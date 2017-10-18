@@ -1,7 +1,9 @@
 module Main exposing (..)
 
-import Html
+import Json.Decode exposing (Value)
+import Navigation
 import Ports exposing (ReceiveMsg(..), SendMsg(..))
+import Route
 import Types exposing (Model, Msg(..), init)
 import Util exposing ((&))
 import View exposing (view)
@@ -10,10 +12,11 @@ import View exposing (view)
 -- MAIN --
 
 
-main : Program Never Model Msg
+main : Program Value Model Msg
 main =
-    Html.program
-        { init = ( init, Cmd.none )
+    Navigation.programWithFlags
+        (Route.fromLocation >> SetRoute)
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -53,6 +56,9 @@ update message model =
             handleRecieveMsg receiveMsg model
 
         HandleJsMsg (Err err) ->
+            model & Cmd.none
+
+        SetRoute maybeRoute ->
             model & Cmd.none
 
 

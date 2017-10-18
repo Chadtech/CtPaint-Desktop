@@ -4,7 +4,6 @@ import Html exposing (Attribute, Html, br, div, input, p, text)
 import Html.Attributes exposing (placeholder, spellcheck, value)
 import Html.CssHelpers
 import Html.Events exposing (onInput)
-import Styles
 import Styles.Shared exposing (Classes(..), appNameSpace)
 import Types exposing (Model, Msg(..))
 import Util exposing (onEnter)
@@ -36,7 +35,7 @@ header =
         [ text "Thank you" ]
 
 
-msg : List Html Msg
+msg : List (Html Msg)
 msg =
     []
 
