@@ -1,21 +1,60 @@
 module Styles.Shared exposing (..)
 
-import Css exposing (Color, hex)
+import Css exposing (..)
 import Html.CssHelpers exposing (withNamespace)
+import Util exposing ((:=))
 
 
 type Classes
     = Field
-    | Point
-    | Big
     | Card
-    | CardBody
+    | Body
     | Header
+    | Selected
+    | Null
 
 
 appNameSpace : String
 appNameSpace =
-    "app-name"
+    "ctpaint-desktop"
+
+
+cannotSelect : List Style
+cannotSelect =
+    [ "-webkit-user-select" := "none"
+    , "-moz-user-select" := "none"
+    , "-ms-user-select" := "none"
+    , "user-select" := "none"
+    ]
+        |> List.map (\a b -> property a b)
+
+
+indent : List Style
+indent =
+    [ borderTop (px 2) solid ignorable1
+    , borderLeft (px 2) solid ignorable1
+    , borderRight (px 2) solid ignorable3
+    , borderBottom (px 2) solid ignorable3
+    ]
+        |> List.concat
+
+
+outdent : List Style
+outdent =
+    [ borderTop (px 2) solid ignorable1
+    , borderLeft (px 2) solid ignorable1
+    , borderRight (px 2) solid ignorable3
+    , borderBottom (px 2) solid ignorable3
+    ]
+
+
+basicFont : List Style
+basicFont =
+    [ fontFamilies [ "hfnss" ]
+    , color point
+    , property "-webkit-font-smoothing" "none"
+    , fontSize (px 32)
+    ]
 
 
 
@@ -77,8 +116,8 @@ pointier =
     hex "#e0d6ca"
 
 
-pointColor : Color
-pointColor =
+point : Color
+point =
     hex "#b0a69a"
 
 
