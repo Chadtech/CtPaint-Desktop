@@ -155,8 +155,20 @@ handleRoute destination model =
         Route.PaintApp ->
             model & Ports.send OpenPaintApp
 
-        Route.Verify ->
-            model & Cmd.none
+        Route.Verify email code ->
+            let
+                cmd =
+                    [ Ports.send EndSession
+                    , Ports.send (VerifyEmail email code)
+                    ]
+                        |> Cmd.batch
+            in
+            { model
+                | session = Nothing
+                , page =
+                    Page.Verify (Verify.init email)
+            }
+                & cmd
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )

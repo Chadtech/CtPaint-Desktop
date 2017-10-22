@@ -11,18 +11,13 @@ type JsMsg
     = EndSession
     | OpenPaintApp
     | Register RegistrationPayload
-    | Login LoginPayload
+    | Login String String
+    | VerifyEmail String String
 
 
 type alias RegistrationPayload =
     { email : String
     , username : String
-    , password : String
-    }
-
-
-type alias LoginPayload =
-    { email : String
     , password : String
     }
 
@@ -58,12 +53,19 @@ send msg =
                 |> Encode.object
                 |> toMsg "register"
 
-        Login { email, password } ->
+        Login email password ->
             [ "email" := Encode.string email
             , "password" := Encode.string password
             ]
                 |> Encode.object
                 |> toMsg "login"
+
+        VerifyEmail email code ->
+            [ "email" := Encode.string email
+            , "code" := Encode.string code
+            ]
+                |> Encode.object
+                |> toMsg "verify email"
 
 
 port toJs : Value -> Cmd msg

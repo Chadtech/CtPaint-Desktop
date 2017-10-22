@@ -10,7 +10,7 @@ type Route
     | Login
     | Logout
     | Register
-    | Verify
+    | Verify String String
     | PaintApp
 
 
@@ -27,5 +27,6 @@ route =
     , Url.map Register (s "register")
     , Url.map Settings (s "settings")
     , Url.map PaintApp (s "app")
+    , Url.map Verify (s "verify" </> Url.string </> Url.string)
     ]
         |> Url.oneOf

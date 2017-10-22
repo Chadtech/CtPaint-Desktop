@@ -61,10 +61,7 @@ update message model =
 
                 cmd =
                     if List.isEmpty errors then
-                        { email = model.email
-                        , password = model.password
-                        }
-                            |> Login
+                        Login model.email model.password
                             |> Ports.send
                     else
                         Cmd.none

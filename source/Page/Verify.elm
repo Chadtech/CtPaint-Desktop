@@ -4,11 +4,20 @@ import Html exposing (Html, a, br, div, p, text)
 import Html.Attributes exposing (class)
 
 
+-- INIT --
+
+
+init : String -> Model
+init =
+    Waiting
+
+
+
 -- TYPES --
 
 
 type Model
-    = AttemptVerification String String
+    = Waiting String
     | Success String
     | Fail String
 
@@ -35,7 +44,7 @@ update message model =
 view : Model -> Html Msg
 view model =
     case model of
-        AttemptVerification email code ->
+        Waiting email ->
             [ p [] [ text "Verifying.." ] ]
                 |> container
 
