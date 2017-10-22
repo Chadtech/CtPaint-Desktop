@@ -7,6 +7,14 @@ import Util exposing ((:=))
 type JsMsg
     = EndSession
     | OpenPaintApp
+    | Register RegistrationPayload
+
+
+type alias RegistrationPayload =
+    { email : String
+    , username : String
+    , password : String
+    }
 
 
 toMsg : String -> Value -> Cmd msg
@@ -31,6 +39,14 @@ send msg =
 
         OpenPaintApp ->
             noPayload "open paint app"
+
+        Register { email, username, password } ->
+            [ "email" := Encode.string email
+            , "username" := Encode.string username
+            , "password" := Encode.string password
+            ]
+                |> Encode.object
+                |> toMsg "register"
 
 
 port toJs : Value -> Cmd msg

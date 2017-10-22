@@ -4,6 +4,7 @@ import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Page exposing (Page(..), Problem(..))
 import Page.Home as Home
+import Page.Register as Register
 import Ports exposing (JsMsg(..))
 import Route exposing (Route(..))
 import Util exposing ((&))
@@ -34,6 +35,16 @@ update message model =
                 _ ->
                     model & Cmd.none
 
+        RegisterMsg subMsg ->
+            case model.page of
+                Page.Register subModel ->
+                    incorporateRegister
+                        (Register.update subMsg subModel)
+                        model
+
+                _ ->
+                    model & Cmd.none
+
         Noop ->
             model & Cmd.none
 
@@ -58,7 +69,7 @@ handleRoute destination model =
         Route.Register ->
             { model
                 | session = Nothing
-                , page = Page.Register
+                , page = Page.Register Register.init
             }
                 & Ports.send EndSession
 
@@ -92,6 +103,17 @@ handleRoute destination model =
 
         Route.PaintApp ->
             model & Ports.send OpenPaintApp
+
+        Route.Verify ->
+            model & Cmd.none
+
+
+incorporateRegister : ( Register.Model, Cmd Register.Msg ) -> Model -> ( Model, Cmd Msg )
+incorporateRegister ( registerModel, cmd ) model =
+    { model
+        | page = Page.Register registerModel
+    }
+        & Cmd.map RegisterMsg cmd
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )

@@ -10,6 +10,7 @@ type Route
     | Login
     | Logout
     | Register
+    | Verify
     | PaintApp
 
 

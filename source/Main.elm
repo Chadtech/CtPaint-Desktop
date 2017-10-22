@@ -9,10 +9,10 @@ import Navigation exposing (Location)
 import Page exposing (Page(..), Problem(..))
 import Page.Error as Error
 import Page.Home as Home
+import Page.Register as Register
 import Ports exposing (JsMsg(..))
 import Route
 import Update exposing (update)
-import Util exposing ((&))
 
 
 -- MAIN --
@@ -35,10 +35,18 @@ main =
 
 init : Value -> Location -> ( Model, Cmd Msg )
 init json location =
-    { session = Session.decode json
-    , page = Home {}
-    }
-        & Cmd.none
+    let
+        model =
+            { session = Session.decode json
+            , page = Error NoPageLoaded
+            }
+
+        msg =
+            location
+                |> Route.fromLocation
+                |> SetRoute
+    in
+    update msg model
 
 
 
@@ -60,8 +68,14 @@ view model =
         Home subModel ->
             Html.map HomeMsg (Home.view subModel)
 
+        Page.Register subModel ->
+            Html.map RegisterMsg (Register.view subModel)
+
         Error InvalidUrl ->
             Error.view "Sorry, something is wrong with your url"
+
+        Error NoPageLoaded ->
+            Error.view "Somehow no page was loaded"
 
         _ ->
             Html.text "nope"
