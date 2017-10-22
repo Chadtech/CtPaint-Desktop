@@ -2,6 +2,7 @@ module Msg exposing (..)
 
 import Json.Decode as Decode exposing (Decoder, Value)
 import Page.Home as Home
+import Page.Login as Login
 import Page.Register as Register
 import Route exposing (Route(..))
 
@@ -12,6 +13,7 @@ type Msg
     | InvalidJsMsg String
     | HomeMsg Home.Msg
     | RegisterMsg Register.Msg
+    | LoginMsg Login.Msg
 
 
 decode : Value -> Msg

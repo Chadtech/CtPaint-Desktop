@@ -2,8 +2,10 @@ module Update exposing (update)
 
 import Model exposing (Model)
 import Msg exposing (Msg(..))
+import Navigation
 import Page exposing (Page(..), Problem(..))
 import Page.Home as Home
+import Page.Login as Login
 import Page.Register as Register
 import Ports exposing (JsMsg(..))
 import Route exposing (Route(..))
@@ -38,9 +40,31 @@ update message model =
         RegisterMsg subMsg ->
             case model.page of
                 Page.Register subModel ->
-                    incorporateRegister
-                        (Register.update subMsg subModel)
-                        model
+                    let
+                        ( newSubModel, cmd ) =
+                            Register.update subMsg subModel
+                    in
+                    { model
+                        | page =
+                            Page.Register newSubModel
+                    }
+                        & Cmd.map RegisterMsg cmd
+
+                _ ->
+                    model & Cmd.none
+
+        LoginMsg subMsg ->
+            case model.page of
+                Page.Login subModel ->
+                    let
+                        ( newSubModel, cmd ) =
+                            Login.update subMsg subModel
+                    in
+                    { model
+                        | page =
+                            Page.Login newSubModel
+                    }
+                        & Cmd.map LoginMsg cmd
 
                 _ ->
                     model & Cmd.none
@@ -53,11 +77,22 @@ handleRoute : Route -> Model -> ( Model, Cmd Msg )
 handleRoute destination model =
     case destination of
         Route.Login ->
+            let
+                page =
+                    Page.Login Login.init
+
+                cmd =
+                    [ Ports.send EndSession
+                    , Page.toUrl page
+                        |> Navigation.newUrl
+                    ]
+                        |> Cmd.batch
+            in
             { model
                 | session = Nothing
-                , page = Page.Login
+                , page = page
             }
-                & Ports.send EndSession
+                & cmd
 
         Route.Logout ->
             { model
@@ -83,7 +118,7 @@ handleRoute destination model =
 
                 Nothing ->
                     { model
-                        | page = Page.Login
+                        | page = Page.Login Login.init
                     }
                         & Cmd.none
 
@@ -97,7 +132,7 @@ handleRoute destination model =
 
                 Nothing ->
                     { model
-                        | page = Page.Login
+                        | page = Page.Login Login.init
                     }
                         & Cmd.none
 
@@ -106,14 +141,6 @@ handleRoute destination model =
 
         Route.Verify ->
             model & Cmd.none
-
-
-incorporateRegister : ( Register.Model, Cmd Register.Msg ) -> Model -> ( Model, Cmd Msg )
-incorporateRegister ( registerModel, cmd ) model =
-    { model
-        | page = Page.Register registerModel
-    }
-        & Cmd.map RegisterMsg cmd
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )

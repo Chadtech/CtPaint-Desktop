@@ -47,6 +47,14 @@ contains =
 -- HTML --
 
 
+showIf : Bool -> String -> String
+showIf show str =
+    if show then
+        str
+    else
+        "********"
+
+
 onEnter : msg -> Attribute msg
 onEnter msg =
     on "keydown" (Decode.andThen (enterDecoder msg) keyCode)

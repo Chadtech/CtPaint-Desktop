@@ -4,15 +4,25 @@ import Json.Encode as Encode exposing (Value)
 import Util exposing ((:=))
 
 
+-- TYPES --
+
+
 type JsMsg
     = EndSession
     | OpenPaintApp
     | Register RegistrationPayload
+    | Login LoginPayload
 
 
 type alias RegistrationPayload =
     { email : String
     , username : String
+    , password : String
+    }
+
+
+type alias LoginPayload =
+    { email : String
     , password : String
     }
 
@@ -47,6 +57,13 @@ send msg =
             ]
                 |> Encode.object
                 |> toMsg "register"
+
+        Login { email, password } ->
+            [ "email" := Encode.string email
+            , "password" := Encode.string password
+            ]
+                |> Encode.object
+                |> toMsg "login"
 
 
 port toJs : Value -> Cmd msg

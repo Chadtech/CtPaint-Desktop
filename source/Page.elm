@@ -1,6 +1,7 @@
 module Page exposing (..)
 
 import Page.Home as Home
+import Page.Login as Login
 import Page.Register as Register
 
 
@@ -9,7 +10,7 @@ type Page
     | Error Problem
     | Settings
     | Register Register.Model
-    | Login
+    | Login Login.Model
     | Logout
     | Verify
 
@@ -34,7 +35,7 @@ toUrl page =
         Register _ ->
             "register"
 
-        Login ->
+        Login _ ->
             "login"
 
         Logout ->

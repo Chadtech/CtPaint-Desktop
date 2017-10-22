@@ -16,7 +16,7 @@ import Html.Attributes exposing (class, hidden, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Encode as Encode
 import Ports exposing (JsMsg(..), RegistrationPayload)
-import Util exposing ((&), (:=))
+import Util exposing ((&), (:=), showIf)
 import Validate exposing (ifBlank)
 
 
@@ -213,14 +213,6 @@ errorView errors fieldType =
 onInput_ : Field -> Attribute Msg
 onInput_ =
     UpdateField >> onInput
-
-
-showIf : Bool -> String -> String
-showIf show str =
-    if show then
-        str
-    else
-        "********"
 
 
 
