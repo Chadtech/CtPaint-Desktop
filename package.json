@@ -4,9 +4,10 @@
   "description": "",
   "main": "gulpFile.coffee",
   "dependencies": {
+    "amazon-cognito-identity-js": "^1.21.0",
     "body-parser": "^1.15.0",
     "coffee-script": "^1.12.7",
-    "coffeeify": "^3.0.0",
+    "coffeeify": "^2.1.0",
     "express": "^4.13.4",
     "gulp": "^3.9.1",
     "gulp-autowatch": "^1.0.2",

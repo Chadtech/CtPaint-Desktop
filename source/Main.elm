@@ -1,12 +1,17 @@
 module Main exposing (..)
 
+import Data.Session as Session
+import Html exposing (Html)
 import Json.Decode exposing (Value)
-import Navigation
-import Ports exposing (ReceiveMsg(..), SendMsg(..))
+import Model exposing (Model)
+import Msg exposing (Msg(..))
+import Navigation exposing (Location)
+import Page exposing (Page(..), Problem(..))
+import Page.Error as Error
+import Page.Home as Home
+import Ports exposing (JsMsg(..))
 import Route
-import Types exposing (Model, Msg(..), init)
 import Util exposing ((&))
-import View exposing (view)
 
 
 -- MAIN --
@@ -24,12 +29,38 @@ main =
 
 
 
+-- INIT --
+
+
+init : Value -> Location -> ( Model, Cmd Msg )
+init json location =
+    { session = Session.decode json
+    , page = Home {}
+    }
+        & Cmd.none
+
+
+
 -- SUBSCRIPTIONS --
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Ports.fromJs (HandleJsMsg << Ports.decodeReceiveMsg)
+    Ports.fromJs Msg.decode
+
+
+
+-- VIEW --
+
+
+view : Model -> Html Msg
+view model =
+    case model.page of
+        Home subModel ->
+            Html.map HomeMsg (Home.view subModel)
+
+        Error InvalidUrl ->
+            Error.view "Sorry, something is wrong with your url"
 
 
 
@@ -39,31 +70,28 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        UpdateField str ->
-            { model
-                | field = str
-            }
-                & Cmd.none
-
-        EnterHappened ->
-            { model
-                | timesEnterWasPressed =
-                    model.timesEnterWasPressed + 1
-            }
-                & Ports.sendToJs (ConsoleLog model.field)
-
-        HandleJsMsg (Ok receiveMsg) ->
-            handleRecieveMsg receiveMsg model
-
-        HandleJsMsg (Err err) ->
-            model & Cmd.none
-
         SetRoute maybeRoute ->
             model & Cmd.none
 
-
-handleRecieveMsg : ReceiveMsg -> Model -> ( Model, Cmd Msg )
-handleRecieveMsg receiveMsg model =
-    case receiveMsg of
-        ConsoleLogHappened ->
+        InvalidJsMsg err ->
             model & Cmd.none
+
+        HomeMsg subMsg ->
+            case model.page of
+                Home subModel ->
+                    incorporateHome
+                        (Home.update subMsg subModel)
+                        model
+
+                _ ->
+                    model & Cmd.none
+
+        Noop ->
+            model & Cmd.none
+
+
+incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )
+incorporateHome ( homeModel, reply ) model =
+    case reply of
+        Home.NoReply ->
+            { model | page = Home homeModel } & Cmd.none
