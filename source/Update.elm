@@ -7,6 +7,7 @@ import Page exposing (Page(..), Problem(..))
 import Page.Home as Home
 import Page.Login as Login
 import Page.Register as Register
+import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route exposing (Route(..))
 import Util exposing ((&))
@@ -65,6 +66,21 @@ update message model =
                             Page.Login newSubModel
                     }
                         & Cmd.map LoginMsg cmd
+
+                _ ->
+                    model & Cmd.none
+
+        VerifyMsg subMsg ->
+            case model.page of
+                Page.Verify subModel ->
+                    let
+                        ( newSubModel, cmd ) =
+                            Verify.update subMsg subModel
+                    in
+                    { model
+                        | page = Page.Verify newSubModel
+                    }
+                        & Cmd.map VerifyMsg cmd
 
                 _ ->
                     model & Cmd.none

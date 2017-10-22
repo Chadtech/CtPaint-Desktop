@@ -4,6 +4,7 @@ import Json.Decode as Decode exposing (Decoder, Value)
 import Page.Home as Home
 import Page.Login as Login
 import Page.Register as Register
+import Page.Verify as Verify
 import Route exposing (Route(..))
 
 
@@ -14,6 +15,7 @@ type Msg
     | HomeMsg Home.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
+    | VerifyMsg Verify.Msg
 
 
 decode : Value -> Msg

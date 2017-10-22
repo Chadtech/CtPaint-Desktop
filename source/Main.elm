@@ -11,6 +11,7 @@ import Page.Error as Error
 import Page.Home as Home
 import Page.Login as Login
 import Page.Register as Register
+import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route
 import Update exposing (update)
@@ -74,6 +75,9 @@ view model =
 
         Page.Login subModel ->
             Html.map LoginMsg (Login.view subModel)
+
+        Page.Verify subModel ->
+            Html.map VerifyMsg (Verify.view subModel)
 
         Error InvalidUrl ->
             Error.view "Sorry, something is wrong with your url"

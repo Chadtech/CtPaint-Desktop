@@ -3,6 +3,7 @@ module Page exposing (..)
 import Page.Home as Home
 import Page.Login as Login
 import Page.Register as Register
+import Page.Verify as Verify
 
 
 type Page
@@ -12,7 +13,7 @@ type Page
     | Register Register.Model
     | Login Login.Model
     | Logout
-    | Verify
+    | Verify Verify.Model
 
 
 type Problem
@@ -41,5 +42,5 @@ toUrl page =
         Logout ->
             "logout"
 
-        Verify ->
+        Verify _ ->
             "verify"
