@@ -11,6 +11,7 @@ import Page.Error as Error
 import Page.Home as Home
 import Ports exposing (JsMsg(..))
 import Route
+import Update exposing (update)
 import Util exposing ((&))
 
 
@@ -62,36 +63,5 @@ view model =
         Error InvalidUrl ->
             Error.view "Sorry, something is wrong with your url"
 
-
-
--- UPDATE --
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update message model =
-    case message of
-        SetRoute maybeRoute ->
-            model & Cmd.none
-
-        InvalidJsMsg err ->
-            model & Cmd.none
-
-        HomeMsg subMsg ->
-            case model.page of
-                Home subModel ->
-                    incorporateHome
-                        (Home.update subMsg subModel)
-                        model
-
-                _ ->
-                    model & Cmd.none
-
-        Noop ->
-            model & Cmd.none
-
-
-incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )
-incorporateHome ( homeModel, reply ) model =
-    case reply of
-        Home.NoReply ->
-            { model | page = Home homeModel } & Cmd.none
+        _ ->
+            Html.text "nope"

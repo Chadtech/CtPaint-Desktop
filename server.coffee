@@ -11,7 +11,7 @@ module.exports = (PORT, log) ->
     app.use (bodyParser.urlencoded (extended: true))
     app.use "/", (express.static (__dirname + "/public"))
 
-    app.get "/", (req, res, next) ->
+    app.use (req, res, next) ->
         indexPage = __dirname + "/public/index.html"
         (res.status 200).sendFile indexPage
 

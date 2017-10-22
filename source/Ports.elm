@@ -5,18 +5,32 @@ import Util exposing ((:=))
 
 
 type JsMsg
-    = ConsoleLog String
+    = EndSession
+    | OpenPaintApp
+
+
+toMsg : String -> Value -> Cmd msg
+toMsg type_ payload =
+    [ "type" := Encode.string type_
+    , "payload" := payload
+    ]
+        |> Encode.object
+        |> toJs
+
+
+noPayload : String -> Cmd msg
+noPayload type_ =
+    toMsg type_ Encode.null
 
 
 send : JsMsg -> Cmd msg
 send msg =
     case msg of
-        ConsoleLog str ->
-            [ "type" := Encode.string "console log"
-            , "payload" := Encode.string str
-            ]
-                |> Encode.object
-                |> toJs
+        EndSession ->
+            noPayload "end session"
+
+        OpenPaintApp ->
+            noPayload "open paint app"
 
 
 port toJs : Value -> Cmd msg
