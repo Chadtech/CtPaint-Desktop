@@ -1,6 +1,6 @@
-public/app.js
-public/elm.js
-public/style.css
+public/desktop-app.js
+public/desktop-elm.js
+public/desktop-styles.css
 node_modules
 elm-stuff
 

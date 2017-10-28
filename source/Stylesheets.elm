@@ -10,7 +10,7 @@ port files : CssFileStructure -> Cmd msg
 
 fileStructure : CssFileStructure
 fileStructure =
-    [ "./public/style.css" := Css.File.compile [ Styles.css ] ]
+    [ "./public/desktop-styles.css" := Css.File.compile [ Styles.css ] ]
         |> Css.File.toFileStructure
 
 
