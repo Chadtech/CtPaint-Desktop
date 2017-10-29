@@ -84,6 +84,9 @@ determineResponseError err =
         "UserNotFoundException: User does not exist." ->
             "Either the user does not exist or the password entered was incorrect"
 
+        "PasswordResetRequiredException: Password reset required for the user" ->
+            "Please reset your password"
+
         _ ->
             err
 
@@ -123,7 +126,7 @@ view model =
         [ class [ Card, Solitary ] ]
         [ div
             [ class [ Header ] ]
-            [ p [] [ text "log in" ] ]
+            [ p [] [ text "CtPaint" ] ]
         , div
             [ class [ Body ] ]
             [ form

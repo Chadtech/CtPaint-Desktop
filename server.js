@@ -10,7 +10,7 @@ module.exports = function(PORT, log) {
     extended: true
   }));
   app.use("/", express.static(__dirname + "/public"));
-  app.get("/", function(req, res, next) {
+  app.get("*", function(req, res, next) {
     var indexPage;
     indexPage = __dirname + "/public/index.html";
     return (res.status(200)).sendFile(indexPage);

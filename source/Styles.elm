@@ -23,6 +23,7 @@ type Classes
     | Long
     | Null
     | Error
+    | HasBottomMargin
 
 
 appNamespace : String
@@ -47,6 +48,8 @@ css =
     , field
     , form
         [ margin (px 0) ]
+    , class HasBottomMargin
+        [ marginBottom (px 8) ]
     ]
         |> namespace appNamespace
         |> stylesheet

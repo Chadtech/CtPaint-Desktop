@@ -11,6 +11,8 @@ var poolData = {
 
 var userPool = new CognitoUserPool(poolData);
 
+var user = userPool.getCurrentUser();
+
 var login = require("./Aws/login")(userPool);
 
 Desktop = {
@@ -21,7 +23,12 @@ Desktop = {
             switch (msg.type) {
                 case "login" :
                     login(app, msg.payload);
-                    console.log("login!");
+                    break;
+
+                case "end session" :
+                    if (user !== null) {
+                        user.signOut();
+                    }
                     break;
 
                 default:

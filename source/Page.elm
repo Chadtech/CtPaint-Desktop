@@ -19,28 +19,3 @@ type Page
 type Problem
     = InvalidUrl
     | NoPageLoaded
-
-
-toUrl : Page -> String
-toUrl page =
-    case page of
-        Home _ ->
-            "home"
-
-        Error _ ->
-            "error"
-
-        Settings ->
-            "settings"
-
-        Register _ ->
-            "register"
-
-        Login _ ->
-            "login"
-
-        Logout ->
-            "logout"
-
-        Verify _ ->
-            "verify"

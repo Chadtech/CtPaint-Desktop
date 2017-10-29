@@ -30,3 +30,32 @@ route =
     , Url.map Verify (s "verify" </> Url.string </> Url.string)
     ]
         |> Url.oneOf
+
+
+toUrl : Route -> String
+toUrl route =
+    let
+        pieces =
+            case route of
+                Home ->
+                    []
+
+                Settings ->
+                    [ "settings" ]
+
+                Register ->
+                    [ "register" ]
+
+                Login ->
+                    [ "login" ]
+
+                Logout ->
+                    [ "logout" ]
+
+                Verify email code ->
+                    [ "verify", email, code ]
+
+                PaintApp ->
+                    [ "app" ]
+    in
+    "/" ++ String.join "/" pieces

@@ -67,7 +67,7 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     case model.page of
-        Home subModel ->
+        Page.Home subModel ->
             Html.map HomeMsg (Home.view subModel)
 
         Page.Register subModel ->

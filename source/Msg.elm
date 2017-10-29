@@ -16,6 +16,7 @@ type Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
     | VerifyMsg Verify.Msg
+    | Navigate Route
 
 
 type JsMsgProblem

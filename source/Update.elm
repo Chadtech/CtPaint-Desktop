@@ -88,6 +88,9 @@ update msg model =
                 _ ->
                     model & Cmd.none
 
+        Navigate route ->
+            model & goTo route
+
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
 handleRoute destination model =
@@ -98,10 +101,7 @@ handleRoute destination model =
                     Page.Login Login.init
 
                 cmd =
-                    [ Ports.send EndSession
-                    , Page.toUrl page
-                        |> Navigation.newUrl
-                    ]
+                    [ Ports.send EndSession ]
                         |> Cmd.batch
             in
             { model
@@ -133,10 +133,7 @@ handleRoute destination model =
                         & Cmd.none
 
                 Nothing ->
-                    { model
-                        | page = Page.Login Login.init
-                    }
-                        & Cmd.none
+                    model & goTo Route.Login
 
         Route.Settings ->
             case model.session of
@@ -169,6 +166,11 @@ handleRoute destination model =
                     Page.Verify (Verify.init email)
             }
                 & cmd
+
+
+goTo : Route -> Cmd Msg
+goTo =
+    Route.toUrl >> Debug.log "go to" >> Navigation.newUrl
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )
