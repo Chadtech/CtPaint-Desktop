@@ -1,9 +1,10 @@
 module Page.Login exposing (..)
 
 import Html exposing (Attribute, Html, a, div, form, input, p, text)
-import Html.Attributes exposing (class, hidden, placeholder, type_, value)
+import Html.Attributes exposing (hidden, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..))
+import Styles exposing (Classes(..))
 import Util exposing ((&), showIf)
 import Validate exposing (ifBlank)
 
@@ -11,7 +12,7 @@ import Validate exposing (ifBlank)
 type alias Model =
     { email : String
     , password : String
-    , fieldErrors : List ( Field, String )
+    , errors : List ( Field, String )
     , responseError : Maybe String
     , showFields : Bool
     }
@@ -25,6 +26,7 @@ type Field
 type Msg
     = UpdateField Field String
     | AttemptLogin
+    | LoginFailed String
 
 
 
@@ -35,7 +37,7 @@ init : Model
 init =
     { email = ""
     , password = ""
-    , fieldErrors = []
+    , errors = []
     , responseError = Nothing
     , showFields = True
     }
@@ -46,8 +48,8 @@ init =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update message model =
-    case message of
+update msg model =
+    case msg of
         UpdateField Email str ->
             { model | email = str } & Cmd.none
 
@@ -66,10 +68,24 @@ update message model =
                     else
                         Cmd.none
             in
+            { model | errors = errors } & cmd
+
+        LoginFailed err ->
             { model
-                | fieldErrors = errors
+                | responseError =
+                    Just (determineResponseError err)
             }
-                & cmd
+                & Cmd.none
+
+
+determineResponseError : String -> String
+determineResponseError err =
+    case err of
+        "UserNotFoundException: User does not exist." ->
+            "Either the user does not exist or the password entered was incorrect"
+
+        _ ->
+            err
 
 
 
@@ -88,6 +104,10 @@ validate =
 -- VIEW --
 
 
+{ class } =
+    Styles.helpers
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -97,36 +117,39 @@ view model =
 
         errorView_ : Field -> Html Msg
         errorView_ =
-            errorView model.fieldErrors
+            fieldErrorView model.errors
     in
     div
-        [ class "card solitary" ]
-        [ form
-            [ onSubmit AttemptLogin ]
-            [ p [] [ text "CtPaint Log In" ]
-            , field
-                "Email"
-                [ value_ model.email
-                , onInput_ Email
+        [ class [ Card, Solitary ] ]
+        [ div
+            [ class [ Header ] ]
+            [ p [] [ text "log in" ] ]
+        , div
+            [ class [ Body ] ]
+            [ form
+                [ onSubmit AttemptLogin ]
+                [ field "email"
+                    [ value_ model.email
+                    , onInput_ Email
+                    ]
+                , errorView_ Email
+                , field "password"
+                    [ value_ model.password
+                    , type_ "password"
+                    , onInput_ Password
+                    ]
+                , responseErrorView model.responseError
+                , input
+                    [ type_ "submit"
+                    , hidden True
+                    ]
+                    []
+                , a
+                    [ class [ Submit ]
+                    , onClick AttemptLogin
+                    ]
+                    [ text "Log in" ]
                 ]
-            , errorView_ Email
-            , field
-                "Password"
-                [ value_ model.password
-                , type_ "password"
-                , onInput_ Password
-                ]
-
-            -- This input is here, because without it
-            -- the enter key does not cause submission
-            , input
-                [ type_ "submit"
-                , hidden True
-                ]
-                []
-            , a
-                [ onClick AttemptLogin ]
-                [ text "Log in" ]
             ]
         ]
 
@@ -138,16 +161,16 @@ view model =
 field : String -> List (Attribute Msg) -> Html Msg
 field name attributes =
     div
-        [ class "field" ]
+        [ class [ Field ] ]
         [ p [] [ text name ]
         , input
-            attributes
+            (class [ Long ] :: attributes)
             []
         ]
 
 
-errorView : List ( Field, String ) -> Field -> Html Msg
-errorView errors fieldType =
+fieldErrorView : List ( Field, String ) -> Field -> Html Msg
+fieldErrorView errors fieldType =
     let
         thisFieldsErrors =
             List.filter
@@ -159,13 +182,24 @@ errorView errors fieldType =
             Html.text ""
 
         error :: _ ->
-            let
-                str =
-                    Tuple.second error
-            in
-            div
-                [ class "error-zone" ]
-                [ p [] [ text str ] ]
+            errorView (Tuple.second error)
+
+
+responseErrorView : Maybe String -> Html Msg
+responseErrorView maybeError =
+    case maybeError of
+        Just error ->
+            errorView error
+
+        Nothing ->
+            Html.text ""
+
+
+errorView : String -> Html Msg
+errorView error =
+    div
+        [ class [ Error ] ]
+        [ p [] [ text error ] ]
 
 
 

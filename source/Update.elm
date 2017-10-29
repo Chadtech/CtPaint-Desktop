@@ -14,8 +14,8 @@ import Util exposing ((&))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update message model =
-    case message of
+update msg model =
+    case msg of
         SetRoute (Just route) ->
             handleRoute route model
 
@@ -24,6 +24,9 @@ update message model =
                 | page = Error InvalidUrl
             }
                 & Cmd.none
+
+        LoggedIn ->
+            model & Cmd.none
 
         InvalidJsMsg err ->
             model & Cmd.none
@@ -84,9 +87,6 @@ update message model =
 
                 _ ->
                     model & Cmd.none
-
-        Noop ->
-            model & Cmd.none
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )

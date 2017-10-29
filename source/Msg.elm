@@ -10,24 +10,45 @@ import Route exposing (Route(..))
 
 type Msg
     = SetRoute (Maybe Route)
-    | Noop
-    | InvalidJsMsg String
+    | LoggedIn
+    | InvalidJsMsg JsMsgProblem
     | HomeMsg Home.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
     | VerifyMsg Verify.Msg
 
 
+type JsMsgProblem
+    = CouldntDecode String
+    | UnrecognizedType String
+
+
 decode : Value -> Msg
 decode json =
-    case Decode.decodeValue decoder json of
-        Ok msg ->
-            msg
+    case Decode.decodeValue typeDecoder json of
+        Ok "login success" ->
+            LoggedIn
+
+        Ok "login fail" ->
+            case Decode.decodeValue errorDecoder json of
+                Ok err ->
+                    LoginMsg (Login.LoginFailed err)
+
+                Err err ->
+                    LoginMsg (Login.LoginFailed err)
+
+        Ok type_ ->
+            InvalidJsMsg (UnrecognizedType type_)
 
         Err err ->
-            InvalidJsMsg err
+            InvalidJsMsg (CouldntDecode err)
 
 
-decoder : Decoder Msg
-decoder =
-    Decode.succeed Noop
+errorDecoder : Decoder String
+errorDecoder =
+    Decode.field "payload" Decode.string
+
+
+typeDecoder : Decoder String
+typeDecoder =
+    Decode.field "type" Decode.string

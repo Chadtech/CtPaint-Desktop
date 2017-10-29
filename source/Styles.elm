@@ -1,23 +1,28 @@
-module Styles exposing (css)
+module Styles exposing (Classes(..), css, helpers)
 
 import Css exposing (..)
-import Css.Elements exposing (a, body, p)
+import Css.Elements exposing (a, body, form, p)
 import Css.Namespace exposing (namespace)
-import Html.CssHelpers
+import Html.CssHelpers exposing (Namespace)
 import Util exposing ((:=))
 
 
+helpers : Namespace String class id msg
 helpers =
-    Html.CssHelpers.withNamespace "desktop"
+    Html.CssHelpers.withNamespace appNamespace
 
 
 type Classes
     = Field
     | Card
+    | Submit
+    | Solitary
     | Body
     | Header
     | Selected
+    | Long
     | Null
+    | Error
 
 
 appNamespace : String
@@ -25,6 +30,7 @@ appNamespace =
     "desktop"
 
 
+css : Stylesheet
 css =
     [ body
         [ backgroundColor backgroundx2
@@ -34,27 +40,85 @@ css =
     , card
     , point
     , header
+    , input
+    , errorZone
+    , button
+    , submit
+    , field
+    , form
+        [ margin (px 0) ]
     ]
         |> namespace appNamespace
         |> stylesheet
 
 
+field : Snippet
+field =
+    [ marginBottom (px 8)
+    , children
+        [ p
+            [ display inlineBlock
+            , width (px 120)
+            , textAlign left
+            ]
+        ]
+    ]
+        |> class Field
+
+
+submit : Snippet
+submit =
+    [ margin auto
+    , display table
+    ]
+        |> class Submit
+
+
+input : Snippet
+input =
+    [ backgroundColor backgroundx2
+    , outline none
+    , fontSize (em 2)
+    , fontFamilies [ "hfnss" ]
+    , color pointColor
+    , property "-webkit-font-smoothing" "none"
+    , margin (px 0)
+    , padding (px 0)
+    , withClass Long
+        [ width (px 300) ]
+    ]
+        |> List.append indent
+        |> Css.Elements.input
+
+
+errorZone : Snippet
+errorZone =
+    [ marginBottom (px 8)
+    , backgroundColor lowWarning
+    , padding (px 4)
+    ]
+        |> class Error
+
+
 header : Snippet
 header =
     [ backgroundColor pointColor
-    , color ignorable3
-    , property "-webkit-font-smoothing" "none"
-    , fontSize (px 32)
-    , fontFamilies [ "hfnss" ]
     , height (px 25)
-    , margin zero
-    , padding zero
+    , width (calc (pct 100) minus (px 8))
     , position absolute
-    , top (px 2)
-    , left (px 2)
-    , width (px 510)
+    , padding (px 2)
+    , margin (px 2)
     , lineHeight (px 25)
     , paddingLeft (px 2)
+    , children
+        [ p
+            [ color ignorable3
+            , cursor default
+            , width (px 150)
+            , margin (px 0)
+            , display inlineBlock
+            ]
+        ]
     ]
         |> class Header
 
@@ -66,15 +130,19 @@ card =
     , borderLeft3 (px 2) solid ignorable1
     , borderRight3 (px 2) solid ignorable3
     , borderBottom3 (px 2) solid ignorable3
-    , width (px 500)
-    , top (pct 50)
-    , left (pct 50)
-    , transform (translate2 (pct -50) (pct -50))
-    , position absolute
-    , padding (px 8)
     , children
         [ class Body
-            [ marginTop (px 25) ]
+            [ marginTop (px 31)
+            , padding (px 8)
+            , children
+                []
+            ]
+        ]
+    , withClass Solitary
+        [ top (pct 50)
+        , left (pct 50)
+        , position absolute
+        , transform (translate2 (pct -50) (pct -50))
         ]
     ]
         |> class Card
@@ -95,7 +163,7 @@ button =
     , textDecoration none
     , backgroundColor ignorable2
     , display inlineBlock
-    , padding4 (px 4) (px 8) (px 8) (px 4)
+    , padding4 (px 4) (px 8) (px 4) (px 8)
     , cursor pointer
     , hover [ color pointier ]
     , withClass Selected indent
@@ -134,10 +202,10 @@ cannotSelect =
 
 indent : List Style
 indent =
-    [ borderTop3 (px 2) solid ignorable1
-    , borderLeft3 (px 2) solid ignorable1
-    , borderRight3 (px 2) solid ignorable3
-    , borderBottom3 (px 2) solid ignorable3
+    [ borderTop3 (px 2) solid ignorable3
+    , borderLeft3 (px 2) solid ignorable3
+    , borderRight3 (px 2) solid ignorable1
+    , borderBottom3 (px 2) solid ignorable1
     ]
 
 
@@ -191,6 +259,11 @@ offBlueDarker =
 critical : Color
 critical =
     hex "#f21d23"
+
+
+lowWarning : Color
+lowWarning =
+    hex "#651a20"
 
 
 good : Color
