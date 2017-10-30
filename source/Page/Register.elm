@@ -14,8 +14,8 @@ import Html
         )
 import Html.Attributes exposing (class, hidden, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Json.Encode as Encode
 import Ports exposing (JsMsg(..), RegistrationPayload)
+import Styles exposing (Classes(..))
 import Util exposing ((&), (:=), showIf)
 import Validate exposing (ifBlank)
 
@@ -80,8 +80,25 @@ init =
 -- VIEW --
 
 
+{ class } =
+    Styles.helpers
+
+
 view : Model -> Html Msg
 view model =
+    div
+        [ class [ Card, Solitary ] ]
+        [ div
+            [ class [ Header ] ]
+            [ p [] [ text "register" ] ]
+        , div
+            [ class [ Body ] ]
+            (viewContent model)
+        ]
+
+
+viewContent : Model -> List (Html Msg)
+viewContent model =
     case model of
         Fields fieldsModel ->
             registeringView fieldsModel
@@ -90,24 +107,30 @@ view model =
             successView email
 
         Fail problem ->
-            Html.text "fail"
+            failView problem
 
 
-successView : String -> Html Msg
+failView : Problem -> List (Html Msg)
+failView problem =
+    [ p
+        []
+        [ text "Sorry, it didnt work. I dont know why" ]
+    ]
+
+
+successView : String -> List (Html Msg)
 successView email =
-    div
-        [ class "card solitary register-success" ]
-        [ p
-            []
-            [ text "Success! Your account is registered" ]
-        , br [] []
-        , p
-            []
-            [ text ("A verification email was sent to " ++ email) ]
-        ]
+    [ p
+        []
+        [ text "Success! Your account is registered" ]
+    , br [] []
+    , p
+        []
+        [ text ("A verification email was sent to " ++ email) ]
+    ]
 
 
-registeringView : FieldsModel -> Html Msg
+registeringView : FieldsModel -> List (Html Msg)
 registeringView fieldsModel =
     let
         value_ : String -> Attribute Msg
@@ -118,56 +141,55 @@ registeringView fieldsModel =
         errorView_ =
             errorView fieldsModel.errors
     in
-    div
-        [ class "card solitary register" ]
-        [ form
-            [ onSubmit AttemptRegistration ]
-            [ p [] [ text "Account Registration" ]
-            , field
-                "Username"
-                [ value_ fieldsModel.username
-                , onInput_ Username
-                ]
-            , errorView_ Username
-            , field
-                "Email"
-                [ value_ fieldsModel.email
-                , onInput_ Email
-                ]
-            , errorView_ Email
-            , field
-                "Type it again"
-                [ value_ fieldsModel.emailConfirm
-                , onInput_ EmailConfirm
-                ]
-            , errorView_ EmailConfirm
-            , field
-                "password"
-                [ value_ fieldsModel.password
-                , type_ "password"
-                , onInput_ Password
-                ]
-            , errorView_ Password
-            , field
-                "Type it again"
-                [ value_ fieldsModel.passwordConfirm
-                , type_ "password"
-                , onInput_ PasswordConfirm
-                ]
-            , errorView_ PasswordConfirm
-
-            -- This input is here, because without it
-            -- the enter key does not cause submission
-            , input
-                [ type_ "submit"
-                , hidden True
-                ]
-                []
-            , a
-                [ onClick AttemptRegistration ]
-                [ text "submit" ]
+    [ form
+        [ onSubmit AttemptRegistration ]
+        [ field
+            "Username"
+            [ value_ fieldsModel.username
+            , onInput_ Username
             ]
+        , errorView_ Username
+        , field
+            "Email"
+            [ value_ fieldsModel.email
+            , onInput_ Email
+            ]
+        , errorView_ Email
+        , field
+            "Type it again"
+            [ value_ fieldsModel.emailConfirm
+            , onInput_ EmailConfirm
+            ]
+        , errorView_ EmailConfirm
+        , field
+            "password"
+            [ value_ fieldsModel.password
+            , type_ "password"
+            , onInput_ Password
+            ]
+        , errorView_ Password
+        , field
+            "Type it again"
+            [ value_ fieldsModel.passwordConfirm
+            , type_ "password"
+            , onInput_ PasswordConfirm
+            ]
+        , errorView_ PasswordConfirm
+
+        -- This input is here, because without it
+        -- the enter key does not cause submission
+        , input
+            [ type_ "submit"
+            , hidden True
+            ]
+            []
+        , a
+            [ class [ Submit ]
+            , onClick AttemptRegistration
+            ]
+            [ text "submit" ]
         ]
+    ]
 
 
 
@@ -177,10 +199,10 @@ registeringView fieldsModel =
 field : String -> List (Attribute Msg) -> Html Msg
 field name attributes =
     div
-        [ class "field" ]
-        [ p [] [ text name ]
+        [ class [ Field ] ]
+        [ p [ class [ Long ] ] [ text name ]
         , input
-            attributes
+            (class [ Long ] :: attributes)
             []
         ]
 
@@ -199,7 +221,7 @@ errorView errors fieldType =
 
         error :: _ ->
             div
-                [ class "error-zone" ]
+                [ class [ Error ] ]
                 [ p
                     []
                     [ text (Tuple.second error) ]

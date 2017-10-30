@@ -82,6 +82,8 @@ field =
             [ display inlineBlock
             , width (px 120)
             , textAlign left
+            , withClass Long
+                [ width (px 180) ]
             ]
         ]
     ]
