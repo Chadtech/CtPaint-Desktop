@@ -1,30 +1,41 @@
 module Page.Verify exposing (..)
 
 import Html exposing (Html, a, br, div, p, text)
-import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
+import Html.Spinner exposing (spinner)
+import Styles exposing (Classes(..))
+import Util exposing ((&))
 
 
 -- INIT --
 
 
 init : String -> Model
-init =
-    Waiting
+init email =
+    { email = email
+    , status = Waiting
+    }
 
 
 
 -- TYPES --
 
 
-type Model
-    = Waiting String
-    | Success String
+type alias Model =
+    { email : String
+    , status : Status
+    }
+
+
+type Status
+    = Waiting
+    | Success
     | Fail String
 
 
 type Msg
-    = VerificationSuccess String
-    | VerificationFail String
+    = Succeeded
+    | Failed String
 
 
 
@@ -32,36 +43,58 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update message model =
-    case message of
-        VerificationSuccess email ->
-            ( Success email, Cmd.none )
+update msg model =
+    case msg of
+        Succeeded ->
+            { model
+                | status = Success
+            }
+                & Cmd.none
 
-        VerificationFail err ->
-            ( Fail err, Cmd.none )
+        Failed err ->
+            { model | status = Fail err } & Cmd.none
+
+
+
+-- VIEW --
+
+
+{ class } =
+    Styles.helpers
 
 
 view : Model -> Html Msg
 view model =
-    case model of
-        Waiting email ->
-            [ p [] [ text "Verifying.." ] ]
-                |> container
+    div
+        [ class [ Card, Solitary, Verify ] ]
+        [ div
+            [ class [ Header ] ]
+            [ p [] [ text "verify account" ] ]
+        , div
+            [ class [ Body ] ]
+            (viewBody model)
+        ]
 
-        Success email ->
+
+viewBody : Model -> List (Html Msg)
+viewBody model =
+    case model.status of
+        Waiting ->
             [ p
-                []
-                [ text "Done!" ]
+                [ class [ HasBottomMargin, TextAlignCenter ] ]
+                [ text "verifying.." ]
+            , spinner
+            ]
+
+        Success ->
+            [ p [] [ text "Success!" ]
             , br [] []
             , p
                 []
-                [ text (email ++ " is verified.") ]
+                [ text (model.email ++ " is verified.") ]
             , br [] []
-            , a
-                []
-                [ text "Log In" ]
+            , a [] [ text "log in" ]
             ]
-                |> container
 
         Fail err ->
             [ p
@@ -72,9 +105,3 @@ view model =
                 []
                 [ text err ]
             ]
-                |> container
-
-
-container : List (Html Msg) -> Html Msg
-container =
-    div [ class "card solitary" ]

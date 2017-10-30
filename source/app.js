@@ -14,6 +14,7 @@ var userPool = new CognitoUserPool(poolData);
 var user = userPool.getCurrentUser();
 
 var login = require("./Aws/login")(userPool);
+var verify = require("./Aws/verify")(userPool);
 
 Desktop = {
     init: function(flags) {
@@ -23,6 +24,10 @@ Desktop = {
             switch (msg.type) {
                 case "login" :
                     login(app, msg.payload);
+                    break;
+
+                case "verify email" :
+                    verify(app, msg.payload);
                     break;
 
                 case "end session" :

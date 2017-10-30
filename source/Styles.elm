@@ -19,11 +19,14 @@ type Classes
     | Solitary
     | Body
     | Header
+    | Verify
     | Selected
     | Long
     | Null
     | Error
     | HasBottomMargin
+    | TextAlignCenter
+    | SpinnerContainer
 
 
 appNamespace : String
@@ -50,9 +53,25 @@ css =
         [ margin (px 0) ]
     , class HasBottomMargin
         [ marginBottom (px 8) ]
+    , class TextAlignCenter
+        [ textAlign center ]
+    , spinnerContainer
     ]
         |> namespace appNamespace
         |> stylesheet
+
+
+spinnerContainer : Snippet
+spinnerContainer =
+    [ position relative
+    , backgroundColor backgroundx2
+    , height (px 16)
+    , overflow hidden
+    , width (px 200)
+    , margin auto
+    ]
+        |> List.append indent
+        |> class SpinnerContainer
 
 
 field : Snippet
@@ -117,7 +136,6 @@ header =
         [ p
             [ color ignorable3
             , cursor default
-            , width (px 150)
             , margin (px 0)
             , display inlineBlock
             ]

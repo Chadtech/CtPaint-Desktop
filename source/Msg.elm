@@ -31,12 +31,23 @@ decode json =
             LoggedIn
 
         Ok "login fail" ->
-            case Decode.decodeValue errorDecoder json of
+            case decodeStringPayload json of
                 Ok err ->
                     LoginMsg (Login.LoginFailed err)
 
                 Err err ->
                     LoginMsg (Login.LoginFailed err)
+
+        Ok "verification success" ->
+            VerifyMsg Verify.Succeeded
+
+        Ok "verification fail" ->
+            case decodeStringPayload json of
+                Ok err ->
+                    VerifyMsg (Verify.Failed err)
+
+                Err err ->
+                    VerifyMsg (Verify.Failed err)
 
         Ok type_ ->
             InvalidJsMsg (UnrecognizedType type_)
@@ -45,8 +56,13 @@ decode json =
             InvalidJsMsg (CouldntDecode err)
 
 
-errorDecoder : Decoder String
-errorDecoder =
+decodeStringPayload : Value -> Result String String
+decodeStringPayload json =
+    Decode.decodeValue stringPayload json
+
+
+stringPayload : Decoder String
+stringPayload =
     Decode.field "payload" Decode.string
 
 
