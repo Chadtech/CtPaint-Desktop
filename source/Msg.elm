@@ -49,6 +49,29 @@ decode json =
                 Err err ->
                     VerifyMsg (Verify.Failed err)
 
+        Ok "registration success" ->
+            case decodeStringPayload json of
+                Ok email ->
+                    RegisterMsg (Register.Succeeded email)
+
+                Err err ->
+                    Register.CouldntDecodeSuccess
+                        |> Register.Failed
+                        |> RegisterMsg
+
+        Ok "registration fail" ->
+            case decodeStringPayload json of
+                Ok err ->
+                    err
+                        |> Register.Other
+                        |> Register.Failed
+                        |> RegisterMsg
+
+                Err err ->
+                    Register.CouldntDecodeFail
+                        |> Register.Failed
+                        |> RegisterMsg
+
         Ok type_ ->
             InvalidJsMsg (UnrecognizedType type_)
 

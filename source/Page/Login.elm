@@ -84,6 +84,9 @@ determineResponseError err =
         "UserNotFoundException: User does not exist." ->
             "Either the user does not exist or the password entered was incorrect"
 
+        "NotAuthorizedException: Incorrect username or password." ->
+            "Either the user does not exist or the password entered was incorrect"
+
         "PasswordResetRequiredException: Password reset required for the user" ->
             "Please reset your password"
 

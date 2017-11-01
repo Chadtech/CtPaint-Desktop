@@ -8,14 +8,12 @@ module.exports = function(userPool){
             Username: payload.email,
             Password: payload.password
         };
-
         var authenticationDetails = new AuthenticationDetails(authenticationDetails);
 
         var userData = {
             Username: payload.email,
             Pool: userPool
         };
-
         var cognitoUser = new CognitoUser(userData);
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: function(result) {

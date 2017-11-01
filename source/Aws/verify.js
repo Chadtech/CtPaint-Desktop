@@ -13,13 +13,12 @@ module.exports = function(userPool) {
             if (err) {
                 app.ports.fromJs.send({
                     type: "verification fail",
-                    payload: null
+                    payload: String(err)
                 });
             } else {
-                console.log("Result", result);
                 app.ports.fromJs.send({
                     type: "verification success",
-                    payload: email
+                    payload: payload.email
                 });
             }
         });

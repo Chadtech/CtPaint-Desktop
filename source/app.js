@@ -1,6 +1,3 @@
-// var register = require("./Aws/register");
-// var verify = require("./Aws/verify");
-
 var AmazonCognitoIdentity = require("amazon-cognito-identity-js");
 var CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
 
@@ -15,6 +12,7 @@ var user = userPool.getCurrentUser();
 
 var login = require("./Aws/login")(userPool);
 var verify = require("./Aws/verify")(userPool);
+var register = require("./Aws/register")(userPool);
 
 Desktop = {
     init: function(flags) {
@@ -29,6 +27,9 @@ Desktop = {
                 case "verify email" :
                     verify(app, msg.payload);
                     break;
+
+                case "register" :
+                    register(app, msg.payload);
 
                 case "end session" :
                     if (user !== null) {

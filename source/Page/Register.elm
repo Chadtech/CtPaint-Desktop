@@ -36,8 +36,7 @@ type alias FieldsModel =
     , password : String
     , passwordConfirm : String
     , errors : List ( Field, String )
-    , showFields : Bool
-    , registrationPending : Bool
+    , show : Bool
     }
 
 
@@ -50,12 +49,16 @@ type Field
 
 
 type Problem
-    = Unknown
+    = CouldntDecodeSuccess
+    | CouldntDecodeFail
+    | Other String
 
 
 type Msg
     = UpdateField Field String
     | AttemptRegistration
+    | Succeeded String
+    | Failed Problem
 
 
 
@@ -70,8 +73,7 @@ init =
     , password = ""
     , passwordConfirm = ""
     , errors = []
-    , showFields = True
-    , registrationPending = False
+    , show = True
     }
         |> Fields
 
@@ -100,21 +102,29 @@ view model =
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
-        Fields fieldsModel ->
-            registeringView fieldsModel
+        Fields fields ->
+            registeringView fields
 
         Success email ->
             successView email
 
-        Fail problem ->
-            failView problem
+        Fail CouldntDecodeSuccess ->
+            "I think it worked, but something went wrong. Check your email and you probably got a verification link"
+                |> failView
+
+        Fail CouldntDecodeFail ->
+            "Sorry, something broke, and I dont know what"
+                |> failView
+
+        Fail (Other str) ->
+            failView str
 
 
-failView : Problem -> List (Html Msg)
+failView : String -> List (Html Msg)
 failView problem =
     [ p
         []
-        [ text "Sorry, it didnt work. I dont know why" ]
+        [ text problem ]
     ]
 
 
@@ -135,7 +145,7 @@ registeringView fieldsModel =
     let
         value_ : String -> Attribute Msg
         value_ =
-            value << showIf fieldsModel.showFields
+            value << showIf fieldsModel.show
 
         errorView_ : Field -> Html Msg
         errorView_ =
@@ -144,19 +154,19 @@ registeringView fieldsModel =
     [ form
         [ onSubmit AttemptRegistration ]
         [ field
-            "Username"
+            "username"
             [ value_ fieldsModel.username
             , onInput_ Username
             ]
         , errorView_ Username
         , field
-            "Email"
+            "email"
             [ value_ fieldsModel.email
             , onInput_ Email
             ]
         , errorView_ Email
         , field
-            "Type it again"
+            "type it again"
             [ value_ fieldsModel.emailConfirm
             , onInput_ EmailConfirm
             ]
@@ -169,7 +179,7 @@ registeringView fieldsModel =
             ]
         , errorView_ Password
         , field
-            "Type it again"
+            "type it again"
             [ value_ fieldsModel.passwordConfirm
             , type_ "password"
             , onInput_ PasswordConfirm
@@ -241,66 +251,86 @@ onInput_ =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case model of
-        Fields fieldsModel ->
-            updateFields msg fieldsModel
-                |> Tuple.mapFirst Fields
-
-        _ ->
-            model & Cmd.none
-
-
-updateFields : Msg -> FieldsModel -> ( FieldsModel, Cmd msg )
-updateFields msg fieldsModel =
     case msg of
-        UpdateField Username str ->
-            { fieldsModel | username = str } & Cmd.none
-
-        UpdateField Email str ->
-            { fieldsModel | email = str } & Cmd.none
-
-        UpdateField EmailConfirm str ->
-            { fieldsModel | emailConfirm = str } & Cmd.none
-
-        UpdateField Password str ->
-            { fieldsModel | password = str } & Cmd.none
-
-        UpdateField PasswordConfirm str ->
-            { fieldsModel | passwordConfirm = str } & Cmd.none
-
         AttemptRegistration ->
-            let
-                errors =
-                    validate fieldsModel
-            in
-            if List.isEmpty errors then
-                let
-                    newModel =
-                        { fieldsModel
-                            | errors = errors
-                            , password = ""
-                            , passwordConfirm = ""
-                            , showFields = False
-                        }
+            case model of
+                Fields fields ->
+                    attemptRegistration fields
 
-                    cmd =
-                        { email = fieldsModel.email
-                        , username = fieldsModel.username
-                        , password = fieldsModel.password
-                        }
-                            |> Register
-                            |> Ports.send
-                in
-                newModel & cmd
-            else
-                { fieldsModel
+                _ ->
+                    model & Cmd.none
+
+        UpdateField field str ->
+            case model of
+                Fields fieldsModel ->
+                    updateField field str fieldsModel
+                        |> Fields
+                        & Cmd.none
+
+                _ ->
+                    model & Cmd.none
+
+        Succeeded email ->
+            Success email & Cmd.none
+
+        Failed problem ->
+            Fail problem & Cmd.none
+
+
+attemptRegistration : FieldsModel -> ( Model, Cmd Msg )
+attemptRegistration fields =
+    let
+        errors =
+            validate fields
+    in
+    if List.isEmpty errors then
+        let
+            newFields =
+                { fields
                     | errors = errors
                     , password = ""
                     , passwordConfirm = ""
+                    , show = False
                 }
-                    & Cmd.none
+
+            cmd =
+                { email = fields.email
+                , username = fields.username
+                , password = fields.password
+                }
+                    |> Register
+                    |> Ports.send
+        in
+        Fields newFields & cmd
+    else
+        { fields
+            | errors = errors
+            , password = ""
+            , passwordConfirm = ""
+        }
+            |> Fields
+            & Cmd.none
+
+
+updateField : Field -> String -> FieldsModel -> FieldsModel
+updateField field str fieldsModel =
+    case field of
+        Username ->
+            { fieldsModel | username = str }
+
+        Email ->
+            { fieldsModel | email = str }
+
+        EmailConfirm ->
+            { fieldsModel | emailConfirm = str }
+
+        Password ->
+            { fieldsModel | password = str }
+
+        PasswordConfirm ->
+            { fieldsModel | passwordConfirm = str }
 
 
 handleFail : String -> FieldsModel -> FieldsModel
