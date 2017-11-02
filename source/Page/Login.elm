@@ -14,7 +14,7 @@ type alias Model =
     , password : String
     , errors : List ( Field, String )
     , responseError : Maybe String
-    , showFields : Bool
+    , show : Bool
     }
 
 
@@ -39,7 +39,7 @@ init =
     , password = ""
     , errors = []
     , responseError = Nothing
-    , showFields = True
+    , show = True
     }
 
 
@@ -68,12 +68,18 @@ update msg model =
                     else
                         Cmd.none
             in
-            { model | errors = errors } & cmd
+            { model
+                | errors = errors
+                , password = ""
+                , show = False
+            }
+                & cmd
 
         LoginFailed err ->
             { model
                 | responseError =
                     Just (determineResponseError err)
+                , show = True
             }
                 & Cmd.none
 
@@ -119,7 +125,7 @@ view model =
     let
         value_ : String -> Attribute Msg
         value_ =
-            value << showIf model.showFields
+            value << showIf model.show
 
         errorView_ : Field -> Html Msg
         errorView_ =

@@ -1,7 +1,9 @@
 public/desktop.js
 public/desktop-elm.js
 public/desktop-styles.css
+public/client.js
 node_modules
 elm-stuff
+client
 
 thanks

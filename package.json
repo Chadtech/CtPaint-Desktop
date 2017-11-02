@@ -6,8 +6,6 @@
   "dependencies": {
     "amazon-cognito-identity-js": "^1.21.0",
     "body-parser": "^1.15.0",
-    "coffee-script": "^1.12.7",
-    "coffeeify": "^2.1.0",
     "express": "^4.13.4",
     "gulp": "^3.9.1",
     "gulp-autowatch": "^1.0.2",
@@ -18,6 +16,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "gulp",
+    "client": "node get-client.js",
     "loc": "cd source && find . -name '*.elm' | xargs wc -l && find . -name '*.coffee' | xargs wc -l && find . -name '*.js' | xargs wc -l && cd ../"
   },
   "author": "Chadtech",

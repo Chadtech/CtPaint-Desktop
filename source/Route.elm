@@ -59,3 +59,8 @@ toUrl route =
                     [ "app" ]
     in
     "/" ++ String.join "/" pieces
+
+
+goTo : Route -> Cmd msg
+goTo =
+    toUrl >> Navigation.newUrl

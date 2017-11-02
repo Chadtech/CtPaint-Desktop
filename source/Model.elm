@@ -1,10 +1,10 @@
 module Model exposing (..)
 
-import Data.Session exposing (Session)
+import Data.User exposing (User)
 import Page exposing (Page(..))
 
 
 type alias Model =
-    { session : Maybe Session
+    { user : Maybe User
     , page : Page
     }

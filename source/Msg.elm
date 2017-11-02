@@ -3,6 +3,7 @@ module Msg exposing (..)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Page.Home as Home
 import Page.Login as Login
+import Page.Logout as Logout
 import Page.Register as Register
 import Page.Verify as Verify
 import Route exposing (Route(..))
@@ -11,10 +12,13 @@ import Route exposing (Route(..))
 type Msg
     = SetRoute (Maybe Route)
     | LoggedIn
+    | LoggedOut
+    | LogOutFailed String
     | InvalidJsMsg JsMsgProblem
     | HomeMsg Home.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
+    | LogoutMsg Logout.Msg
     | VerifyMsg Verify.Msg
     | Navigate Route
 
@@ -27,16 +31,27 @@ type JsMsgProblem
 decode : Value -> Msg
 decode json =
     case Decode.decodeValue typeDecoder json of
-        Ok "login success" ->
+        Ok "log in success" ->
             LoggedIn
 
-        Ok "login fail" ->
+        Ok "log in fail" ->
             case decodeStringPayload json of
                 Ok err ->
                     LoginMsg (Login.LoginFailed err)
 
                 Err err ->
                     LoginMsg (Login.LoginFailed err)
+
+        Ok "log out success" ->
+            LoggedOut
+
+        Ok "log out fail" ->
+            case decodeStringPayload json of
+                Ok err ->
+                    LogOutFailed err
+
+                Err err ->
+                    LogOutFailed err
 
         Ok "verification success" ->
             VerifyMsg Verify.Succeeded

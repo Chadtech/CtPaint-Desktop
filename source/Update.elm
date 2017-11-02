@@ -2,10 +2,10 @@ module Update exposing (update)
 
 import Model exposing (Model)
 import Msg exposing (Msg(..))
-import Navigation
 import Page exposing (Page(..), Problem(..))
 import Page.Home as Home
 import Page.Login as Login
+import Page.Logout as Logout
 import Page.Register as Register
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
@@ -26,6 +26,15 @@ update msg model =
                 & Cmd.none
 
         LoggedIn ->
+            model & Route.goTo Route.Home
+
+        LoggedOut ->
+            { model
+                | user = Nothing
+            }
+                & Route.goTo Route.Login
+
+        LogOutFailed err ->
             model & Cmd.none
 
         InvalidJsMsg err ->
@@ -73,6 +82,22 @@ update msg model =
                 _ ->
                     model & Cmd.none
 
+        LogoutMsg subMsg ->
+            case model.page of
+                Page.Logout subModel ->
+                    let
+                        ( newSubModel, cmd ) =
+                            Logout.update subMsg subModel
+                    in
+                    { model
+                        | page =
+                            Page.Logout newSubModel
+                    }
+                        & Cmd.map LogoutMsg cmd
+
+                _ ->
+                    model & Cmd.none
+
         VerifyMsg subMsg ->
             case model.page of
                 Page.Verify subModel ->
@@ -89,7 +114,7 @@ update msg model =
                     model & Cmd.none
 
         Navigate route ->
-            model & goTo route
+            model & Route.goTo route
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
@@ -101,43 +126,43 @@ handleRoute destination model =
                     Page.Login Login.init
 
                 cmd =
-                    [ Ports.send EndSession ]
+                    [ Ports.send Ports.Logout ]
                         |> Cmd.batch
             in
             { model
-                | session = Nothing
+                | user = Nothing
                 , page = page
             }
                 & cmd
 
         Route.Logout ->
             { model
-                | session = Nothing
-                , page = Page.Logout
+                | user = Nothing
+                , page = Page.Logout Logout.init
             }
-                & Ports.send EndSession
+                & Ports.send Ports.Logout
 
         Route.Register ->
             { model
-                | session = Nothing
+                | user = Nothing
                 , page = Page.Register Register.init
             }
-                & Ports.send EndSession
+                & Ports.send Ports.Logout
 
         Route.Home ->
-            case model.session of
-                Just session ->
+            case model.user of
+                Just user ->
                     { model
                         | page = Page.Home {}
                     }
                         & Cmd.none
 
                 Nothing ->
-                    model & goTo Route.Login
+                    model & Route.goTo Route.Login
 
         Route.Settings ->
-            case model.session of
-                Just session ->
+            case model.user of
+                Just user ->
                     { model
                         | page = Page.Settings
                     }
@@ -155,22 +180,17 @@ handleRoute destination model =
         Route.Verify email code ->
             let
                 cmd =
-                    [ Ports.send EndSession
+                    [ Ports.send Ports.Logout
                     , Ports.send (VerifyEmail email code)
                     ]
                         |> Cmd.batch
             in
             { model
-                | session = Nothing
+                | user = Nothing
                 , page =
                     Page.Verify (Verify.init email)
             }
                 & cmd
-
-
-goTo : Route -> Cmd Msg
-goTo =
-    Route.toUrl >> Debug.log "go to" >> Navigation.newUrl
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )

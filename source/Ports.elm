@@ -8,11 +8,12 @@ import Util exposing ((:=))
 
 
 type JsMsg
-    = EndSession
+    = Logout
     | OpenPaintApp
     | Register RegistrationPayload
     | Login String String
     | VerifyEmail String String
+    | GetUserAttributes
 
 
 type alias RegistrationPayload =
@@ -22,10 +23,10 @@ type alias RegistrationPayload =
     }
 
 
-toMsg : String -> Value -> Cmd msg
-toMsg type_ payload =
+withPayload : String -> List ( String, Value ) -> Cmd msg
+withPayload type_ payload =
     [ "type" := Encode.string type_
-    , "payload" := payload
+    , "payload" := Encode.object payload
     ]
         |> Encode.object
         |> toJs
@@ -33,14 +34,18 @@ toMsg type_ payload =
 
 noPayload : String -> Cmd msg
 noPayload type_ =
-    toMsg type_ Encode.null
+    [ "type" := Encode.string type_
+    , "payload" := Encode.null
+    ]
+        |> Encode.object
+        |> toJs
 
 
 send : JsMsg -> Cmd msg
 send msg =
     case msg of
-        EndSession ->
-            noPayload "end session"
+        Logout ->
+            noPayload "log out"
 
         OpenPaintApp ->
             noPayload "open paint app"
@@ -50,22 +55,22 @@ send msg =
             , "username" := Encode.string username
             , "password" := Encode.string password
             ]
-                |> Encode.object
-                |> toMsg "register"
+                |> withPayload "register"
 
         Login email password ->
             [ "email" := Encode.string email
             , "password" := Encode.string password
             ]
-                |> Encode.object
-                |> toMsg "login"
+                |> withPayload "log in"
 
         VerifyEmail email code ->
             [ "email" := Encode.string email
             , "code" := Encode.string code
             ]
-                |> Encode.object
-                |> toMsg "verify email"
+                |> withPayload "verify email"
+
+        GetUserAttributes ->
+            noPayload "get user attributes"
 
 
 port toJs : Value -> Cmd msg

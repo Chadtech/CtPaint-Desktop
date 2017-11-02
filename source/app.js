@@ -1,46 +1,75 @@
-var AmazonCognitoIdentity = require("amazon-cognito-identity-js");
-var CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
+Desktop = function(Client) {
 
-var poolData = {
-    UserPoolId: "us-east-2_xc2oQp2ju",
-    ClientId: "7r81o7o9pnar49lrh54mhv0u5s"
-};
+    var app = Elm.Desktop.fullscreen({
+        isLoggedIn: Client.getUser() !== null,
+    });
 
-var userPool = new CognitoUserPool(poolData);
+    function toElm(type, payload) {
+        app.ports.fromJs.send({
+            type: type,
+            payload: payload
+        });
+    };
 
-var user = userPool.getCurrentUser();
-
-var login = require("./Aws/login")(userPool);
-var verify = require("./Aws/verify")(userPool);
-var register = require("./Aws/register")(userPool);
-
-Desktop = {
-    init: function(flags) {
-        var app = Elm.Desktop.fullscreen(flags);
-
-        function jsMsgHandler(msg) {
-            switch (msg.type) {
-                case "login" :
-                    login(app, msg.payload);
-                    break;
-
-                case "verify email" :
-                    verify(app, msg.payload);
-                    break;
-
-                case "register" :
-                    register(app, msg.payload);
-
-                case "end session" :
-                    if (user !== null) {
-                        user.signOut();
-                    }
-                    break;
-
-                default:
-                    console.log("Unknown js msg type", msg.type);
-            }
+    var handleLogin = {
+        onSuccess: function(result) {
+            toElm("log in success", null);
+        },
+        onFailure: function(err) {
+            toElm("log in fail", String(err));
         }
-        app.ports.toJs.subscribe(jsMsgHandler);
+    };
+
+    function handleLogin(err, result) {
+        if (err) {
+            toElm("verification fail", String(err));
+        } else {
+            toElm("verification success", payload.email);
+        }
+    };
+
+    function handleRegister(err, result){
+        if (err) {
+            toElm("registration fail", String(err));
+        } else {
+            toElm("registration success", result.user.username);
+        }
+    };
+
+    var handleLogout = {
+        onSuccess: function() {
+            toElm("log out success", null);
+        },
+        onFailure: function(err) {
+            toElm("log out fail", err);
+        }
+    };
+
+    function jsMsgHandler(msg) {
+        switch (msg.type) {
+            case "log in" :
+                Client.login(msg.payload, handleLogin);
+                break;
+
+            case "verify email" :
+                Client.verify(msg.payload, handleLogin);
+                break;
+
+            case "register" :
+                Client.register(msg.payload, handleRegister)
+                break;
+
+            case "log out" :
+                Client.logout(handleLogout);
+                break;
+
+            default:
+                console.log("Unknown js msg type", msg.type);
+        }
     }
+
+    app.ports.toJs.subscribe(jsMsgHandler);
+
+    return app;
 };
+
