@@ -1,5 +1,4 @@
 Desktop = function(Client) {
-
     var app = Elm.Desktop.fullscreen({
         isLoggedIn: Client.getUser() !== null,
     });

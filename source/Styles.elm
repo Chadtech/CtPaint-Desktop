@@ -1,5 +1,6 @@
 module Styles exposing (Classes(..), css, helpers)
 
+import Chadtech.Colors exposing (..)
 import Css exposing (..)
 import Css.Elements exposing (a, body, form, p)
 import Css.Namespace exposing (namespace)
@@ -42,15 +43,18 @@ css =
         , padding zero
         ]
     , card
-    , point
+    , p <|
+        List.append basicFont
+            [ margin zero
+            , padding zero
+            ]
     , header
     , input
     , errorZone
     , button
     , submit
     , field
-    , form
-        [ margin (px 0) ]
+    , form [ margin (px 0) ]
     , class HasBottomMargin
         [ marginBottom (px 8) ]
     , class TextAlignCenter
@@ -104,7 +108,7 @@ input =
     , outline none
     , fontSize (em 2)
     , fontFamilies [ "hfnss" ]
-    , color pointColor
+    , color point
     , property "-webkit-font-smoothing" "none"
     , margin (px 0)
     , padding (px 0)
@@ -126,7 +130,7 @@ errorZone =
 
 header : Snippet
 header =
-    [ backgroundColor pointColor
+    [ backgroundColor point
     , height (px 25)
     , width (calc (pct 100) minus (px 8))
     , position absolute
@@ -192,21 +196,12 @@ button =
     , withClass Selected indent
     , withClass Null
         [ backgroundColor ignorable1
-        , hover [ color pointColor ]
+        , hover [ color point ]
         , active outdent
         ]
     ]
         |> List.append mixins
         |> a
-
-
-point : Snippet
-point =
-    [ margin zero
-    , padding zero
-    ]
-        |> List.append basicFont
-        |> p
 
 
 
@@ -244,96 +239,7 @@ outdent =
 basicFont : List Style
 basicFont =
     [ fontFamilies [ "hfnss" ]
-    , color pointColor
+    , color point
     , property "-webkit-font-smoothing" "none"
     , fontSize (px 32)
     ]
-
-
-
--- COLORS --
-
-
-backgroundx2 : Color
-backgroundx2 =
-    hex "#06120e"
-
-
-backgroundx1 : Color
-backgroundx1 =
-    hex "#030907"
-
-
-actualBlack : Color
-actualBlack =
-    hex "#000000"
-
-
-offBlue : Color
-offBlue =
-    hex "#143b2e"
-
-
-offBlueDarker : Color
-offBlueDarker =
-    hex "#071d17"
-
-
-critical : Color
-critical =
-    hex "#f21d23"
-
-
-lowWarning : Color
-lowWarning =
-    hex "#651a20"
-
-
-good : Color
-good =
-    hex "#366317"
-
-
-prettyBlue : Color
-prettyBlue =
-    hex "#175cfe"
-
-
-importanterText : Color
-importanterText =
-    hex "#e3d34b"
-
-
-importantText : Color
-importantText =
-    hex "#b39f4b"
-
-
-pointier : Color
-pointier =
-    hex "#e0d6ca"
-
-
-pointColor : Color
-pointColor =
-    hex "#b0a69a"
-
-
-ignorable0 : Color
-ignorable0 =
-    hex "#807672"
-
-
-ignorable1 : Color
-ignorable1 =
-    hex "#57524f"
-
-
-ignorable2 : Color
-ignorable2 =
-    hex "#2c2826"
-
-
-ignorable3 : Color
-ignorable3 =
-    hex "#131610"

@@ -121,19 +121,11 @@ handleRoute : Route -> Model -> ( Model, Cmd Msg )
 handleRoute destination model =
     case destination of
         Route.Login ->
-            let
-                page =
-                    Page.Login Login.init
-
-                cmd =
-                    [ Ports.send Ports.Logout ]
-                        |> Cmd.batch
-            in
             { model
                 | user = Nothing
-                , page = page
+                , page = Page.Login Login.init
             }
-                & cmd
+                & Ports.send Ports.Logout
 
         Route.Logout ->
             { model
@@ -178,19 +170,15 @@ handleRoute destination model =
             model & Ports.send OpenPaintApp
 
         Route.Verify email code ->
-            let
-                cmd =
-                    [ Ports.send Ports.Logout
-                    , Ports.send (VerifyEmail email code)
-                    ]
-                        |> Cmd.batch
-            in
             { model
                 | user = Nothing
                 , page =
                     Page.Verify (Verify.init email)
             }
-                & cmd
+                & Cmd.batch
+                    [ Ports.send Ports.Logout
+                    , Ports.send (VerifyEmail email code)
+                    ]
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )
