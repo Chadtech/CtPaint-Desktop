@@ -5,7 +5,6 @@ import Css.Namespace exposing (namespace)
 import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
-import Html.Events exposing (onClick)
 import Tuple.Infix exposing ((&))
 
 

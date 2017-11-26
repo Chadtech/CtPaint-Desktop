@@ -1,5 +1,6 @@
 module Update exposing (update)
 
+import Data.User as User
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Page exposing (Page(..), Problem(..))
@@ -30,7 +31,7 @@ update msg model =
 
         LoggedOut ->
             { model
-                | user = Nothing
+                | user = User.NoSession
             }
                 & Route.goTo Route.Login
 
@@ -122,58 +123,54 @@ handleRoute destination model =
     case destination of
         Route.Login ->
             { model
-                | user = Nothing
+                | user = User.NoSession
                 , page = Page.Login Login.init
             }
                 & Ports.send Ports.Logout
 
         Route.Logout ->
             { model
-                | user = Nothing
+                | user = User.NoSession
                 , page = Page.Logout Logout.init
             }
                 & Ports.send Ports.Logout
 
         Route.Register ->
             { model
-                | user = Nothing
+                | user = User.NoSession
                 , page = Page.Register Register.init
             }
                 & Ports.send Ports.Logout
 
         Route.Home ->
             case model.user of
-                Just user ->
+                User.LoggedIn user ->
                     { model
                         | page = Page.Home {}
                     }
                         & Cmd.none
 
-                Nothing ->
+                _ ->
                     model & Route.goTo Route.Login
 
         Route.Settings ->
             case model.user of
-                Just user ->
+                User.LoggedIn user ->
                     { model
                         | page = Page.Settings
                     }
                         & Cmd.none
 
-                Nothing ->
-                    { model
-                        | page = Page.Login Login.init
-                    }
-                        & Cmd.none
+                _ ->
+                    model & Route.goTo Route.Login
 
         Route.PaintApp ->
             model & Ports.send OpenPaintApp
 
         Route.Verify email code ->
             { model
-                | user = Nothing
-                , page =
-                    Page.Verify (Verify.init email)
+                | user = User.NoSession
+                , page = Page.Verify (Verify.init email)
             }
                 & Cmd.batch
                     [ Ports.send Ports.Logout

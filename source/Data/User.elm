@@ -1,31 +1,51 @@
-module Data.User exposing (..)
+module Data.User exposing (Model(..), User, decoder)
 
+import Data.Keys as Keys
 import Json.Decode as Decode exposing (Decoder, Value)
-import Json.Decode.Pipeline as Pipeline exposing (required)
+import Json.Decode.Pipeline as Pipeline exposing (decode, required)
+
+
+type Model
+    = NoSession
+    | Offline
+    | LoggingIn
+    | LoggingOut
+    | LoggedIn User
 
 
 type alias User =
-    { username : String
-    , email : String
+    { email : String
+    , name : String
+    , profilePic : String
+    , keyConfig : Keys.Config
     }
 
 
-decode : Value -> Maybe User
-decode json =
-    Decode.decodeValue decoder json
-        |> Result.toMaybe
+
+-- DECODER --
 
 
-decoder : Decoder User
+decoder : Decoder Model
 decoder =
-    Pipeline.decode User
-        |> required "nickname" Decode.string
+    [ Decode.null NoSession
+    , Decode.string |> Decode.andThen offlineDecoder
+    , userDecoder |> Decode.map LoggedIn
+    ]
+        |> Decode.oneOf
+
+
+offlineDecoder : String -> Decoder Model
+offlineDecoder str =
+    if str == "offline" then
+        Decode.succeed Offline
+    else
+        Decode.fail "not offline"
+
+
+userDecoder : Decoder User
+userDecoder =
+    decode User
         |> required "email" Decode.string
-
-
-isLoggedIn : Value -> Bool
-isLoggedIn json =
-    Decode.decodeValue
-        (Decode.field "isLoggedIn" Decode.bool)
-        json
-        |> Result.withDefault False
+        |> required "nickname" Decode.string
+        |> required "picture" Decode.string
+        |> required "key-config" Keys.configDecoder

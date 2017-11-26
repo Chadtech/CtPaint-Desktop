@@ -4,6 +4,7 @@ module Html.Custom
         , cannotSelect
         , card
         , cardBody
+        , cardSolitary
         , css
         , error
         , field
@@ -18,7 +19,7 @@ module Html.Custom
 import Chadtech.Colors exposing (..)
 import Css exposing (..)
 import Css.Elements exposing (a, body, canvas, form, p)
-import Css.Namespace exposing (namespace)
+import Css.Namespace
 import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.CssHelpers
@@ -33,11 +34,11 @@ import Tuple.Infix exposing ((:=))
 type Class
     = Field
     | Card
+    | Solitary
     | Submit
     | Body
     | Header
     | Selected
-    | Long
     | Null
     | Error
     | SpinnerContainer
@@ -81,13 +82,18 @@ css =
         ]
     , spinnerContainer
     ]
-        |> namespace appNamespace
+        |> Css.Namespace.namespace appNamespace
         |> stylesheet
 
 
 appNamespace : String
 appNamespace =
-    "paintApp"
+    "Desktop"
+
+
+namespace : String -> String
+namespace str =
+    appNamespace ++ str
 
 
 spinnerContainer : Snippet
@@ -109,10 +115,7 @@ fieldStyle =
     , children
         [ p
             [ display inlineBlock
-            , width (px 120)
             , textAlign left
-            , withClass Long
-                [ width (px 180) ]
             ]
         ]
     ]
@@ -123,6 +126,7 @@ submit : Snippet
 submit =
     [ margin auto
     , display table
+    , marginTop (px 8)
     ]
         |> Css.class Submit
 
@@ -137,8 +141,6 @@ input =
     , property "-webkit-font-smoothing" "none"
     , margin (px 0)
     , padding (px 0)
-    , withClass Long
-        [ width (px 300) ]
     ]
         |> List.append indent
         |> Css.Elements.input
@@ -190,6 +192,12 @@ cardStyle =
             ]
         ]
     , textAlign left
+    , Css.withClass Solitary
+        [ position absolute
+        , top (pct 50)
+        , left (pct 50)
+        , transform (translate2 (pct -50) (pct -50))
+        ]
     ]
         |> Css.class Card
 
@@ -302,6 +310,11 @@ toolButton state =
 card : List (Attribute msg) -> List (Html msg) -> Html msg
 card attrs =
     Html.div (class [ Card ] :: attrs)
+
+
+cardSolitary : List (Attribute msg) -> List (Html msg) -> Html msg
+cardSolitary attrs =
+    Html.div (class [ Card, Solitary ] :: attrs)
 
 
 cardBody : List (Attribute msg) -> List (Html msg) -> Html msg

@@ -2,6 +2,7 @@ port module Stylesheets exposing (..)
 
 import Css.File exposing (CssCompilerProgram, CssFileStructure)
 import Html.Custom
+import Page.Register
 
 
 port files : CssFileStructure -> Cmd msg
@@ -9,7 +10,9 @@ port files : CssFileStructure -> Cmd msg
 
 main : CssCompilerProgram
 main =
-    [ Html.Custom.css ]
+    [ Page.Register.css
+    , Html.Custom.css
+    ]
         |> Css.File.compile
         |> (,) "./public/desktop-styles.css"
         |> List.singleton

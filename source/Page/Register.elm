@@ -1,6 +1,16 @@
-module Page.Register exposing (..)
+module Page.Register
+    exposing
+        ( Model
+        , Msg(..)
+        , Problem(..)
+        , css
+        , init
+        , update
+        , view
+        )
 
 import Css exposing (..)
+import Css.Elements
 import Css.Namespace exposing (namespace)
 import Html
     exposing
@@ -33,7 +43,7 @@ type Model
 
 
 type alias Fields =
-    { username : String
+    { name : String
     , email : String
     , emailConfirm : String
     , password : String
@@ -44,7 +54,7 @@ type alias Fields =
 
 
 type Field
-    = Username
+    = Name
     | Email
     | EmailConfirm
     | Password
@@ -58,8 +68,9 @@ type Problem
 
 
 type Msg
-    = UpdateField Field String
-    | AttemptRegistration
+    = FieldUpdated Field String
+    | Submitted
+    | SubmitClicked
     | Succeeded String
     | Failed Problem
 
@@ -70,7 +81,7 @@ type Msg
 
 init : Model
 init =
-    { username = ""
+    { name = ""
     , email = ""
     , emailConfirm = ""
     , password = ""
@@ -91,8 +102,14 @@ type Class
 
 css : Stylesheet
 css =
-    [ Css.class Long
-        [ width (px 180) ]
+    [ Css.Elements.p
+        [ Css.withClass Long
+            [ width (px 180) ]
+        ]
+    , Css.Elements.input
+        [ Css.withClass Long
+            [ width (px 300) ]
+        ]
     ]
         |> namespace registerNamespace
         |> stylesheet
@@ -113,7 +130,7 @@ registerNamespace =
 
 view : Model -> Html Msg
 view model =
-    Html.Custom.card []
+    Html.Custom.cardSolitary []
         [ Html.Custom.header
             { text = "register"
             , closability = Html.Custom.NotClosable
@@ -175,13 +192,13 @@ registeringView fields =
             errorView fields.errors
     in
     [ form
-        [ onSubmit AttemptRegistration ]
+        [ onSubmit Submitted ]
         [ field
-            "username"
-            [ value_ fields.username
-            , onInput_ Username
+            "name"
+            [ value_ fields.name
+            , onInput_ Name
             ]
-        , errorView_ Username
+        , errorView_ Name
         , field
             "email"
             [ value_ fields.email
@@ -217,7 +234,7 @@ registeringView fields =
             ]
             []
         , Html.Custom.menuButton
-            [ onClick AttemptRegistration ]
+            [ onClick SubmitClicked ]
             [ Html.text "submit" ]
         ]
     ]
@@ -229,7 +246,7 @@ registeringView fields =
 
 field : String -> List (Attribute Msg) -> Html Msg
 field name attributes =
-    Html.Custom.field []
+    Html.Custom.field [ class [ Long ] ]
         [ p [ class [ Long ] ] [ Html.text name ]
         , input
             (class [ Long ] :: attributes)
@@ -259,7 +276,7 @@ errorView errors field =
 
 onInput_ : Field -> Attribute Msg
 onInput_ =
-    UpdateField >> onInput
+    FieldUpdated >> onInput
 
 
 
@@ -269,7 +286,7 @@ onInput_ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AttemptRegistration ->
+        Submitted ->
             case model of
                 Ready fields ->
                     attemptRegistration fields
@@ -277,7 +294,15 @@ update msg model =
                 _ ->
                     model & Cmd.none
 
-        UpdateField field str ->
+        SubmitClicked ->
+            case model of
+                Ready fields ->
+                    attemptRegistration fields
+
+                _ ->
+                    model & Cmd.none
+
+        FieldUpdated field str ->
             case model of
                 Ready fields ->
                     updateField field str fields
@@ -302,23 +327,22 @@ attemptRegistration fields =
     in
     if List.isEmpty errors then
         let
-            newFields =
-                { fields
-                    | errors = errors
-                    , password = ""
-                    , passwordConfirm = ""
-                    , show = False
-                }
-
             cmd =
                 { email = fields.email
-                , username = fields.username
+                , name = fields.name
                 , password = fields.password
                 }
                     |> Register
                     |> Ports.send
         in
-        Ready newFields & cmd
+        { fields
+            | errors = errors
+            , password = ""
+            , passwordConfirm = ""
+            , show = False
+        }
+            |> Ready
+            & cmd
     else
         { fields
             | errors = errors
@@ -332,8 +356,8 @@ attemptRegistration fields =
 updateField : Field -> String -> Fields -> Fields
 updateField field str fields =
     case field of
-        Username ->
-            { fields | username = str }
+        Name ->
+            { fields | name = str }
 
         Email ->
             { fields | email = str }
@@ -372,17 +396,17 @@ handleFail fail fields =
 
 validate : Fields -> List ( Field, String )
 validate =
-    Validate.all
-        [ .email >> ifBlank ( Email, "Email field is required" )
-        , .password >> ifBlank ( Password, "Password field is required" )
-        , .username >> ifBlank ( Username, "Username field is required" )
-        , passwordsMatch
-        , passwordLongEnough
-        , emailsMatch
-        , atLeastOneUpperCaseInPassword
-        , atLeastOneLowerCaseInPassword
-        , validEmail
-        ]
+    [ .email >> ifBlank ( Email, "email field is required" )
+    , .password >> ifBlank ( Password, "password field is required" )
+    , .name >> ifBlank ( Name, "name field is required" )
+    , passwordsMatch
+    , passwordLongEnough
+    , emailsMatch
+    , atLeastOneUpperCaseInPassword
+    , atLeastOneLowerCaseInPassword
+    , validEmail
+    ]
+        |> Validate.all
 
 
 validEmail : Fields -> List ( Field, String )

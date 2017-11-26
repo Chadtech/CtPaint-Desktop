@@ -1,8 +1,9 @@
 module Desktop exposing (..)
 
+import Data.Flags as Flags
 import Data.User as User
 import Html exposing (Html)
-import Json.Decode exposing (Value)
+import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Navigation exposing (Location)
@@ -40,22 +41,23 @@ main =
 
 init : Value -> Location -> ( Model, Cmd Msg )
 init json location =
-    if User.isLoggedIn json then
-        { user = Nothing
-        , page = Loading UserAttributes
-        }
-            & Ports.send GetUserAttributes
-    else
-        let
-            msg =
-                location
-                    |> Route.fromLocation
-                    |> SetRoute
-        in
-        { user = Nothing
-        , page = Error NoPageLoaded
-        }
-            |> update msg
+    case Decode.decodeValue Flags.decoder json of
+        Ok flags ->
+            { user = flags.user
+            , page = Error NoPageLoaded
+            }
+                |> initPage location
+
+        Err err ->
+            { user = User.NoSession
+            , page = Error (FlagsDecoderFailed err)
+            }
+                & Cmd.none
+
+
+initPage : Location -> Model -> ( Model, Cmd Msg )
+initPage =
+    Route.fromLocation >> SetRoute >> update
 
 
 
@@ -100,3 +102,9 @@ view model =
 
         Error NoPageLoaded ->
             Error.view "Somehow no page was loaded"
+
+        Error (FlagsDecoderFailed err) ->
+            Error.view ("Something went wrong with this apps initialization. Here is the error :" ++ err)
+
+        Error Offline ->
+            Error.view "It looks like you arent connected to the internet."

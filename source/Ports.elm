@@ -1,5 +1,6 @@
 port module Ports exposing (..)
 
+import Data.Keys as Keys
 import Json.Encode as Encode exposing (Value)
 import Tuple.Infix exposing ((:=))
 
@@ -18,15 +19,15 @@ type JsMsg
 
 type alias RegistrationPayload =
     { email : String
-    , username : String
+    , name : String
     , password : String
     }
 
 
-withPayload : String -> List ( String, Value ) -> Cmd msg
-withPayload type_ payload =
+fromKeyValues : String -> List ( String, Value ) -> Cmd msg
+fromKeyValues type_ keyValues =
     [ "type" := Encode.string type_
-    , "payload" := Encode.object payload
+    , "payload" := Encode.object keyValues
     ]
         |> Encode.object
         |> toJs
@@ -41,6 +42,11 @@ noPayload type_ =
         |> toJs
 
 
+encodeConfig : Keys.Config -> Value
+encodeConfig =
+    Keys.encodeConfig >> Encode.encode 0 >> Encode.string
+
+
 send : JsMsg -> Cmd msg
 send msg =
     case msg of
@@ -50,24 +56,25 @@ send msg =
         OpenPaintApp ->
             noPayload "open paint app"
 
-        Register { email, username, password } ->
+        Register { email, name, password } ->
             [ "email" := Encode.string email
-            , "username" := Encode.string username
+            , "name" := Encode.string name
             , "password" := Encode.string password
+            , "keyConfig" := encodeConfig Keys.defaultConfig
             ]
-                |> withPayload "register"
+                |> fromKeyValues "register"
 
         Login email password ->
             [ "email" := Encode.string email
             , "password" := Encode.string password
             ]
-                |> withPayload "log in"
+                |> fromKeyValues "log in"
 
         VerifyEmail email code ->
             [ "email" := Encode.string email
             , "code" := Encode.string code
             ]
-                |> withPayload "verify email"
+                |> fromKeyValues "verify email"
 
         GetUserAttributes ->
             noPayload "get user attributes"

@@ -9,7 +9,7 @@ import Route exposing (Route(..))
 
 view : String -> Html Msg
 view msg =
-    Html.Custom.card []
+    Html.Custom.cardSolitary []
         [ Html.Custom.header
             { text = "error"
             , closability = Html.Custom.NotClosable
