@@ -81,19 +81,18 @@ css =
         , withClass Selected indent
         ]
     , spinnerContainer
+    , Css.class Error
+        [ backgroundColor lowWarning
+        , padding (px 8)
+        ]
     ]
         |> Css.Namespace.namespace appNamespace
-        |> stylesheet
+        |> Css.stylesheet
 
 
 appNamespace : String
 appNamespace =
     "Desktop"
-
-
-namespace : String -> String
-namespace str =
-    appNamespace ++ str
 
 
 spinnerContainer : Snippet

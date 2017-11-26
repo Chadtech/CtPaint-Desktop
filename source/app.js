@@ -8,20 +8,20 @@ Desktop = function(Client) {
         });
     };
 
+    function handleLoginSuccess(user) {
+        user.getUserAttributes(function(err, attributes) {
+            if (err) {
+                toElm("log in fail", String(err));
+            } else {
+                toElm("log in success", (toUser(attributes)))
+            }
+        });
+    }
+
     var handleLogin = {
-        onSuccess: function(result) {
-            toElm("log in success", null);
-        },
+        onSuccess: handleLoginSuccess,
         onFailure: function(err) {
             toElm("log in fail", String(err));
-        }
-    };
-
-    function handleLogin(err, result) {
-        if (err) {
-            toElm("verification fail", String(err));
-        } else {
-            toElm("verification success", payload.email);
         }
     };
 
@@ -107,6 +107,9 @@ Desktop = function(Client) {
                 case "NetworkingError: Network Failure":
                     init({ user: "offline" });
                     break;
+
+                case "UserNotFoundException: User does not exist.":
+                    init({ user : null });
 
                 default : 
                     console.log("Unknown get session error", err);

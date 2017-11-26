@@ -1,5 +1,6 @@
 module Msg exposing (..)
 
+import Data.User as User exposing (User)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Page.Home as Home
 import Page.Login as Login
@@ -11,7 +12,7 @@ import Route exposing (Route(..))
 
 type Msg
     = SetRoute (Maybe Route)
-    | LogInSucceeded
+    | LogInSucceeded User
     | LogOutSucceeded
     | LogOutFailed String
     | InvalidJsMsg JsMsgProblem
@@ -32,7 +33,12 @@ decode : Value -> Msg
 decode json =
     case Decode.decodeValue typeDecoder json of
         Ok "log in success" ->
-            LogInSucceeded
+            case decodePayload User.userDecoder json of
+                Ok user ->
+                    LogInSucceeded user
+
+                Err err ->
+                    InvalidJsMsg (CouldntDecode err)
 
         Ok "log in fail" ->
             case decodeStringPayload json of
@@ -92,6 +98,11 @@ decode json =
 
         Err err ->
             InvalidJsMsg (CouldntDecode err)
+
+
+decodePayload : Decoder a -> Value -> Result String a
+decodePayload decoder json =
+    Decode.decodeValue (Decode.field "payload" decoder) json
 
 
 decodeStringPayload : Value -> Result String String

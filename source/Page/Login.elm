@@ -93,6 +93,7 @@ attemptLogin model =
         | errors = errors
         , password = ""
         , show = False
+        , responseError = Nothing
     }
         & cmd
 

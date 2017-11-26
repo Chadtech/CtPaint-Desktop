@@ -16,7 +16,7 @@ import Tuple.Infix exposing ((&))
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case Debug.log "MSG" msg of
         SetRoute (Just route) ->
             handleRoute route model
 
@@ -26,8 +26,9 @@ update msg model =
             }
                 & Cmd.none
 
-        LogInSucceeded ->
-            model & Route.goTo Route.Home
+        LogInSucceeded user ->
+            { model | user = User.LoggedIn user }
+                & Route.goTo Route.Home
 
         LogOutSucceeded ->
             { model | user = User.NoSession }

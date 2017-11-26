@@ -138,7 +138,7 @@ viewBody model =
                 msg =
                     [ "Success!"
                     , model.email
-                    , "is verified."
+                    , "is now verified."
                     ]
                         |> String.join " "
             in
