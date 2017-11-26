@@ -26,13 +26,11 @@ update msg model =
             }
                 & Cmd.none
 
-        LoggedIn ->
+        LogInSucceeded ->
             model & Route.goTo Route.Home
 
-        LoggedOut ->
-            { model
-                | user = User.NoSession
-            }
+        LogOutSucceeded ->
+            { model | user = User.NoSession }
                 & Route.goTo Route.Login
 
         LogOutFailed err ->
@@ -103,13 +101,18 @@ update msg model =
             case model.page of
                 Page.Verify subModel ->
                     let
-                        ( newSubModel, cmd ) =
+                        ( newSubModel, reply ) =
                             Verify.update subMsg subModel
                     in
-                    { model
-                        | page = Page.Verify newSubModel
-                    }
-                        & Cmd.map VerifyMsg cmd
+                    case reply of
+                        Verify.NoReply ->
+                            { model
+                                | page = Page.Verify newSubModel
+                            }
+                                & Cmd.none
+
+                        Verify.GoToLogin ->
+                            model & Route.goTo Route.Login
 
                 _ ->
                     model & Cmd.none
@@ -123,24 +126,17 @@ handleRoute destination model =
     case destination of
         Route.Login ->
             { model
-                | user = User.NoSession
-                , page = Page.Login Login.init
+                | page = Page.Login Login.init
             }
-                & Ports.send Ports.Logout
+                |> logout
 
         Route.Logout ->
-            { model
-                | user = User.NoSession
-                , page = Page.Logout Logout.init
-            }
-                & Ports.send Ports.Logout
+            { model | page = Page.Logout Logout.init }
+                |> logout
 
         Route.Register ->
-            { model
-                | user = User.NoSession
-                , page = Page.Register Register.init
-            }
-                & Ports.send Ports.Logout
+            { model | page = Page.Register Register.init }
+                |> logout
 
         Route.Home ->
             case model.user of
@@ -169,13 +165,23 @@ handleRoute destination model =
 
         Route.Verify email code ->
             { model
-                | user = User.NoSession
-                , page = Page.Verify (Verify.init email)
+                | page = Page.Verify (Verify.init email)
             }
-                & Cmd.batch
-                    [ Ports.send Ports.Logout
-                    , Ports.send (VerifyEmail email code)
-                    ]
+                |> logout
+                |> mixinCmd (Ports.send (VerifyEmail email code))
+
+
+logout : Model -> ( Model, Cmd Msg )
+logout model =
+    { model
+        | user = User.NoSession
+    }
+        & Ports.send Ports.Logout
+
+
+mixinCmd : Cmd Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+mixinCmd newCmd ( model, cmd ) =
+    model & Cmd.batch [ newCmd, cmd ]
 
 
 incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )

@@ -11,8 +11,8 @@ import Route exposing (Route(..))
 
 type Msg
     = SetRoute (Maybe Route)
-    | LoggedIn
-    | LoggedOut
+    | LogInSucceeded
+    | LogOutSucceeded
     | LogOutFailed String
     | InvalidJsMsg JsMsgProblem
     | HomeMsg Home.Msg
@@ -32,7 +32,7 @@ decode : Value -> Msg
 decode json =
     case Decode.decodeValue typeDecoder json of
         Ok "log in success" ->
-            LoggedIn
+            LogInSucceeded
 
         Ok "log in fail" ->
             case decodeStringPayload json of
@@ -43,7 +43,7 @@ decode json =
                     LoginMsg (Login.LoginFailed err)
 
         Ok "log out success" ->
-            LoggedOut
+            LogOutSucceeded
 
         Ok "log out fail" ->
             case decodeStringPayload json of

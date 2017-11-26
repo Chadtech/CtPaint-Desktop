@@ -41,7 +41,14 @@ Desktop = function(Client) {
                 break;
 
             case "verify email" :
-                Client.verify(msg.payload, handleLogin);
+                Client.verify(msg.payload, {
+                    onFailure: function(err) {
+                        toElm("verification fail", err);
+                    },
+                    onSuccess: function(result) {
+                        toElm('verification success', result);
+                    }
+                });
                 break;
 
             case "register" :

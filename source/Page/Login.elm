@@ -1,4 +1,4 @@
-module Page.Login exposing (..)
+module Page.Login exposing (Model, Msg(..), css, init, update, view)
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
@@ -28,8 +28,9 @@ type Field
 
 
 type Msg
-    = UpdateField Field String
-    | AttemptLogin
+    = FieldUpdated Field String
+    | Submitted
+    | LoginClicked
     | LoginFailed String
 
 
@@ -54,30 +55,17 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateField Email str ->
+        FieldUpdated Email str ->
             { model | email = str } & Cmd.none
 
-        UpdateField Password str ->
+        FieldUpdated Password str ->
             { model | password = str } & Cmd.none
 
-        AttemptLogin ->
-            let
-                errors =
-                    validate model
+        Submitted ->
+            attemptLogin model
 
-                cmd =
-                    if List.isEmpty errors then
-                        Login model.email model.password
-                            |> Ports.send
-                    else
-                        Cmd.none
-            in
-            { model
-                | errors = errors
-                , password = ""
-                , show = False
-            }
-                & cmd
+        LoginClicked ->
+            attemptLogin model
 
         LoginFailed err ->
             { model
@@ -86,6 +74,27 @@ update msg model =
                 , show = True
             }
                 & Cmd.none
+
+
+attemptLogin : Model -> ( Model, Cmd Msg )
+attemptLogin model =
+    let
+        errors =
+            validate model
+
+        cmd =
+            if List.isEmpty errors then
+                Login model.email model.password
+                    |> Ports.send
+            else
+                Cmd.none
+    in
+    { model
+        | errors = errors
+        , password = ""
+        , show = False
+    }
+        & cmd
 
 
 determineResponseError : String -> String
@@ -121,13 +130,14 @@ validate =
 
 
 type Class
-    = Long
+    = Text
+    | Long
 
 
 css : Stylesheet
 css =
-    [ Css.class Long
-        [ width (px 180) ]
+    [ Css.class Text [ width (px 120) ]
+    , Css.class Long [ width (px 300) ]
     ]
         |> namespace loginNamespace
         |> stylesheet
@@ -157,14 +167,14 @@ view model =
         errorView_ =
             fieldErrorView model.errors
     in
-    Html.Custom.card []
+    Html.Custom.cardSolitary []
         [ Html.Custom.header
             { text = "CtPaint"
             , closability = Html.Custom.NotClosable
             }
         , Html.Custom.cardBody []
             [ form
-                [ onSubmit AttemptLogin ]
+                [ onSubmit Submitted ]
                 [ field "email"
                     [ value_ model.email
                     , onInput_ Email
@@ -182,8 +192,8 @@ view model =
                     ]
                     []
                 , Html.Custom.menuButton
-                    [ onClick AttemptLogin ]
-                    [ Html.text "Log in" ]
+                    [ onClick LoginClicked ]
+                    [ Html.text "log in" ]
                 ]
             ]
         ]
@@ -196,7 +206,7 @@ view model =
 field : String -> List (Attribute Msg) -> Html Msg
 field name attributes =
     Html.Custom.field []
-        [ p [] [ Html.text name ]
+        [ p [ class [ Text ] ] [ Html.text name ]
         , input (class [ Long ] :: attributes) []
         ]
 
@@ -233,4 +243,4 @@ responseErrorView maybeError =
 
 onInput_ : Field -> Attribute Msg
 onInput_ =
-    UpdateField >> onInput
+    FieldUpdated >> onInput
