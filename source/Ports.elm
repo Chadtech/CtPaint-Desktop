@@ -1,7 +1,7 @@
 port module Ports exposing (..)
 
 import Json.Encode as Encode exposing (Value)
-import Util exposing ((:=))
+import Tuple.Infix exposing ((:=))
 
 
 -- TYPES --

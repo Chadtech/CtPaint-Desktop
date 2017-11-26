@@ -1,10 +1,12 @@
 module Page.Verify exposing (..)
 
-import Html exposing (Html, a, br, div, p, text)
+import Css exposing (..)
+import Css.Namespace exposing (namespace)
+import Html exposing (Html, a, br, div, p)
+import Html.CssHelpers
+import Html.Custom
 import Html.Events exposing (onClick)
-import Html.Spinner exposing (spinner)
-import Styles exposing (Classes(..))
-import Util exposing ((&))
+import Tuple.Infix exposing ((&))
 
 
 -- INIT --
@@ -56,23 +58,41 @@ update msg model =
 
 
 
+-- STYLES --
+
+
+type Class
+    = Text
+
+
+css : Stylesheet
+css =
+    []
+        |> namespace verifyNamespace
+        |> stylesheet
+
+
+verifyNamespace : String
+verifyNamespace =
+    "Verify"
+
+
+
 -- VIEW --
 
 
 { class } =
-    Styles.helpers
+    Html.CssHelpers.withNamespace verifyNamespace
 
 
 view : Model -> Html Msg
 view model =
-    div
-        [ class [ Card, Solitary, Verify ] ]
-        [ div
-            [ class [ Header ] ]
-            [ p [] [ text "verify account" ] ]
-        , div
-            [ class [ Body ] ]
-            (viewBody model)
+    Html.Custom.card []
+        [ Html.Custom.header
+            { text = "verify account"
+            , closability = Html.Custom.NotClosable
+            }
+        , Html.Custom.cardBody [] (viewBody model)
         ]
 
 
@@ -80,28 +100,26 @@ viewBody : Model -> List (Html Msg)
 viewBody model =
     case model.status of
         Waiting ->
-            [ p
-                [ class [ HasBottomMargin, TextAlignCenter ] ]
-                [ text "verifying.." ]
-            , spinner
+            [ p [] [ Html.text "verifying.." ]
+            , Html.Custom.spinner
             ]
 
         Success ->
-            [ p [] [ text "Success!" ]
+            [ p [] [ Html.text "Success!" ]
             , br [] []
             , p
                 []
-                [ text (model.email ++ " is verified.") ]
+                [ Html.text (model.email ++ " is verified.") ]
             , br [] []
-            , a [] [ text "log in" ]
+            , a [] [ Html.text "log in" ]
             ]
 
         Fail err ->
             [ p
                 []
-                [ text "Error" ]
+                [ Html.text "Error" ]
             , br [] []
             , p
                 []
-                [ text err ]
+                [ Html.text err ]
             ]

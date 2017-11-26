@@ -1,12 +1,14 @@
 module Page.Logout exposing (..)
 
-import Html exposing (Html, a, br, div, p, text)
-import Html.Spinner exposing (spinner)
+import Css exposing (..)
+import Css.Namespace exposing (namespace)
+import Html exposing (Html, a, br, div, p)
+import Html.CssHelpers
+import Html.Custom
 import Process
 import Route exposing (Route(Home))
-import Styles exposing (Classes(..))
 import Task exposing (Task)
-import Util exposing ((&))
+import Tuple.Infix exposing ((&))
 
 
 -- TYPES --
@@ -58,24 +60,41 @@ finishWaiting =
 
 
 
+-- STYLES --
+
+
+type Class
+    = Text
+
+
+css : Stylesheet
+css =
+    []
+        |> namespace logoutNamespace
+        |> stylesheet
+
+
+logoutNamespace : String
+logoutNamespace =
+    "Logout"
+
+
+
 -- VIEW --
 
 
 { class } =
-    Styles.helpers
+    Html.CssHelpers.withNamespace logoutNamespace
 
 
 view : Model -> Html Msg
 view model =
-    div
-        [ class [ Card, Solitary ] ]
-        [ div
-            [ class [ Header ] ]
-            [ p [] [ text "log out" ]
-            , div
-                [ class [ Body ] ]
-                (viewContent model)
-            ]
+    Html.Custom.card []
+        [ Html.Custom.header
+            { text = "log out"
+            , closability = Html.Custom.NotClosable
+            }
+        , Html.Custom.cardBody [] (viewContent model)
         ]
 
 
@@ -83,22 +102,15 @@ viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
         Waiting ->
-            [ p_ "logging out.."
-            , spinner
+            [ p [] [ Html.text "logging out.." ]
+            , Html.Custom.spinner
             ]
 
         Success ->
-            [ p_ "You have successfully logged out. You will be redirected momentarily."
+            [ p [] [ Html.text "You have successfully logged out. You will be redirected momentarily." ]
             ]
 
         Fail err ->
-            [ p_ "Weird, I couldnt log out."
-            , p_ err
+            [ p [] [ Html.text "Weird, I couldnt log out." ]
+            , p [] [ Html.text err ]
             ]
-
-
-p_ : String -> Html Msg
-p_ str =
-    p
-        [ class [ HasBottomMargin, TextAlignCenter ] ]
-        [ text str ]

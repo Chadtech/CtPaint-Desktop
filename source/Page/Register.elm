@@ -1,5 +1,7 @@
 module Page.Register exposing (..)
 
+import Css exposing (..)
+import Css.Namespace exposing (namespace)
 import Html
     exposing
         ( Attribute
@@ -10,13 +12,14 @@ import Html
         , form
         , input
         , p
-        , text
         )
-import Html.Attributes exposing (class, hidden, type_, value)
+import Html.Attributes as Attr
+import Html.CssHelpers
+import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..), RegistrationPayload)
-import Styles exposing (Classes(..))
-import Util exposing ((&), (:=), showIf)
+import Tuple.Infix exposing ((&), (:=))
+import Util
 import Validate exposing (ifBlank)
 
 
@@ -24,12 +27,12 @@ import Validate exposing (ifBlank)
 
 
 type Model
-    = Fields FieldsModel
+    = Ready Fields
     | Success String
     | Fail Problem
 
 
-type alias FieldsModel =
+type alias Fields =
     { username : String
     , email : String
     , emailConfirm : String
@@ -75,7 +78,29 @@ init =
     , errors = []
     , show = True
     }
-        |> Fields
+        |> Ready
+
+
+
+-- STYLES --
+
+
+type Class
+    = Long
+
+
+css : Stylesheet
+css =
+    [ Css.class Long
+        [ width (px 180) ]
+    ]
+        |> namespace registerNamespace
+        |> stylesheet
+
+
+registerNamespace : String
+registerNamespace =
+    "Register"
 
 
 
@@ -83,26 +108,24 @@ init =
 
 
 { class } =
-    Styles.helpers
+    Html.CssHelpers.withNamespace registerNamespace
 
 
 view : Model -> Html Msg
 view model =
-    div
-        [ class [ Card, Solitary ] ]
-        [ div
-            [ class [ Header ] ]
-            [ p [] [ text "register" ] ]
-        , div
-            [ class [ Body ] ]
-            (viewContent model)
+    Html.Custom.card []
+        [ Html.Custom.header
+            { text = "register"
+            , closability = Html.Custom.NotClosable
+            }
+        , Html.Custom.cardBody [] (viewContent model)
         ]
 
 
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
-        Fields fields ->
+        Ready fields ->
             registeringView fields
 
         Success email ->
@@ -124,7 +147,7 @@ failView : String -> List (Html Msg)
 failView problem =
     [ p
         []
-        [ text problem ]
+        [ Html.text problem ]
     ]
 
 
@@ -132,56 +155,56 @@ successView : String -> List (Html Msg)
 successView email =
     [ p
         []
-        [ text "Success! Your account is registered" ]
+        [ Html.text "Success! Your account is registered" ]
     , br [] []
     , p
         []
-        [ text ("A verification email was sent to " ++ email) ]
+        [ Html.text ("A verification email was sent to " ++ email) ]
     ]
 
 
-registeringView : FieldsModel -> List (Html Msg)
-registeringView fieldsModel =
+registeringView : Fields -> List (Html Msg)
+registeringView fields =
     let
         value_ : String -> Attribute Msg
         value_ =
-            value << showIf fieldsModel.show
+            Attr.value << Util.showIf fields.show
 
         errorView_ : Field -> Html Msg
         errorView_ =
-            errorView fieldsModel.errors
+            errorView fields.errors
     in
     [ form
         [ onSubmit AttemptRegistration ]
         [ field
             "username"
-            [ value_ fieldsModel.username
+            [ value_ fields.username
             , onInput_ Username
             ]
         , errorView_ Username
         , field
             "email"
-            [ value_ fieldsModel.email
+            [ value_ fields.email
             , onInput_ Email
             ]
         , errorView_ Email
         , field
             "type it again"
-            [ value_ fieldsModel.emailConfirm
+            [ value_ fields.emailConfirm
             , onInput_ EmailConfirm
             ]
         , errorView_ EmailConfirm
         , field
             "password"
-            [ value_ fieldsModel.password
-            , type_ "password"
+            [ value_ fields.password
+            , Attr.type_ "password"
             , onInput_ Password
             ]
         , errorView_ Password
         , field
             "type it again"
-            [ value_ fieldsModel.passwordConfirm
-            , type_ "password"
+            [ value_ fields.passwordConfirm
+            , Attr.type_ "password"
             , onInput_ PasswordConfirm
             ]
         , errorView_ PasswordConfirm
@@ -189,15 +212,13 @@ registeringView fieldsModel =
         -- This input is here, because without it
         -- the enter key does not cause submission
         , input
-            [ type_ "submit"
-            , hidden True
+            [ Attr.type_ "submit"
+            , Attr.hidden True
             ]
             []
-        , a
-            [ class [ Submit ]
-            , onClick AttemptRegistration
-            ]
-            [ text "submit" ]
+        , Html.Custom.menuButton
+            [ onClick AttemptRegistration ]
+            [ Html.text "submit" ]
         ]
     ]
 
@@ -208,9 +229,8 @@ registeringView fieldsModel =
 
 field : String -> List (Attribute Msg) -> Html Msg
 field name attributes =
-    div
-        [ class [ Field ] ]
-        [ p [ class [ Long ] ] [ text name ]
+    Html.Custom.field []
+        [ p [ class [ Long ] ] [ Html.text name ]
         , input
             (class [ Long ] :: attributes)
             []
@@ -218,11 +238,11 @@ field name attributes =
 
 
 errorView : List ( Field, String ) -> Field -> Html Msg
-errorView errors fieldType =
+errorView errors field =
     let
         thisFieldsErrors =
             List.filter
-                (Tuple.first >> (==) fieldType)
+                (Tuple.first >> (==) field)
                 errors
     in
     case thisFieldsErrors of
@@ -230,12 +250,7 @@ errorView errors fieldType =
             Html.text ""
 
         error :: _ ->
-            div
-                [ class [ Error ] ]
-                [ p
-                    []
-                    [ text (Tuple.second error) ]
-                ]
+            Html.Custom.error (Tuple.second error)
 
 
 
@@ -256,7 +271,7 @@ update msg model =
     case msg of
         AttemptRegistration ->
             case model of
-                Fields fields ->
+                Ready fields ->
                     attemptRegistration fields
 
                 _ ->
@@ -264,9 +279,9 @@ update msg model =
 
         UpdateField field str ->
             case model of
-                Fields fieldsModel ->
-                    updateField field str fieldsModel
-                        |> Fields
+                Ready fields ->
+                    updateField field str fields
+                        |> Ready
                         & Cmd.none
 
                 _ ->
@@ -279,7 +294,7 @@ update msg model =
             Fail problem & Cmd.none
 
 
-attemptRegistration : FieldsModel -> ( Model, Cmd Msg )
+attemptRegistration : Fields -> ( Model, Cmd Msg )
 attemptRegistration fields =
     let
         errors =
@@ -303,41 +318,41 @@ attemptRegistration fields =
                     |> Register
                     |> Ports.send
         in
-        Fields newFields & cmd
+        Ready newFields & cmd
     else
         { fields
             | errors = errors
             , password = ""
             , passwordConfirm = ""
         }
-            |> Fields
+            |> Ready
             & Cmd.none
 
 
-updateField : Field -> String -> FieldsModel -> FieldsModel
-updateField field str fieldsModel =
+updateField : Field -> String -> Fields -> Fields
+updateField field str fields =
     case field of
         Username ->
-            { fieldsModel | username = str }
+            { fields | username = str }
 
         Email ->
-            { fieldsModel | email = str }
+            { fields | email = str }
 
         EmailConfirm ->
-            { fieldsModel | emailConfirm = str }
+            { fields | emailConfirm = str }
 
         Password ->
-            { fieldsModel | password = str }
+            { fields | password = str }
 
         PasswordConfirm ->
-            { fieldsModel | passwordConfirm = str }
+            { fields | passwordConfirm = str }
 
 
-handleFail : String -> FieldsModel -> FieldsModel
-handleFail fail fieldsModel =
+handleFail : String -> Fields -> Fields
+handleFail fail fields =
     case fail of
         "UsernameExistsException: User already exists" ->
-            { fieldsModel
+            { fields
                 | errors =
                     Email
                         & "Email is already registered to an account"
@@ -345,7 +360,7 @@ handleFail fail fieldsModel =
             }
 
         other ->
-            { fieldsModel
+            { fields
                 | errors =
                     [ Email & other ]
             }
@@ -355,7 +370,7 @@ handleFail fail fieldsModel =
 -- VALIDATIONS --
 
 
-validate : FieldsModel -> List ( Field, String )
+validate : Fields -> List ( Field, String )
 validate =
     Validate.all
         [ .email >> ifBlank ( Email, "Email field is required" )
@@ -370,7 +385,7 @@ validate =
         ]
 
 
-validEmail : FieldsModel -> List ( Field, String )
+validEmail : Fields -> List ( Field, String )
 validEmail model =
     case String.split "@" model.email of
         "" :: _ ->
@@ -431,7 +446,7 @@ alphanumeric =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 
-atLeastOneLowerCaseInPassword : FieldsModel -> List ( Field, String )
+atLeastOneLowerCaseInPassword : Fields -> List ( Field, String )
 atLeastOneLowerCaseInPassword { password } =
     if password == String.toUpper password then
         [ ( Password, "Password must contain at least one lower case letter" ) ]
@@ -439,7 +454,7 @@ atLeastOneLowerCaseInPassword { password } =
         []
 
 
-atLeastOneUpperCaseInPassword : FieldsModel -> List ( Field, String )
+atLeastOneUpperCaseInPassword : Fields -> List ( Field, String )
 atLeastOneUpperCaseInPassword { password } =
     if password == String.toLower password then
         [ ( Password, "Password must contain at least one upper case letter" ) ]
@@ -447,7 +462,7 @@ atLeastOneUpperCaseInPassword { password } =
         []
 
 
-passwordLongEnough : FieldsModel -> List ( Field, String )
+passwordLongEnough : Fields -> List ( Field, String )
 passwordLongEnough { password } =
     if String.length password < 8 then
         [ ( Password, "Password must be at least 8 characters" ) ]
@@ -455,7 +470,7 @@ passwordLongEnough { password } =
         []
 
 
-passwordsMatch : FieldsModel -> List ( Field, String )
+passwordsMatch : Fields -> List ( Field, String )
 passwordsMatch { password, passwordConfirm } =
     if password == passwordConfirm then
         []
@@ -463,7 +478,7 @@ passwordsMatch { password, passwordConfirm } =
         [ ( PasswordConfirm, "Passwords do not match" ) ]
 
 
-emailsMatch : FieldsModel -> List ( Field, String )
+emailsMatch : Fields -> List ( Field, String )
 emailsMatch { email, emailConfirm } =
     if email == emailConfirm then
         []

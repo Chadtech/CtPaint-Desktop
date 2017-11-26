@@ -10,7 +10,7 @@ import Page.Register as Register
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route exposing (Route(..))
-import Util exposing ((&))
+import Tuple.Infix exposing ((&))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

@@ -1,7 +1,7 @@
 module Page.Home exposing (..)
 
 import Html exposing (Html, div, text)
-import Util exposing ((&))
+import Tuple.Infix exposing ((&))
 
 
 -- TYPES --

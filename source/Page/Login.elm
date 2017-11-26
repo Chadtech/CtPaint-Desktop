@@ -1,11 +1,15 @@
 module Page.Login exposing (..)
 
+import Css exposing (..)
+import Css.Namespace exposing (namespace)
 import Html exposing (Attribute, Html, a, div, form, input, p, text)
-import Html.Attributes exposing (hidden, placeholder, type_, value)
+import Html.Attributes as Attr
+import Html.CssHelpers
+import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..))
-import Styles exposing (Classes(..))
-import Util exposing ((&), showIf)
+import Tuple.Infix exposing ((&))
+import Util
 import Validate exposing (ifBlank)
 
 
@@ -106,10 +110,32 @@ determineResponseError err =
 
 validate : Model -> List ( Field, String )
 validate =
-    Validate.all
-        [ .email >> ifBlank ( Email, "Email field is required" )
-        , .password >> ifBlank ( Password, "Password field is required" )
-        ]
+    [ .email >> ifBlank ( Email, "Email field is required" )
+    , .password >> ifBlank ( Password, "Password field is required" )
+    ]
+        |> Validate.all
+
+
+
+-- STYLES --
+
+
+type Class
+    = Long
+
+
+css : Stylesheet
+css =
+    [ Css.class Long
+        [ width (px 180) ]
+    ]
+        |> namespace loginNamespace
+        |> stylesheet
+
+
+loginNamespace : String
+loginNamespace =
+    "Login"
 
 
 
@@ -117,7 +143,7 @@ validate =
 
 
 { class } =
-    Styles.helpers
+    Html.CssHelpers.withNamespace loginNamespace
 
 
 view : Model -> Html Msg
@@ -125,19 +151,18 @@ view model =
     let
         value_ : String -> Attribute Msg
         value_ =
-            value << showIf model.show
+            Attr.value << Util.showIf model.show
 
         errorView_ : Field -> Html Msg
         errorView_ =
             fieldErrorView model.errors
     in
-    div
-        [ class [ Card, Solitary ] ]
-        [ div
-            [ class [ Header ] ]
-            [ p [] [ text "CtPaint" ] ]
-        , div
-            [ class [ Body ] ]
+    Html.Custom.card []
+        [ Html.Custom.header
+            { text = "CtPaint"
+            , closability = Html.Custom.NotClosable
+            }
+        , Html.Custom.cardBody []
             [ form
                 [ onSubmit AttemptLogin ]
                 [ field "email"
@@ -147,20 +172,18 @@ view model =
                 , errorView_ Email
                 , field "password"
                     [ value_ model.password
-                    , type_ "password"
+                    , Attr.type_ "password"
                     , onInput_ Password
                     ]
                 , responseErrorView model.responseError
                 , input
-                    [ type_ "submit"
-                    , hidden True
+                    [ Attr.type_ "submit"
+                    , Attr.hidden True
                     ]
                     []
-                , a
-                    [ class [ Submit ]
-                    , onClick AttemptLogin
-                    ]
-                    [ text "Log in" ]
+                , Html.Custom.menuButton
+                    [ onClick AttemptLogin ]
+                    [ Html.text "Log in" ]
                 ]
             ]
         ]
@@ -172,21 +195,18 @@ view model =
 
 field : String -> List (Attribute Msg) -> Html Msg
 field name attributes =
-    div
-        [ class [ Field ] ]
-        [ p [] [ text name ]
-        , input
-            (class [ Long ] :: attributes)
-            []
+    Html.Custom.field []
+        [ p [] [ Html.text name ]
+        , input (class [ Long ] :: attributes) []
         ]
 
 
 fieldErrorView : List ( Field, String ) -> Field -> Html Msg
-fieldErrorView errors fieldType =
+fieldErrorView errors field =
     let
         thisFieldsErrors =
             List.filter
-                (Tuple.first >> (==) fieldType)
+                (Tuple.first >> (==) field)
                 errors
     in
     case thisFieldsErrors of
@@ -194,24 +214,17 @@ fieldErrorView errors fieldType =
             Html.text ""
 
         error :: _ ->
-            errorView (Tuple.second error)
+            Html.Custom.error (Tuple.second error)
 
 
 responseErrorView : Maybe String -> Html Msg
 responseErrorView maybeError =
     case maybeError of
         Just error ->
-            errorView error
+            Html.Custom.error error
 
         Nothing ->
             Html.text ""
-
-
-errorView : String -> Html Msg
-errorView error =
-    div
-        [ class [ Error ] ]
-        [ p [] [ text error ] ]
 
 
 

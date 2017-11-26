@@ -16,8 +16,8 @@ import Page.Register as Register
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route
+import Tuple.Infix exposing ((&))
 import Update exposing (update)
-import Util exposing ((&))
 
 
 -- MAIN --
