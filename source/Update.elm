@@ -16,11 +16,11 @@ import Tuple.Infix exposing ((&))
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case Debug.log "MSG" msg of
-        SetRoute (Just route) ->
+    case msg of
+        RouteChanged (Just route) ->
             handleRoute route model
 
-        SetRoute Nothing ->
+        RouteChanged Nothing ->
             { model
                 | page = Error InvalidUrl
             }

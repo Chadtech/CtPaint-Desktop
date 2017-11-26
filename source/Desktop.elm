@@ -27,7 +27,7 @@ import Update exposing (update)
 main : Program Value Model Msg
 main =
     Navigation.programWithFlags
-        (Route.fromLocation >> SetRoute)
+        (Route.fromLocation >> RouteChanged)
         { init = init
         , view = view
         , update = update
@@ -57,7 +57,7 @@ init json location =
 
 initPage : Location -> Model -> ( Model, Cmd Msg )
 initPage =
-    Route.fromLocation >> SetRoute >> update
+    Route.fromLocation >> RouteChanged >> update
 
 
 

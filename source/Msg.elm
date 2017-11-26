@@ -11,7 +11,7 @@ import Route exposing (Route(..))
 
 
 type Msg
-    = SetRoute (Maybe Route)
+    = RouteChanged (Maybe Route)
     | LogInSucceeded User
     | LogOutSucceeded
     | LogOutFailed String
@@ -25,22 +25,23 @@ type Msg
 
 
 type JsMsgProblem
-    = CouldntDecode String
+    = PayloadDecodeFailed String
+    | TypeDecodeFailed String
     | UnrecognizedType String
 
 
 decode : Value -> Msg
 decode json =
     case Decode.decodeValue typeDecoder json of
-        Ok "log in success" ->
+        Ok "login succeeded" ->
             case decodePayload User.userDecoder json of
                 Ok user ->
                     LogInSucceeded user
 
                 Err err ->
-                    InvalidJsMsg (CouldntDecode err)
+                    InvalidJsMsg (PayloadDecodeFailed err)
 
-        Ok "log in fail" ->
+        Ok "login failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     LoginMsg (Login.LoginFailed err)
@@ -48,10 +49,10 @@ decode json =
                 Err err ->
                     LoginMsg (Login.LoginFailed err)
 
-        Ok "log out success" ->
+        Ok "logout succeeded" ->
             LogOutSucceeded
 
-        Ok "log out fail" ->
+        Ok "logout failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     LogOutFailed err
@@ -59,10 +60,10 @@ decode json =
                 Err err ->
                     LogOutFailed err
 
-        Ok "verification success" ->
+        Ok "verification succeeded" ->
             VerifyMsg Verify.Succeeded
 
-        Ok "verification fail" ->
+        Ok "verification failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     VerifyMsg (Verify.Failed err)
@@ -70,7 +71,7 @@ decode json =
                 Err err ->
                     VerifyMsg (Verify.Failed err)
 
-        Ok "registration success" ->
+        Ok "registration succeeded" ->
             case decodeStringPayload json of
                 Ok email ->
                     RegisterMsg (Register.Succeeded email)
@@ -80,7 +81,7 @@ decode json =
                         |> Register.Failed
                         |> RegisterMsg
 
-        Ok "registration fail" ->
+        Ok "registration failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     err
@@ -97,7 +98,7 @@ decode json =
             InvalidJsMsg (UnrecognizedType type_)
 
         Err err ->
-            InvalidJsMsg (CouldntDecode err)
+            InvalidJsMsg (TypeDecodeFailed err)
 
 
 decodePayload : Decoder a -> Value -> Result String a
