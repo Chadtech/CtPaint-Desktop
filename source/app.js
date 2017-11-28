@@ -11,9 +11,9 @@ Desktop = function(Client) {
     function handleLoginSuccess(user) {
         user.getUserAttributes(function(err, attributes) {
             if (err) {
-                toElm("log in fail", String(err));
+                toElm("login failed", String(err));
             } else {
-                toElm("log in success", (toUser(attributes)))
+                toElm("login succeeded", toUser(attributes));
             }
         });
     }
@@ -21,16 +21,16 @@ Desktop = function(Client) {
     var handleLogin = {
         onSuccess: handleLoginSuccess,
         onFailure: function(err) {
-            toElm("log in fail", String(err));
+            toElm("login failed", String(err));
         }
     };
 
     var handleLogout = {
         onSuccess: function() {
-            toElm("log out success", null);
+            toElm("logout succeeded", null);
         },
         onFailure: function(err) {
-            toElm("log out fail", err);
+            toElm("logout failed", err);
         }
     };
 
@@ -43,10 +43,10 @@ Desktop = function(Client) {
             case "verify email" :
                 Client.verify(msg.payload, {
                     onFailure: function(err) {
-                        toElm("verification fail", err);
+                        toElm("verification failed", err);
                     },
                     onSuccess: function(result) {
-                        toElm('verification success', result);
+                        toElm('verification succeeded', result);
                     }
                 });
                 break;
@@ -54,10 +54,10 @@ Desktop = function(Client) {
             case "register" :
                 Client.register(msg.payload, {
                     onFailure: function(err) { 
-                        toElm("registration fail", err)
+                        toElm("registration failed", err)
                     },
                     onSuccess: function(result) {
-                        toElm("registration success", result.user.username);
+                        toElm("registration succeeded", result.user.username);
                     }
                 });
                 break;

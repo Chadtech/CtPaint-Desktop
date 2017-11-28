@@ -146,7 +146,7 @@ css =
 
 loginNamespace : String
 loginNamespace =
-    "Login"
+    Html.Custom.makeNamespace "Login"
 
 
 

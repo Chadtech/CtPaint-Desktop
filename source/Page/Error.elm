@@ -30,7 +30,7 @@ css =
 
 errorNamespace : String
 errorNamespace =
-    "Error"
+    Html.Custom.makeNamespace "Error"
 
 
 

@@ -10,6 +10,7 @@ module Html.Custom
         , field
         , header
         , indent
+        , makeNamespace
         , menuButton
         , outdent
         , spinner
@@ -93,6 +94,11 @@ css =
 appNamespace : String
 appNamespace =
     "Desktop"
+
+
+makeNamespace : String -> String
+makeNamespace thisNamespace =
+    appNamespace ++ thisNamespace
 
 
 spinnerContainer : Snippet

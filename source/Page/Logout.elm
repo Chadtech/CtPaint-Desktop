@@ -76,7 +76,7 @@ css =
 
 logoutNamespace : String
 logoutNamespace =
-    "Logout"
+    Html.Custom.makeNamespace "Logout"
 
 
 

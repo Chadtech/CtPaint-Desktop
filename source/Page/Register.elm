@@ -117,7 +117,7 @@ css =
 
 registerNamespace : String
 registerNamespace =
-    "Register"
+    Html.Custom.makeNamespace "Register"
 
 
 

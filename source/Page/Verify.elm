@@ -102,7 +102,7 @@ css =
 
 verifyNamespace : String
 verifyNamespace =
-    "Verify"
+    Html.Custom.makeNamespace "Verify"
 
 
 
