@@ -17,7 +17,14 @@
   </body>
 
   <script type="text/javascript">
-    Desktop(Client);
+    Desktop({ 
+      Client: Client,
+      mountPath: "http://localhost:2970",
+      track: function(msg) {
+        console.log("-- TRACKING --", msg);
+      },
+      buildNumber: 9000
+    });
   </script>
 
 </html>

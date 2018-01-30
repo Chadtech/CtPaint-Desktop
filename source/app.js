@@ -1,4 +1,14 @@
-Desktop = function(Client) {
+/*
+    manifest
+        { Client: Client
+        , mountPath: String
+        , buildNumber: Int
+        }
+
+*/
+Desktop = function(manifest) {
+    var Client = manifest.Client;
+    var track = manifest.track;
     var app;
 
     function toElm(type, payload) {
