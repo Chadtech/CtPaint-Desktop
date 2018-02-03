@@ -8,6 +8,7 @@ module Comply
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Reply exposing (Reply(..))
+import Route
 import Tuple.Infix exposing ((&))
 import Util
 
@@ -30,3 +31,6 @@ fromDouble ( model, reply ) =
     case reply of
         NoReply ->
             model & Cmd.none
+
+        GoToLoginPage ->
+            model & Route.goTo Route.Login

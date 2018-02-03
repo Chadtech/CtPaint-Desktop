@@ -1,4 +1,4 @@
-module Page.Verify exposing (Model, Msg(..), Reply(..), css, init, update, view)
+module Page.Verify exposing (Model, Msg(..), css, init, update, view)
 
 import Css exposing (..)
 import Css.Elements
@@ -7,6 +7,10 @@ import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Reply
+    exposing
+        ( Reply(GoToLoginPage, NoReply)
+        )
 import Tuple.Infix exposing ((&))
 
 
@@ -42,11 +46,6 @@ type Msg
     | LoginClicked
 
 
-type Reply
-    = NoReply
-    | GoToLogin
-
-
 type Problem
     = AlreadyVerified
     | Other String
@@ -67,7 +66,7 @@ update msg model =
 
         LoginClicked ->
             if model.status == Success then
-                model & GoToLogin
+                model & GoToLoginPage
             else
                 model & NoReply
 

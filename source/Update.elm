@@ -109,19 +109,10 @@ update msg model =
         VerifyMsg subMsg ->
             case model.page of
                 Page.Verify subModel ->
-                    let
-                        ( newSubModel, reply ) =
-                            Verify.update subMsg subModel
-                    in
-                    case reply of
-                        Verify.NoReply ->
-                            { model
-                                | page = Page.Verify newSubModel
-                            }
-                                & Cmd.none
-
-                        Verify.GoToLogin ->
-                            model & Route.goTo Route.Login
+                    subModel
+                        |> Verify.update subMsg
+                        |> Tuple.mapFirst (integrateVerify model)
+                        |> Comply.fromDouble
 
                 _ ->
                     model & Cmd.none
@@ -183,6 +174,11 @@ handleRoute destination model =
 integrateHome : Model -> Home.Model -> Model
 integrateHome model homeModel =
     { model | page = Page.Home homeModel }
+
+
+integrateVerify : Model -> Verify.Model -> Model
+integrateVerify model verifyModel =
+    { model | page = Page.Verify verifyModel }
 
 
 logout : Model -> ( Model, Cmd Msg )
