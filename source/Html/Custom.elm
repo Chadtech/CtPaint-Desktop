@@ -50,7 +50,7 @@ type Class
 css : Stylesheet
 css =
     [ body
-        [ backgroundColor backgroundx2
+        [ backgroundColor ignorable2
         , margin zero
         , padding zero
         ]

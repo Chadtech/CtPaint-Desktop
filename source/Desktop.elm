@@ -1,7 +1,7 @@
 module Desktop exposing (..)
 
 import Data.Flags as Flags
-import Data.User as User
+import Data.Taco as Taco
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
@@ -18,16 +18,16 @@ import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route
 import Tuple.Infix exposing ((&))
-import Update exposing (update)
+import Update
 
 
 -- MAIN --
 
 
-main : Program Value Model Msg
+main : Program Value (Result String Model) Msg
 main =
     Navigation.programWithFlags
-        (Route.fromLocation >> RouteChanged)
+        onNavigation
         { init = init
         , view = view
         , update = update
@@ -35,46 +35,75 @@ main =
         }
 
 
+onNavigation : Location -> Msg
+onNavigation =
+    Route.fromLocation >> RouteChanged
+
+
+update : Msg -> Result String Model -> ( Result String Model, Cmd Msg )
+update msg result =
+    case result of
+        Ok model ->
+            Update.update msg model
+                |> Tuple.mapFirst Ok
+
+        Err err ->
+            Err err & Cmd.none
+
+
 
 -- INIT --
 
 
-init : Value -> Location -> ( Model, Cmd Msg )
+init : Value -> Location -> ( Result String Model, Cmd Msg )
 init json location =
     case Decode.decodeValue Flags.decoder json of
         Ok flags ->
-            { user = flags.user
-            , page = Error NoPageLoaded
+            { page = Error NoPageLoaded
+            , taco = Taco.fromFlags flags
             }
                 |> initPage location
 
         Err err ->
-            { user = User.NoSession
-            , page = Error (FlagsDecoderFailed err)
-            }
-                & Cmd.none
+            Err err & Cmd.none
 
 
-initPage : Location -> Model -> ( Model, Cmd Msg )
-initPage =
-    Route.fromLocation >> RouteChanged >> update
+initPage : Location -> Model -> ( Result String Model, Cmd Msg )
+initPage location model =
+    Update.update (onNavigation location) model
+        |> Tuple.mapFirst Ok
 
 
 
 -- SUBSCRIPTIONS --
 
 
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Ports.fromJs Msg.decode
+subscriptions : Result String Model -> Sub Msg
+subscriptions result =
+    case result of
+        Ok model ->
+            Ports.fromJs (Msg.decode model.taco)
+
+        Err _ ->
+            Sub.none
 
 
 
 -- VIEW --
 
 
-view : Model -> Html Msg
-view model =
+view : Result String Model -> Html Msg
+view result =
+    case result of
+        Ok model ->
+            viewModel model
+
+        Err err ->
+            Error.view ("Something went wrong with this apps initialization. Here is the error :" ++ err)
+
+
+viewModel : Model -> Html Msg
+viewModel model =
     case model.page of
         Page.Home subModel ->
             Html.map HomeMsg (Home.view subModel)
@@ -102,9 +131,6 @@ view model =
 
         Error NoPageLoaded ->
             Error.view "Somehow no page was loaded"
-
-        Error (FlagsDecoderFailed err) ->
-            Error.view ("Something went wrong with this apps initialization. Here is the error :" ++ err)
 
         Error Offline ->
             Error.view "It looks like you arent connected to the internet."

@@ -1,5 +1,7 @@
 module Update exposing (update)
 
+import Comply
+import Data.Taco as Taco
 import Data.User as User
 import Model exposing (Model)
 import Msg exposing (Msg(..))
@@ -12,6 +14,8 @@ import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route exposing (Route(..))
 import Tuple.Infix exposing ((&))
+import Tuple3
+import Util
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -27,25 +31,29 @@ update msg model =
                 & Cmd.none
 
         LogInSucceeded user ->
-            { model | user = User.LoggedIn user }
+            model
+                |> Model.setUser (User.LoggedIn user)
                 & Route.goTo Route.Home
 
         LogOutSucceeded ->
-            { model | user = User.NoSession }
+            model
+                |> Model.setUser User.LoggedOut
                 & Route.goTo Route.Login
 
         LogOutFailed err ->
             model & Cmd.none
 
-        InvalidJsMsg err ->
+        MsgDecodeFailed err ->
             model & Cmd.none
 
         HomeMsg subMsg ->
             case model.page of
                 Page.Home subModel ->
-                    incorporateHome
-                        (Home.update subMsg subModel)
-                        model
+                    subModel
+                        |> Home.update subMsg
+                        |> Tuple3.mapFirst (integrateHome model)
+                        |> Tuple3.mapSecond (Cmd.map HomeMsg)
+                        |> Comply.fromTriple
 
                 _ ->
                     model & Cmd.none
@@ -55,7 +63,7 @@ update msg model =
                 Page.Register subModel ->
                     let
                         ( newSubModel, cmd ) =
-                            Register.update subMsg subModel
+                            Register.update model.taco subMsg subModel
                     in
                     { model
                         | page =
@@ -140,7 +148,7 @@ handleRoute destination model =
                 |> logout
 
         Route.Home ->
-            case model.user of
+            case model.taco.user of
                 User.LoggedIn user ->
                     { model
                         | page = Page.Home {}
@@ -151,7 +159,7 @@ handleRoute destination model =
                     model & Route.goTo Route.Login
 
         Route.Settings ->
-            case model.user of
+            case model.taco.user of
                 User.LoggedIn user ->
                     { model
                         | page = Page.Settings
@@ -169,27 +177,18 @@ handleRoute destination model =
                 | page = Page.Verify (Verify.init email)
             }
                 |> logout
-                |> mixinCmd (Ports.send (VerifyEmail email code))
+                |> Util.addCmd (Ports.send (VerifyEmail email code))
+
+
+integrateHome : Model -> Home.Model -> Model
+integrateHome model homeModel =
+    { model | page = Page.Home homeModel }
 
 
 logout : Model -> ( Model, Cmd Msg )
 logout model =
     { model
-        | user = User.NoSession
+        | taco =
+            Taco.setUser User.LoggedOut model.taco
     }
         & Ports.send Ports.Logout
-
-
-mixinCmd : Cmd Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-mixinCmd newCmd ( model, cmd ) =
-    model & Cmd.batch [ newCmd, cmd ]
-
-
-incorporateHome : ( Home.Model, Home.Reply ) -> Model -> ( Model, Cmd Msg )
-incorporateHome ( homeModel, reply ) model =
-    case reply of
-        Home.NoReply ->
-            { model
-                | page = Page.Home homeModel
-            }
-                & Cmd.none

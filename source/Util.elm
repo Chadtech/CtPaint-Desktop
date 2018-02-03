@@ -3,6 +3,16 @@ module Util exposing (..)
 import Html exposing (Attribute, Html)
 import Html.Events exposing (keyCode, on)
 import Json.Decode as Decode exposing (Decoder)
+import Tuple.Infix exposing ((&))
+
+
+-- CMD --
+
+
+addCmd : Cmd msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
+addCmd newCmd ( model, cmd ) =
+    model & Cmd.batch [ newCmd, cmd ]
+
 
 
 -- GENERAL --

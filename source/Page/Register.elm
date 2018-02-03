@@ -12,6 +12,7 @@ module Page.Register
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html
     exposing
         ( Attribute
@@ -283,13 +284,13 @@ onInput_ =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         Submitted ->
             case model of
                 Ready fields ->
-                    attemptRegistration fields
+                    attemptRegistration taco fields
 
                 _ ->
                     model & Cmd.none
@@ -297,7 +298,7 @@ update msg model =
         SubmitClicked ->
             case model of
                 Ready fields ->
-                    attemptRegistration fields
+                    attemptRegistration taco fields
 
                 _ ->
                     model & Cmd.none
@@ -319,8 +320,8 @@ update msg model =
             Fail problem & Cmd.none
 
 
-attemptRegistration : Fields -> ( Model, Cmd Msg )
-attemptRegistration fields =
+attemptRegistration : Taco -> Fields -> ( Model, Cmd Msg )
+attemptRegistration taco fields =
     let
         errors =
             validate fields
@@ -331,6 +332,7 @@ attemptRegistration fields =
                 { email = fields.email
                 , name = fields.name
                 , password = fields.password
+                , browser = taco.config.browser
                 }
                     |> Register
                     |> Ports.send

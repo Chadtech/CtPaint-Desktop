@@ -6,6 +6,9 @@
         }
 
 */
+
+var Flags = require("./Js/Flags");
+
 Desktop = function(manifest) {
     var Client = manifest.Client;
     var track = manifest.track;
@@ -91,35 +94,40 @@ Desktop = function(manifest) {
         return payload;
     }
 
-    function flags(extraFlags){
-        return {
-          user: extraFlags.user
-        };
-    }
-
-    function init(extraFlags) {
-        app = Elm.Desktop.fullscreen(flags(extraFlags));
+    function init(mixins) {
+        app = Elm.Desktop.fullscreen(Flags.make(mixins));
         app.ports.toJs.subscribe(jsMsgHandler);
     }
 
     Client.getSession({
         onSuccess: function(attributes) {
             init({
-                user: toUser(attributes)
+                user: toUser(attributes),
+                manifest: manifest
             });
         },
         onFailure: function(err) {
-            switch (err) {
+            switch (Sring(err)) {
                 case "no session" :
-                    init({ user: null });
+                    init({ 
+                        user: null,
+                        manifest: manifest
+                    });
                     break;
 
                 case "NetworkingError: Network Failure":
-                    init({ user: "offline" });
+                    init({ 
+                        user: "offline",
+                        manifest: manifest
+                    });
                     break;
 
                 case "UserNotFoundException: User does not exist.":
-                    init({ user : null });
+                    init({ 
+                        user: null,
+                        manifest: manifest
+                    });
+                    break;
 
                 default : 
                     console.log("Unknown get session error", err);

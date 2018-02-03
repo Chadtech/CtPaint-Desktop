@@ -25,5 +25,4 @@ type HoldUp
 type Problem
     = InvalidUrl
     | NoPageLoaded
-    | FlagsDecoderFailed String
     | Offline

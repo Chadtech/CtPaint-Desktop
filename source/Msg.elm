@@ -1,7 +1,13 @@
 module Msg exposing (..)
 
+import Data.Taco exposing (Taco)
 import Data.User as User exposing (User)
-import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Decode as Decode
+    exposing
+        ( Decoder
+        , Value
+        , decodeValue
+        )
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
@@ -15,33 +21,54 @@ type Msg
     | LogInSucceeded User
     | LogOutSucceeded
     | LogOutFailed String
-    | InvalidJsMsg JsMsgProblem
     | HomeMsg Home.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
     | LogoutMsg Logout.Msg
     | VerifyMsg Verify.Msg
     | Navigate Route
+    | MsgDecodeFailed DecodeProblem
 
 
-type JsMsgProblem
-    = PayloadDecodeFailed String
-    | TypeDecodeFailed String
-    | UnrecognizedType String
+type DecodeProblem
+    = UnrecognizedType String
+    | FailedToDecoderUser String
+    | Other String
 
 
-decode : Value -> Msg
-decode json =
-    case Decode.decodeValue typeDecoder json of
-        Ok "login succeeded" ->
-            case decodePayload User.userDecoder json of
+decode : Taco -> Value -> Msg
+decode taco json =
+    case decodeValue (decoder taco json) json of
+        Ok msg ->
+            msg
+
+        Err err ->
+            MsgDecodeFailed (Other err)
+
+
+decoder : Taco -> Value -> Decoder Msg
+decoder taco json =
+    Decode.field "type" Decode.string
+        |> Decode.andThen
+            (Decode.succeed << toMsg taco json)
+
+
+toMsg : Taco -> Value -> String -> Msg
+toMsg taco json type_ =
+    case type_ of
+        "login succeeded" ->
+            let
+                userDecoder =
+                    User.userDecoder taco.config.browser
+            in
+            case decodePayload userDecoder json of
                 Ok user ->
                     LogInSucceeded user
 
                 Err err ->
-                    InvalidJsMsg (PayloadDecodeFailed err)
+                    MsgDecodeFailed (FailedToDecoderUser err)
 
-        Ok "login failed" ->
+        "login failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     LoginMsg (Login.LoginFailed err)
@@ -49,10 +76,10 @@ decode json =
                 Err err ->
                     LoginMsg (Login.LoginFailed err)
 
-        Ok "logout succeeded" ->
+        "logout succeeded" ->
             LogOutSucceeded
 
-        Ok "logout failed" ->
+        "logout failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     LogOutFailed err
@@ -60,10 +87,10 @@ decode json =
                 Err err ->
                     LogOutFailed err
 
-        Ok "verification succeeded" ->
+        "verification succeeded" ->
             VerifyMsg Verify.Succeeded
 
-        Ok "verification failed" ->
+        "verification failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     VerifyMsg (Verify.Failed err)
@@ -71,7 +98,7 @@ decode json =
                 Err err ->
                     VerifyMsg (Verify.Failed err)
 
-        Ok "registration succeeded" ->
+        "registration succeeded" ->
             case decodeStringPayload json of
                 Ok email ->
                     RegisterMsg (Register.Succeeded email)
@@ -81,7 +108,7 @@ decode json =
                         |> Register.Failed
                         |> RegisterMsg
 
-        Ok "registration failed" ->
+        "registration failed" ->
             case decodeStringPayload json of
                 Ok err ->
                     err
@@ -94,11 +121,8 @@ decode json =
                         |> Register.Failed
                         |> RegisterMsg
 
-        Ok type_ ->
-            InvalidJsMsg (UnrecognizedType type_)
-
-        Err err ->
-            InvalidJsMsg (TypeDecodeFailed err)
+        type_ ->
+            MsgDecodeFailed (UnrecognizedType type_)
 
 
 decodePayload : Decoder a -> Value -> Result String a

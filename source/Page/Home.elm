@@ -1,6 +1,7 @@
 module Page.Home exposing (..)
 
 import Html exposing (Html, div, text)
+import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
 
 
@@ -11,10 +12,6 @@ type Msg
     = Noop
 
 
-type Reply
-    = NoReply
-
-
 type alias Model =
     {}
 
@@ -23,11 +20,14 @@ type alias Model =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Reply )
+update : Msg -> Model -> ( Model, Cmd Msg, Reply )
 update msg model =
     case msg of
         Noop ->
-            model & NoReply
+            ( model
+            , Cmd.none
+            , NoReply
+            )
 
 
 

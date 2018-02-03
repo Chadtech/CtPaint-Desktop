@@ -2,6 +2,7 @@ port module Ports exposing (..)
 
 import Data.Keys as Keys
 import Json.Encode as Encode exposing (Value)
+import Keyboard.Extra.Browser exposing (Browser)
 import Tuple.Infix exposing ((:=))
 
 
@@ -21,6 +22,7 @@ type alias RegistrationPayload =
     { email : String
     , name : String
     , password : String
+    , browser : Browser
     }
 
 
@@ -42,9 +44,9 @@ noPayload type_ =
         |> toJs
 
 
-encodeConfig : Keys.Config -> Value
-encodeConfig =
-    Keys.encodeConfig >> Encode.encode 0 >> Encode.string
+encodeConfig : Browser -> Keys.Config -> Value
+encodeConfig browser =
+    Keys.encodeConfig browser >> Encode.encode 0 >> Encode.string
 
 
 send : JsMsg -> Cmd msg
@@ -56,11 +58,11 @@ send msg =
         OpenPaintApp ->
             noPayload "open paint app"
 
-        Register { email, name, password } ->
+        Register { email, name, password, browser } ->
             [ "email" := Encode.string email
             , "name" := Encode.string name
             , "password" := Encode.string password
-            , "keyConfig" := encodeConfig Keys.defaultConfig
+            , "keyConfig" := encodeConfig browser Keys.defaultConfig
             ]
                 |> fromKeyValues "register"
 
