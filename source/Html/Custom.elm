@@ -1,6 +1,7 @@
 module Html.Custom
     exposing
         ( Closability(..)
+        , basicFontSize
         , cannotSelect
         , card
         , cardBody
@@ -104,7 +105,7 @@ makeNamespace thisNamespace =
 
 navHeight : Float
 navHeight =
-    29
+    32
 
 
 spinnerContainer : Snippet
@@ -275,8 +276,13 @@ basicFont =
     [ fontFamilies [ "hfnss" ]
     , color point
     , property "-webkit-font-smoothing" "none"
-    , fontSize (px 32)
+    , fontSize (px basicFontSize)
     ]
+
+
+basicFontSize : Float
+basicFontSize =
+    32
 
 
 

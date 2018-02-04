@@ -11,7 +11,9 @@ import Page.Error as Error
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
+import Page.Offline as Offline
 import Page.Register as Register
+import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route exposing (Route(..))
@@ -49,13 +51,29 @@ update msg model =
             model & Cmd.none
 
         HomeMsg subMsg ->
-            case model.page of
-                Page.Home subModel ->
+            case ( model.page, model.taco.user ) of
+                ( Page.Home subModel, User.LoggedIn user ) ->
                     subModel
                         |> Home.update subMsg
                         |> Tuple3.mapFirst (integrateHome model)
                         |> Tuple3.mapSecond (Cmd.map HomeMsg)
                         |> Comply.fromTriple
+
+                _ ->
+                    model & Cmd.none
+
+        SplashMsg subMsg ->
+            case ( model.page, model.taco.user ) of
+                ( Page.Splash, User.LoggedOut ) ->
+                    model & Cmd.map SplashMsg (Splash.update subMsg)
+
+                _ ->
+                    model & Cmd.none
+
+        OfflineMsg subMsg ->
+            case ( model.page, model.taco.user ) of
+                ( Page.Offline, User.Offline ) ->
+                    model & Cmd.map OfflineMsg (Offline.update subMsg)
 
                 _ ->
                     model & Cmd.none
@@ -151,10 +169,14 @@ handleRoute destination model =
         Route.Home ->
             case model.taco.user of
                 User.LoggedIn user ->
+                    let
+                        ( subModel, cmd ) =
+                            Home.init user
+                    in
                     { model
-                        | page = Page.Home {}
+                        | page = Page.Home subModel
                     }
-                        & Cmd.none
+                        & Cmd.map HomeMsg cmd
 
                 _ ->
                     model & Route.goTo Route.Login

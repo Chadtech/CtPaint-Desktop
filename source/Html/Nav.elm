@@ -66,8 +66,7 @@ css =
         , padding (px 2)
         ]
     , Css.class Button
-        [ padding4 (px 2) (px 4) (px 2) (px 4)
-        , Css.withClass User
+        [ Css.withClass User
             [ float right ]
         ]
     ]
@@ -116,9 +115,6 @@ userButtons taco =
 
         User.LoggedIn _ ->
             [ userButton "log out" LogoutClicked ]
-
-        User.LoggingOut ->
-            []
 
 
 userButton : String -> Msg -> Html Msg

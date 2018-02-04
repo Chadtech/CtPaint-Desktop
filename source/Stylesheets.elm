@@ -5,7 +5,9 @@ import Html.Custom
 import Html.Main
 import Html.Nav
 import Page.Error
+import Page.Home
 import Page.Login
+import Page.Offline
 import Page.Register
 import Page.Verify
 
@@ -22,6 +24,8 @@ main =
     , Html.Main.css
     , Html.Nav.css
     , Html.Custom.css
+    , Page.Home.css
+    , Page.Offline.css
     ]
         |> Css.File.compile
         |> (,) "./public/desktop-styles.css"

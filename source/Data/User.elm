@@ -1,4 +1,10 @@
-module Data.User exposing (Model(..), User, decoder, userDecoder)
+module Data.User
+    exposing
+        ( Model(..)
+        , User
+        , decoder
+        , userDecoder
+        )
 
 import Data.Keys as Keys
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -16,7 +22,6 @@ type Model
     | LoggedOut
     | LoggingIn
     | LoggedIn User
-    | LoggingOut
 
 
 type alias User =

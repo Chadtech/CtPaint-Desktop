@@ -107,7 +107,7 @@ Desktop = function(manifest) {
             });
         },
         onFailure: function(err) {
-            switch (Sring(err)) {
+            switch (String(err)) {
                 case "no session" :
                     init({ 
                         user: null,

@@ -14,7 +14,9 @@ import Page.Home as Home
 import Page.Loading as Loading
 import Page.Login as Login
 import Page.Logout as Logout
+import Page.Offline as Offline
 import Page.Register as Register
+import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Route
@@ -112,14 +114,26 @@ errorView =
     Error.view >> Html.map ErrorMsg
 
 
+viewWithNav : Model -> (subMsg -> Msg) -> List (Html subMsg) -> Html Msg
+viewWithNav model toMsg =
+    List.map (Html.map toMsg) >> Html.Main.viewWithNav model.taco
+
+
 viewModel : Model -> Html Msg
 viewModel model =
     case model.page of
         Page.Home subModel ->
             subModel
-                |> Home.view
-                |> List.map (Html.map HomeMsg)
-                |> Html.Main.viewWithNav model.taco
+                |> Home.view model.taco
+                |> viewWithNav model HomeMsg
+
+        Page.Offline ->
+            Offline.view
+                |> viewWithNav model OfflineMsg
+
+        Page.Splash ->
+            Splash.view
+                |> viewWithNav model SplashMsg
 
         Page.Settings ->
             Html.text ""
@@ -144,6 +158,3 @@ viewModel model =
 
         Error NoPageLoaded ->
             errorView "Somehow no page was loaded"
-
-        Error Offline ->
-            errorView "It looks like you arent connected to the internet."

@@ -13,7 +13,9 @@ import Page.Error as Error
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
+import Page.Offline as Offline
 import Page.Register as Register
+import Page.Splash as Splash
 import Page.Verify as Verify
 import Route exposing (Route(..))
 
@@ -30,6 +32,8 @@ type Msg
     | VerifyMsg Verify.Msg
     | ErrorMsg Error.Msg
     | NavMsg Nav.Msg
+    | SplashMsg Splash.Msg
+    | OfflineMsg Offline.Msg
     | MsgDecodeFailed DecodeProblem
 
 

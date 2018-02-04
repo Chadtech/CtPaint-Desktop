@@ -34,31 +34,32 @@ route =
 
 toUrl : Route -> String
 toUrl route =
-    let
-        pieces =
-            case route of
-                Home ->
-                    []
+    "/" ++ String.join "/" (toPieces route)
 
-                Settings ->
-                    [ "settings" ]
 
-                Register ->
-                    [ "register" ]
+toPieces : Route -> List String
+toPieces route =
+    case route of
+        Home ->
+            []
 
-                Login ->
-                    [ "login" ]
+        Settings ->
+            [ "settings" ]
 
-                Logout ->
-                    [ "logout" ]
+        Register ->
+            [ "register" ]
 
-                Verify email code ->
-                    [ "verify", email, code ]
+        Login ->
+            [ "login" ]
 
-                PaintApp ->
-                    [ "app" ]
-    in
-    "/" ++ String.join "/" pieces
+        Logout ->
+            [ "logout" ]
+
+        Verify email code ->
+            [ "verify", email, code ]
+
+        PaintApp ->
+            [ "app" ]
 
 
 goTo : Route -> Cmd msg

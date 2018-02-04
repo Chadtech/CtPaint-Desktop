@@ -31,9 +31,7 @@ css =
         , width (pct 100)
         , height
             (calc (pct 100) minus (px Html.Custom.navHeight))
-        , top (px Html.Custom.navHeight)
-        , left (px 0)
-        , position absolute
+        , position relative
         ]
     , Css.class Main
         [ width (pct 100)
