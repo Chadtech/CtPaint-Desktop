@@ -3,9 +3,11 @@ module Update exposing (update)
 import Comply
 import Data.Taco as Taco
 import Data.User as User
+import Html.Nav as Nav
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Page exposing (Page(..), Problem(..))
+import Page.Error as Error
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
@@ -117,8 +119,16 @@ update msg model =
                 _ ->
                     model & Cmd.none
 
-        Navigate route ->
-            model & Route.goTo route
+        ErrorMsg subMsg ->
+            case model.page of
+                Page.Error _ ->
+                    model & Error.update subMsg
+
+                _ ->
+                    model & Cmd.none
+
+        NavMsg subMsg ->
+            model & Cmd.map NavMsg (Nav.update subMsg)
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )

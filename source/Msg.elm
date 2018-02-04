@@ -2,12 +2,14 @@ module Msg exposing (..)
 
 import Data.Taco exposing (Taco)
 import Data.User as User exposing (User)
+import Html.Nav as Nav
 import Json.Decode as Decode
     exposing
         ( Decoder
         , Value
         , decodeValue
         )
+import Page.Error as Error
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
@@ -26,7 +28,8 @@ type Msg
     | LoginMsg Login.Msg
     | LogoutMsg Logout.Msg
     | VerifyMsg Verify.Msg
-    | Navigate Route
+    | ErrorMsg Error.Msg
+    | NavMsg Nav.Msg
     | MsgDecodeFailed DecodeProblem
 
 

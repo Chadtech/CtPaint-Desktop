@@ -1,4 +1,10 @@
-module Page.Error exposing (css, view)
+module Page.Error
+    exposing
+        ( Msg
+        , css
+        , update
+        , view
+        )
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
@@ -6,8 +12,24 @@ import Html exposing (Html, a, div, p, text)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
-import Msg exposing (Msg(..))
-import Route exposing (Route(..))
+import Route
+
+
+-- TYPES --
+
+
+type Msg
+    = GoHomeClicked
+
+
+
+-- UPDATE --
+
+
+update : Msg -> Cmd msg
+update GoHomeClicked =
+    Route.goTo Route.Home
+
 
 
 -- STYLES --
@@ -51,7 +73,7 @@ view msg =
         , Html.Custom.cardBody []
             [ p [] [ Html.text msg ]
             , Html.Custom.menuButton
-                [ onClick (Navigate Home) ]
+                [ onClick GoHomeClicked ]
                 [ Html.text "go home" ]
             ]
         ]

@@ -5,8 +5,6 @@ module Comply
         , noReply
         )
 
-import Model exposing (Model)
-import Msg exposing (Msg(..))
 import Reply exposing (Reply(..))
 import Route
 import Tuple.Infix exposing ((&))
@@ -18,7 +16,7 @@ noReply ( model, cmd ) =
     ( model, cmd, NoReply )
 
 
-fromTriple : ( Model, Cmd Msg, Reply ) -> ( Model, Cmd Msg )
+fromTriple : ( model, Cmd msg, Reply ) -> ( model, Cmd msg )
 fromTriple ( model, cmd, reply ) =
     model
         & reply
@@ -26,7 +24,7 @@ fromTriple ( model, cmd, reply ) =
         |> Util.addCmd cmd
 
 
-fromDouble : ( Model, Reply ) -> ( Model, Cmd Msg )
+fromDouble : ( model, Reply ) -> ( model, Cmd msg )
 fromDouble ( model, reply ) =
     case reply of
         NoReply ->

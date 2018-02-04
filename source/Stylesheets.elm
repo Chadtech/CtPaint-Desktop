@@ -2,6 +2,8 @@ port module Stylesheets exposing (..)
 
 import Css.File exposing (CssCompilerProgram, CssFileStructure)
 import Html.Custom
+import Html.Main
+import Html.Nav
 import Page.Error
 import Page.Login
 import Page.Register
@@ -17,6 +19,8 @@ main =
     , Page.Verify.css
     , Page.Login.css
     , Page.Error.css
+    , Html.Main.css
+    , Html.Nav.css
     , Html.Custom.css
     ]
         |> Css.File.compile

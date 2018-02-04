@@ -1,6 +1,17 @@
-module Page.Home exposing (..)
+module Page.Home
+    exposing
+        ( Model
+        , Msg
+        , css
+        , update
+        , view
+        )
 
+import Css exposing (..)
+import Css.Namespace exposing (namespace)
 import Html exposing (Html, div, text)
+import Html.CssHelpers
+import Html.Custom
 import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
 
@@ -31,11 +42,33 @@ update msg model =
 
 
 
+-- STYLES --
+
+
+type Class
+    = None
+
+
+css : Stylesheet
+css =
+    []
+        |> namespace homeNamespace
+        |> stylesheet
+
+
+homeNamespace : String
+homeNamespace =
+    Html.Custom.makeNamespace "Home"
+
+
+
 -- VIEW --
 
 
-view : Model -> Html Msg
+{ class } =
+    Html.CssHelpers.withNamespace homeNamespace
+
+
+view : Model -> List (Html Msg)
 view model =
-    div
-        []
-        [ text "Home!" ]
+    []

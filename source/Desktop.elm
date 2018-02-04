@@ -3,6 +3,7 @@ module Desktop exposing (..)
 import Data.Flags as Flags
 import Data.Taco as Taco
 import Html exposing (Html)
+import Html.Main
 import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
 import Msg exposing (Msg(..))
@@ -99,14 +100,26 @@ view result =
             viewModel model
 
         Err err ->
-            Error.view ("Something went wrong with this apps initialization. Here is the error :" ++ err)
+            let
+                _ =
+                    Debug.log "INIT ERROR" err
+            in
+            errorView "Something went wrong with this apps initialization."
+
+
+errorView : String -> Html Msg
+errorView =
+    Error.view >> Html.map ErrorMsg
 
 
 viewModel : Model -> Html Msg
 viewModel model =
     case model.page of
         Page.Home subModel ->
-            Html.map HomeMsg (Home.view subModel)
+            subModel
+                |> Home.view
+                |> List.map (Html.map HomeMsg)
+                |> Html.Main.viewWithNav model.taco
 
         Page.Settings ->
             Html.text ""
@@ -127,10 +140,10 @@ viewModel model =
             Loading.view holdUp
 
         Error InvalidUrl ->
-            Error.view "Sorry, something is wrong with your url"
+            errorView "Sorry, something is wrong with your url"
 
         Error NoPageLoaded ->
-            Error.view "Somehow no page was loaded"
+            errorView "Somehow no page was loaded"
 
         Error Offline ->
-            Error.view "It looks like you arent connected to the internet."
+            errorView "It looks like you arent connected to the internet."

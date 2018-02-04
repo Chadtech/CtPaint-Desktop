@@ -12,6 +12,7 @@ module Html.Custom
         , indent
         , makeNamespace
         , menuButton
+        , navHeight
         , outdent
         , spinner
         , toolButton
@@ -50,7 +51,7 @@ type Class
 css : Stylesheet
 css =
     [ body
-        [ backgroundColor ignorable2
+        [ backgroundColor backgroundx2
         , margin zero
         , padding zero
         ]
@@ -99,6 +100,11 @@ appNamespace =
 makeNamespace : String -> String
 makeNamespace thisNamespace =
     appNamespace ++ thisNamespace
+
+
+navHeight : Float
+navHeight =
+    29
 
 
 spinnerContainer : Snippet
