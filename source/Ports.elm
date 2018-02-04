@@ -16,6 +16,7 @@ type JsMsg
     | Login String String
     | VerifyEmail String String
     | GetUserAttributes
+    | GetDrawings
 
 
 type alias RegistrationPayload =
@@ -80,6 +81,9 @@ send msg =
 
         GetUserAttributes ->
             noPayload "get user attributes"
+
+        GetDrawings ->
+            noPayload "get drawings"
 
 
 port toJs : Value -> Cmd msg

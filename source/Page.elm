@@ -3,16 +3,15 @@ module Page exposing (..)
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
-import Page.Offline as Offline
 import Page.Register as Register
-import Page.Splash as Splash
+import Page.Settings as Settings
 import Page.Verify as Verify
 
 
 type Page
     = Home Home.Model
     | Error Problem
-    | Settings
+    | Settings Settings.Model
     | Register Register.Model
     | Login Login.Model
     | Logout Logout.Model

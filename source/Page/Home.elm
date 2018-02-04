@@ -20,6 +20,7 @@ import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Ports exposing (JsMsg(GetDrawings))
 import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
 
@@ -46,7 +47,7 @@ init user =
     { ctPaintMenuOpen = False
     , drawings = []
     }
-        & Cmd.none
+        & Ports.send GetDrawings
 
 
 

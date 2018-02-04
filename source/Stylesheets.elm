@@ -9,6 +9,7 @@ import Page.Home
 import Page.Login
 import Page.Offline
 import Page.Register
+import Page.Settings
 import Page.Verify
 
 
@@ -21,6 +22,7 @@ main =
     , Page.Verify.css
     , Page.Login.css
     , Page.Error.css
+    , Page.Settings.css
     , Html.Main.css
     , Html.Nav.css
     , Html.Custom.css

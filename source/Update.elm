@@ -13,6 +13,7 @@ import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Register as Register
+import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
@@ -145,6 +146,17 @@ update msg model =
                 _ ->
                     model & Cmd.none
 
+        SettingsMsg subMsg ->
+            case ( model.page, model.taco.user ) of
+                ( Page.Settings subModel, User.LoggedIn user ) ->
+                    subModel
+                        |> Settings.update subMsg user
+                        |> Tuple.mapFirst (integrateSettings model)
+                        |> Tuple.mapSecond (Cmd.map SettingsMsg)
+
+                _ ->
+                    model & Route.goTo Route.Login
+
         NavMsg subMsg ->
             model & Cmd.map NavMsg (Nav.update subMsg)
 
@@ -185,7 +197,7 @@ handleRoute destination model =
             case model.taco.user of
                 User.LoggedIn user ->
                     { model
-                        | page = Page.Settings
+                        | page = Page.Settings Settings.init
                     }
                         & Cmd.none
 
@@ -201,6 +213,11 @@ handleRoute destination model =
             }
                 |> logout
                 |> Util.addCmd (Ports.send (VerifyEmail email code))
+
+
+integrateSettings : Model -> Settings.Model -> Model
+integrateSettings model settingsModel =
+    { model | page = Page.Settings settingsModel }
 
 
 integrateHome : Model -> Home.Model -> Model

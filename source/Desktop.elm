@@ -16,6 +16,7 @@ import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Register as Register
+import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
@@ -135,8 +136,10 @@ viewModel model =
             Splash.view
                 |> viewWithNav model SplashMsg
 
-        Page.Settings ->
-            Html.text ""
+        Page.Settings subModel ->
+            subModel
+                |> Settings.view
+                |> viewWithNav model SettingsMsg
 
         Page.Register subModel ->
             Html.map RegisterMsg (Register.view subModel)

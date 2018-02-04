@@ -79,6 +79,17 @@ Desktop = function(manifest) {
                 Client.logout(handleLogout);
                 break;
 
+            case "get drawings":
+                Client.getDrawings({
+                    onSuccess: function(result) {
+                        console.log("Result!", result);
+                    },
+                    onFailure: function(err) {
+                        console.log("Error!", err);
+                    }
+                })
+                break;
+
             default:
                 console.log("Unknown js msg type", msg.type);
         }
