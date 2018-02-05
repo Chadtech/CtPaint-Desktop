@@ -1,4 +1,12 @@
-module Page.Verify exposing (Model, Msg(..), css, init, update, view)
+module Page.Verify
+    exposing
+        ( Model
+        , Msg(Failed, Succeeded)
+        , css
+        , init
+        , update
+        , view
+        )
 
 import Css exposing (..)
 import Css.Elements
@@ -7,10 +15,7 @@ import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
-import Reply
-    exposing
-        ( Reply(GoToLoginPage, NoReply)
-        )
+import Route
 import Tuple.Infix exposing ((&))
 
 
@@ -55,26 +60,28 @@ type Problem
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Reply )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Succeeded ->
             { model
                 | status = Success
             }
-                & NoReply
+                & Cmd.none
 
         LoginClicked ->
             if model.status == Success then
-                model & GoToLoginPage
+                model & Route.goTo Route.Home
             else
-                model & NoReply
+                model & Cmd.none
 
         Failed "NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED." ->
-            { model | status = Fail AlreadyVerified } & NoReply
+            { model | status = Fail AlreadyVerified }
+                & Cmd.none
 
         Failed err ->
-            { model | status = Fail (Other err) } & NoReply
+            { model | status = Fail (Other err) }
+                & Cmd.none
 
 
 

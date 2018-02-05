@@ -15,6 +15,7 @@ import Html exposing (Html, a, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Html.Variables
 import Route
 
 
@@ -61,7 +62,7 @@ type Class
 css : Stylesheet
 css =
     [ Css.class Nav
-        [ height (px Html.Custom.navHeight)
+        [ height (px Html.Variables.navHeight)
         , backgroundColor ignorable2
         , padding (px 2)
         ]

@@ -5,8 +5,9 @@ module Comply
         , noReply
         )
 
+import Data.User as User exposing (User)
+import Model exposing (Model)
 import Reply exposing (Reply(..))
-import Route
 import Tuple.Infix exposing ((&))
 import Util
 
@@ -16,7 +17,7 @@ noReply ( model, cmd ) =
     ( model, cmd, NoReply )
 
 
-fromTriple : ( model, Cmd msg, Reply ) -> ( model, Cmd msg )
+fromTriple : ( Model, Cmd msg, Reply ) -> ( Model, Cmd msg )
 fromTriple ( model, cmd, reply ) =
     model
         & reply
@@ -24,11 +25,12 @@ fromTriple ( model, cmd, reply ) =
         |> Util.addCmd cmd
 
 
-fromDouble : ( model, Reply ) -> ( model, Cmd msg )
+fromDouble : ( Model, Reply ) -> ( Model, Cmd msg )
 fromDouble ( model, reply ) =
     case reply of
         NoReply ->
             model & Cmd.none
 
-        GoToLoginPage ->
-            model & Route.goTo Route.Login
+        SetUser user ->
+            Model.setUser (User.LoggedIn user) model
+                & Cmd.none

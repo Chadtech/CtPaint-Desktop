@@ -20,6 +20,7 @@ import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Html.Variables exposing (leftSideWidth)
 import Ports exposing (JsMsg(GetDrawings))
 import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
@@ -74,8 +75,7 @@ openCtPaintMenu model =
 
 
 type Class
-    = Container
-    | Drawings
+    = Drawings
     | ProfilePictureContainer
     | ProfilePicture
     | Profile
@@ -83,26 +83,9 @@ type Class
     | Name
 
 
-leftSideWidth : Float
-leftSideWidth =
-    158
-
-
 css : Stylesheet
 css =
-    [ Css.class Container
-        [ position relative
-        , marginLeft (px 2)
-        , marginBottom (px 2)
-        , width (px (leftSideWidth - 4))
-        , children
-            [ Css.Elements.a
-                [ width (px (leftSideWidth - 24))
-                , textAlign center
-                ]
-            ]
-        ]
-    , (Css.class Drawings << List.append Html.Custom.indent)
+    [ (Css.class Drawings << List.append Html.Custom.indent)
         [ position absolute
         , top (px 0)
         , left (px leftSideWidth)
@@ -180,8 +163,7 @@ loggedInView user =
 
 openCtPaintButton : Html Msg
 openCtPaintButton =
-    div
-        [ class [ Container ] ]
+    Html.Custom.container []
         [ a
             [ onClick OpenCtPaintClicked ]
             [ Html.text "open ctpaint" ]
@@ -190,9 +172,9 @@ openCtPaintButton =
 
 profile : User -> Html Msg
 profile user =
-    div
-        [ class [ Container ] ]
-        (profileChildren user)
+    user
+        |> profileChildren
+        |> Html.Custom.container []
 
 
 profileChildren : User -> List (Html Msg)

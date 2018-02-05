@@ -6,6 +6,7 @@ module Html.Custom
         , card
         , cardBody
         , cardSolitary
+        , container
         , css
         , error
         , field
@@ -13,7 +14,6 @@ module Html.Custom
         , indent
         , makeNamespace
         , menuButton
-        , navHeight
         , outdent
         , spinner
         , toolButton
@@ -27,6 +27,10 @@ import Html exposing (Attribute, Html)
 import Html.Attributes
 import Html.CssHelpers
 import Html.Events exposing (onMouseDown)
+import Html.Variables
+    exposing
+        ( leftSideWidth
+        )
 import MouseEvents exposing (MouseEvent, Position)
 import Tuple.Infix exposing ((:=))
 
@@ -47,6 +51,7 @@ type Class
     | SpinnerContainer
     | ToolButton
     | Button
+    | Container
 
 
 css : Stylesheet
@@ -88,6 +93,18 @@ css =
         [ backgroundColor lowWarning
         , padding (px 8)
         ]
+    , Css.class Container
+        [ position relative
+        , marginLeft (px 2)
+        , marginBottom (px 2)
+        , width (px (leftSideWidth - 4))
+        , children
+            [ Css.Elements.a
+                [ width (px (leftSideWidth - 24))
+                , textAlign center
+                ]
+            ]
+        ]
     ]
         |> Css.Namespace.namespace appNamespace
         |> Css.stylesheet
@@ -101,11 +118,6 @@ appNamespace =
 makeNamespace : String -> String
 makeNamespace thisNamespace =
     appNamespace ++ thisNamespace
-
-
-navHeight : Float
-navHeight =
-    32
 
 
 spinnerContainer : Snippet
@@ -392,3 +404,8 @@ error errMsg =
             []
             [ Html.text errMsg ]
         ]
+
+
+container : List (Attribute msg) -> List (Html msg) -> Html msg
+container attrs =
+    Html.div (class [ Container ] :: attrs)

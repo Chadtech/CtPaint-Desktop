@@ -9,11 +9,13 @@ module Page.Settings
         )
 
 import Css exposing (..)
+import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.User exposing (User)
 import Html exposing (Html)
 import Html.CssHelpers
 import Html.Custom
+import Reply exposing (Reply(NoReply, SetUser))
 import Tuple.Infix exposing ((&))
 
 
@@ -21,11 +23,16 @@ import Tuple.Infix exposing ((&))
 
 
 type alias Model =
-    ()
+    { page : Page }
+
+
+type Page
+    = KeyConfig
+    | User
 
 
 type Msg
-    = Noop
+    = NavClickedOn Page
 
 
 
@@ -34,18 +41,21 @@ type Msg
 
 init : Model
 init =
-    ()
+    { page = KeyConfig }
 
 
 
 -- UPDATE --
 
 
-update : Msg -> User -> Model -> ( Model, Cmd Msg )
+update : Msg -> User -> Model -> ( Model, Cmd Msg, Reply )
 update msg user model =
     case msg of
-        Noop ->
-            model & Cmd.none
+        NavClickedOn page ->
+            ( { model | page = page }
+            , Cmd.none
+            , NoReply
+            )
 
 
 
@@ -53,12 +63,14 @@ update msg user model =
 
 
 type Class
-    = None
+    = KeyCmds
 
 
 css : Stylesheet
 css =
-    []
+    [ Css.class KeyCmds
+        []
+    ]
         |> namespace settingsNamespace
         |> stylesheet
 

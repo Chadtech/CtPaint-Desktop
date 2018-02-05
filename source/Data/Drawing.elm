@@ -3,6 +3,8 @@ module Data.Drawing
         ( Drawing
         )
 
+import Id exposing (Id)
+
 
 type alias Drawing =
-    {}
+    { id : Id }

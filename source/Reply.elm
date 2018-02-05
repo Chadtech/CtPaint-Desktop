@@ -1,6 +1,8 @@
 module Reply exposing (Reply(..))
 
+import Data.User exposing (User)
+
 
 type Reply
     = NoReply
-    | GoToLoginPage
+    | SetUser User

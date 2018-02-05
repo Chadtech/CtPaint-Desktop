@@ -10,6 +10,7 @@ import Page.Login
 import Page.Offline
 import Page.Register
 import Page.Settings
+import Page.Splash
 import Page.Verify
 
 
@@ -24,6 +25,7 @@ main =
     , Page.Error.css
     , Page.Settings.css
     , Html.Main.css
+    , Page.Splash.css
     , Html.Nav.css
     , Html.Custom.css
     , Page.Home.css

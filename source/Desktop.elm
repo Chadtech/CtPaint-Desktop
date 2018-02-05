@@ -133,7 +133,7 @@ viewModel model =
                 |> viewWithNav model OfflineMsg
 
         Page.Splash ->
-            Splash.view
+            Splash.view model.taco
                 |> viewWithNav model SplashMsg
 
         Page.Settings subModel ->

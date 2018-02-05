@@ -13,6 +13,7 @@ import Html exposing (Html, div)
 import Html.CssHelpers
 import Html.Custom
 import Html.Nav as Nav
+import Html.Variables
 import Msg exposing (Msg(NavMsg))
 
 
@@ -24,13 +25,18 @@ type Class
     | Body
 
 
+bodyHeight : Style
+bodyHeight =
+    calc (pct 100) minus (px Html.Variables.navHeight)
+        |> height
+
+
 css : Stylesheet
 css =
     [ Css.class Body
         [ backgroundColor ignorable2
         , width (pct 100)
-        , height
-            (calc (pct 100) minus (px Html.Custom.navHeight))
+        , bodyHeight
         , position relative
         ]
     , Css.class Main

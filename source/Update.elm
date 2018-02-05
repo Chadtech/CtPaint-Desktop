@@ -133,7 +133,7 @@ update msg model =
                     subModel
                         |> Verify.update subMsg
                         |> Tuple.mapFirst (integrateVerify model)
-                        |> Comply.fromDouble
+                        |> Tuple.mapSecond (Cmd.map VerifyMsg)
 
                 _ ->
                     model & Cmd.none
@@ -151,8 +151,9 @@ update msg model =
                 ( Page.Settings subModel, User.LoggedIn user ) ->
                     subModel
                         |> Settings.update subMsg user
-                        |> Tuple.mapFirst (integrateSettings model)
-                        |> Tuple.mapSecond (Cmd.map SettingsMsg)
+                        |> Tuple3.mapFirst (integrateSettings model)
+                        |> Tuple3.mapSecond (Cmd.map SettingsMsg)
+                        |> Comply.fromTriple
 
                 _ ->
                     model & Route.goTo Route.Login
@@ -190,8 +191,15 @@ handleRoute destination model =
                     }
                         & Cmd.map HomeMsg cmd
 
+                User.Offline ->
+                    { model | page = Page.Offline }
+                        & Cmd.none
+
                 _ ->
-                    model & Route.goTo Route.Login
+                    { model
+                        | page = Page.Splash
+                    }
+                        & Cmd.none
 
         Route.Settings ->
             case model.taco.user of

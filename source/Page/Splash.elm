@@ -8,7 +8,9 @@ module Page.Splash
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Html exposing (Html)
+import Data.Taco exposing (Taco)
+import Html exposing (Html, img)
+import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 
@@ -34,12 +36,16 @@ update Noop =
 
 
 type Class
-    = None
+    = Logo
 
 
 css : Stylesheet
 css =
-    []
+    [ Css.class Logo
+        [ margin auto
+        , display block
+        ]
+    ]
         |> namespace splashNamespace
         |> stylesheet
 
@@ -57,6 +63,11 @@ splashNamespace =
     Html.CssHelpers.withNamespace splashNamespace
 
 
-view : List (Html Msg)
-view =
-    []
+view : Taco -> List (Html Msg)
+view taco =
+    [ img
+        [ class [ Logo ]
+        , Attrs.src (taco.config.mountPath ++ "/splash-image.png")
+        ]
+        []
+    ]

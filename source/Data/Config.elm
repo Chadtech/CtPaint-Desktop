@@ -1,7 +1,6 @@
 module Data.Config
     exposing
         ( Config
-        , error
         , fromFlags
         )
 
@@ -14,9 +13,17 @@ import Keyboard.Extra.Browser
 import Random.Pcg as Random exposing (Seed)
 
 
+{-|
+
+    Formal term : Config
+    A config is for values that dont change
+    during run time, but cant be hardcoded
+
+-}
 type alias Config =
     { sessionId : Id
     , browser : Browser
+    , mountPath : String
     }
 
 
@@ -29,12 +36,6 @@ fromFlags flags =
     (,)
         { sessionId = sessionId
         , browser = flags.browser
+        , mountPath = flags.mountPath
         }
         seed
-
-
-error : Config
-error =
-    { sessionId = Id.fromString "NO ID"
-    , browser = FireFox
-    }
