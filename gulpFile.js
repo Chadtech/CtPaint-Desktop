@@ -2,7 +2,6 @@ var gulp = require("gulp");
 var source = require("vinyl-source-stream");
 var buffer = require("vinyl-buffer");
 var cp = require("child_process");
-var stylus = require("gulp-stylus");
 var browserify = require("browserify");
 var util = require("gulp-util");
 
