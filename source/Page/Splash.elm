@@ -131,7 +131,7 @@ view taco =
         ]
     , video
         [ class [ Video ]
-        , Attrs.src (taco.config.mountPath ++ "/ctpaint-splash.mp4")
+        , Attrs.src (taco.config.mountPath ++ "/splash-video.mp4")
         , Attrs.autoplay True
         , Attrs.loop True
         ]
