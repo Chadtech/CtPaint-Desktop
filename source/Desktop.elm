@@ -142,7 +142,7 @@ viewModel model =
                 |> viewWithNav model InitDrawingMsg
 
         Page.About ->
-            About.view
+            About.view model.taco
                 |> viewWithNav model identity
 
         Page.Pricing ->
@@ -150,7 +150,7 @@ viewModel model =
                 |> viewWithNav model PricingMsg
 
         Page.Contact ->
-            Contact.view
+            [ Contact.view ]
                 |> viewWithNav model identity
 
         Page.Offline ->

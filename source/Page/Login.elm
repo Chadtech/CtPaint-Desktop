@@ -8,7 +8,6 @@ module Page.Login
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx2)
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Html exposing (Attribute, Html, a, div, form, input, p, text)
@@ -149,14 +148,6 @@ css : Stylesheet
 css =
     [ Css.class Text [ width (px 120) ]
     , Css.class Long [ width (px 300) ]
-    , Css.class Background
-        [ position absolute
-        , top zero
-        , left zero
-        , bottom zero
-        , right zero
-        , backgroundColor backgroundx2
-        ]
     ]
         |> namespace loginNamespace
         |> stylesheet
@@ -217,7 +208,7 @@ view model =
     ]
         |> Html.Custom.cardSolitary []
         |> List.singleton
-        |> div [ class [ Background ] ]
+        |> Html.Custom.background []
 
 
 

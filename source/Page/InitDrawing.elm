@@ -8,7 +8,6 @@ module Page.InitDrawing
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx2)
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Html exposing (Html, div, form, input, p)
@@ -83,20 +82,11 @@ fromUrl model =
 
 type Class
     = Text
-    | Background
 
 
 css : Stylesheet
 css =
-    [ Css.class Background
-        [ backgroundColor backgroundx2
-        , position absolute
-        , top zero
-        , left zero
-        , bottom zero
-        , right zero
-        ]
-    ]
+    []
         |> namespace initDrawingNamespace
         |> stylesheet
 
@@ -136,4 +126,4 @@ view model =
     ]
         |> Html.Custom.cardSolitary []
         |> List.singleton
-        |> div [ class [ Background ] ]
+        |> Html.Custom.background []

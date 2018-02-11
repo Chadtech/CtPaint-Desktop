@@ -23,7 +23,7 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
 import Html.Variables
-import Route
+import Route exposing (Route)
 import Tuple.Infix exposing ((&))
 
 
@@ -35,14 +35,7 @@ type alias Model =
 
 
 type Msg
-    = HomeClicked
-    | AboutClicked
-    | ContactClicked
-    | PricingClicked
-    | LoginClicked
-    | LogoutClicked
-    | RegisterClicked
-    | DrawClicked
+    = RouteClicked Route
 
 
 
@@ -61,29 +54,8 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DrawClicked ->
-            model & Route.goTo Route.InitDrawing
-
-        HomeClicked ->
-            model & Route.goTo Route.Landing
-
-        AboutClicked ->
-            model & Route.goTo Route.About
-
-        ContactClicked ->
-            model & Route.goTo Route.Contact
-
-        PricingClicked ->
-            model & Route.goTo Route.Pricing
-
-        LoginClicked ->
-            model & Route.goTo Route.Login
-
-        LogoutClicked ->
-            model & Route.goTo Route.Logout
-
-        RegisterClicked ->
-            model & Route.goTo Route.Register
+        RouteClicked route ->
+            model & Route.goTo route
 
 
 
@@ -141,12 +113,12 @@ navNamespace =
 
 view : Taco -> Model -> Html Msg
 view taco model =
-    [ button "draw" DrawClicked
+    [ button "draw" (RouteClicked Route.InitDrawing)
     , a [ class [ Divider ] ] []
-    , button "home" HomeClicked
-    , button "about" AboutClicked
-    , button "contact" ContactClicked
-    , button "pricing" PricingClicked
+    , button "home" (RouteClicked Route.Landing)
+    , button "about" (RouteClicked Route.About)
+    , button "contact" (RouteClicked Route.Contact)
+    , button "pricing" (RouteClicked Route.Pricing)
     ]
         |> mixinUserButtons taco
         |> div [ class [ Nav ] ]
@@ -164,15 +136,15 @@ userButtons taco =
             [ p [] [ Html.text "offline" ] ]
 
         User.LoggedOut ->
-            [ userButton "register" RegisterClicked
-            , userButton "log in" LoginClicked
+            [ userButton "register" (RouteClicked Route.Register)
+            , userButton "log in" (RouteClicked Route.Login)
             ]
 
         User.LoggingIn ->
             []
 
         User.LoggedIn _ ->
-            [ userButton "log out" LogoutClicked ]
+            [ userButton "log out" (RouteClicked Route.Logout) ]
 
 
 userButton : String -> Msg -> Html Msg

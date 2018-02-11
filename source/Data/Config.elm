@@ -1,6 +1,7 @@
 module Data.Config
     exposing
         ( Config
+        , assetSrc
         , fromFlags
         )
 
@@ -24,6 +25,8 @@ type alias Config =
     { sessionId : Id
     , browser : Browser
     , mountPath : String
+    , logoSrc : String
+    , videoSrc : String
     }
 
 
@@ -37,5 +40,12 @@ fromFlags flags =
         { sessionId = sessionId
         , browser = flags.browser
         , mountPath = flags.mountPath
+        , logoSrc = "splash-image.png"
+        , videoSrc = "splash-video.mp4"
         }
         seed
+
+
+assetSrc : Config -> (Config -> String) -> String
+assetSrc config assetFunc =
+    config.mountPath ++ "/" ++ assetFunc config

@@ -9,6 +9,7 @@ module Page.Splash
 import Chadtech.Colors exposing (backgroundx2)
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Config as Config
 import Data.Taco exposing (Taco)
 import Html exposing (Html, a, div, img, p, video)
 import Html.Attributes as Attrs
@@ -117,12 +118,12 @@ msg =
 
 
 view : Taco -> List (Html Msg)
-view taco =
+view { config } =
     [ div
         [ class [ LogoContainer ] ]
         [ img
             [ class [ Logo ]
-            , Attrs.src (taco.config.mountPath ++ "/splash-image.png")
+            , Attrs.src (Config.assetSrc config .logoSrc)
             ]
             []
         ]
@@ -144,7 +145,7 @@ view taco =
         ]
     , video
         [ class [ Video ]
-        , Attrs.src (taco.config.mountPath ++ "/splash-video.mp4")
+        , Attrs.src (Config.assetSrc config .videoSrc)
         , Attrs.autoplay True
         , Attrs.loop True
         ]

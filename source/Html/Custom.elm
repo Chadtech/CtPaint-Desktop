@@ -1,6 +1,7 @@
 module Html.Custom
     exposing
         ( Closability(..)
+        , background
         , basicFontSize
         , cannotSelect
         , card
@@ -52,6 +53,7 @@ type Class
     | ToolButton
     | Button
     | Container
+    | Background
 
 
 css : Stylesheet
@@ -103,6 +105,14 @@ css =
                 , textAlign center
                 ]
             ]
+        ]
+    , Css.class Background
+        [ position absolute
+        , top zero
+        , left zero
+        , bottom zero
+        , right zero
+        , backgroundColor backgroundx2
         ]
     ]
         |> Css.Namespace.namespace appNamespace
@@ -408,3 +418,8 @@ error errMsg =
 container : List (Attribute msg) -> List (Html msg) -> Html msg
 container attrs =
     Html.div (class [ Container ] :: attrs)
+
+
+background : List (Attribute msg) -> List (Html msg) -> Html msg
+background attrs =
+    Html.div (class [ Background ] :: attrs)
