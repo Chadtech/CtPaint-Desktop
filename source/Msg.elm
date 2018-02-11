@@ -15,6 +15,7 @@ import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
+import Page.Pricing as Pricing
 import Page.Register as Register
 import Page.Settings as Settings
 import Page.Splash as Splash
@@ -28,6 +29,7 @@ type Msg
     | LogOutSucceeded
     | LogOutFailed String
     | HomeMsg Home.Msg
+    | PricingMsg Pricing.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
     | LogoutMsg Logout.Msg

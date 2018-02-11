@@ -13,7 +13,8 @@ type Page
     = Home Home.Model
     | InitDrawing InitDrawing.Model
     | About
-    | Error Problem
+    | Contact
+    | Pricing
     | Settings Settings.Model
     | Register Register.Model
     | Login Login.Model
@@ -22,6 +23,7 @@ type Page
     | Splash
     | Offline
     | Loading HoldUp
+    | Error Problem
 
 
 type HoldUp

@@ -37,6 +37,8 @@ type alias Model =
 type Msg
     = HomeClicked
     | AboutClicked
+    | ContactClicked
+    | PricingClicked
     | LoginClicked
     | LogoutClicked
     | RegisterClicked
@@ -67,6 +69,12 @@ update msg model =
 
         AboutClicked ->
             model & Route.goTo Route.About
+
+        ContactClicked ->
+            model & Route.goTo Route.Contact
+
+        PricingClicked ->
+            model & Route.goTo Route.Pricing
 
         LoginClicked ->
             model & Route.goTo Route.Login
@@ -137,6 +145,8 @@ view taco model =
     , a [ class [ Divider ] ] []
     , button "home" HomeClicked
     , button "about" AboutClicked
+    , button "contact" ContactClicked
+    , button "pricing" PricingClicked
     ]
         |> mixinUserButtons taco
         |> div [ class [ Nav ] ]

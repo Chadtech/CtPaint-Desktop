@@ -126,7 +126,7 @@ view model =
             [ Html.Custom.field []
                 [ p
                     [ class [ Text ] ]
-                    [ Html.text "New" ]
+                    [ Html.text "from url" ]
                 , input
                     [ class [] ]
                     []

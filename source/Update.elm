@@ -13,6 +13,7 @@ import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
+import Page.Pricing as Pricing
 import Page.Register as Register
 import Page.Settings as Settings
 import Page.Splash as Splash
@@ -71,6 +72,14 @@ update msg model =
                         |> InitDrawing.update subMsg
                         |> Tuple.mapFirst (integrateInitDrawing model)
                         |> Tuple.mapSecond (Cmd.map InitDrawingMsg)
+
+                _ ->
+                    model & Cmd.none
+
+        PricingMsg subMsg ->
+            case model.page of
+                Page.Pricing ->
+                    model & Cmd.map PricingMsg (Pricing.update subMsg)
 
                 _ ->
                     model & Cmd.none
@@ -215,6 +224,14 @@ handleRoute destination model =
 
         Route.About ->
             { model | page = Page.About }
+                & Cmd.none
+
+        Route.Contact ->
+            { model | page = Page.Contact }
+                & Cmd.none
+
+        Route.Pricing ->
+            { model | page = Page.Pricing }
                 & Cmd.none
 
         Route.Settings ->

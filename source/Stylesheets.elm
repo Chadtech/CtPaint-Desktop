@@ -5,11 +5,13 @@ import Html.Custom
 import Html.Main
 import Nav
 import Page.About
+import Page.Contact
 import Page.Error
 import Page.Home
 import Page.InitDrawing
 import Page.Login
 import Page.Offline
+import Page.Pricing
 import Page.Register
 import Page.Settings
 import Page.Splash
@@ -33,6 +35,8 @@ main =
     , Page.Home.css
     , Page.Offline.css
     , Page.About.css
+    , Page.Pricing.css
+    , Page.Contact.css
     , Page.InitDrawing.css
     ]
         |> Css.File.compile

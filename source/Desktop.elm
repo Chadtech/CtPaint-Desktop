@@ -12,6 +12,7 @@ import Nav
 import Navigation exposing (Location)
 import Page exposing (HoldUp(..), Page(..), Problem(..))
 import Page.About as About
+import Page.Contact as Contact
 import Page.Error as Error
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
@@ -19,6 +20,7 @@ import Page.Loading as Loading
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
+import Page.Pricing as Pricing
 import Page.Register as Register
 import Page.Settings as Settings
 import Page.Splash as Splash
@@ -141,6 +143,14 @@ viewModel model =
 
         Page.About ->
             About.view
+                |> viewWithNav model identity
+
+        Page.Pricing ->
+            Pricing.view
+                |> viewWithNav model PricingMsg
+
+        Page.Contact ->
+            Contact.view
                 |> viewWithNav model identity
 
         Page.Offline ->
