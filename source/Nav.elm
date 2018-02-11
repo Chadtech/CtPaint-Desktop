@@ -144,7 +144,9 @@ userButtons taco =
             []
 
         User.LoggedIn _ ->
-            [ userButton "log out" (RouteClicked Route.Logout) ]
+            [ userButton "log out" (RouteClicked Route.Logout)
+            , userButton "settings" (RouteClicked Route.Settings)
+            ]
 
 
 userButton : String -> Msg -> Html Msg
