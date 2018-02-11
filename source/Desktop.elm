@@ -2,15 +2,19 @@ module Desktop exposing (..)
 
 import Data.Flags as Flags
 import Data.Taco as Taco
+import Data.User as User
 import Html exposing (Html)
 import Html.Main
 import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
 import Msg exposing (Msg(..))
+import Nav
 import Navigation exposing (Location)
 import Page exposing (HoldUp(..), Page(..), Problem(..))
+import Page.About as About
 import Page.Error as Error
 import Page.Home as Home
+import Page.InitDrawing as InitDrawing
 import Page.Loading as Loading
 import Page.Login as Login
 import Page.Logout as Logout
@@ -64,6 +68,7 @@ init json location =
     case Decode.decodeValue Flags.decoder json of
         Ok flags ->
             { page = Error NoPageLoaded
+            , nav = Nav.init
             , taco = Taco.fromFlags flags
             }
                 |> initPage location
@@ -103,10 +108,6 @@ view result =
             viewModel model
 
         Err err ->
-            let
-                _ =
-                    Debug.log "INIT ERROR" err
-            in
             errorView "Something went wrong with this apps initialization."
 
 
@@ -116,17 +117,31 @@ errorView =
 
 
 viewWithNav : Model -> (subMsg -> Msg) -> List (Html subMsg) -> Html Msg
-viewWithNav model toMsg =
-    List.map (Html.map toMsg) >> Html.Main.viewWithNav model.taco
+viewWithNav { taco, nav } toMsg =
+    List.map (Html.map toMsg)
+        >> Html.Main.viewWithNav taco nav
 
 
 viewModel : Model -> Html Msg
 viewModel model =
     case model.page of
         Page.Home subModel ->
-            subModel
-                |> Home.view model.taco
-                |> viewWithNav model HomeMsg
+            case model.taco.user of
+                User.LoggedIn user ->
+                    subModel
+                        |> Home.view user
+                        |> viewWithNav model HomeMsg
+
+                _ ->
+                    errorView "Something went wrong with your authentication, sorry"
+
+        Page.InitDrawing subModel ->
+            [ InitDrawing.view subModel ]
+                |> viewWithNav model InitDrawingMsg
+
+        Page.About ->
+            About.view
+                |> viewWithNav model identity
 
         Page.Offline ->
             Offline.view
@@ -145,7 +160,8 @@ viewModel model =
             Html.map RegisterMsg (Register.view subModel)
 
         Page.Login subModel ->
-            Html.map LoginMsg (Login.view subModel)
+            [ Login.view subModel ]
+                |> viewWithNav model LoginMsg
 
         Page.Logout subModel ->
             Html.map LogoutMsg (Logout.view subModel)

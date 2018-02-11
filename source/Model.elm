@@ -6,11 +6,13 @@ module Model
 
 import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
+import Nav
 import Page exposing (Page(..))
 
 
 type alias Model =
     { page : Page
+    , nav : Nav.Model
     , taco : Taco
     }
 

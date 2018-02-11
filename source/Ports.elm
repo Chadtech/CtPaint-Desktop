@@ -12,6 +12,7 @@ import Tuple.Infix exposing ((:=))
 type JsMsg
     = Logout
     | OpenPaintApp
+    | OpenUrlInPaintApp String
     | Register RegistrationPayload
     | Login String String
     | VerifyEmail String String
@@ -29,17 +30,19 @@ type alias RegistrationPayload =
 
 fromKeyValues : String -> List ( String, Value ) -> Cmd msg
 fromKeyValues type_ keyValues =
-    [ "type" := Encode.string type_
-    , "payload" := Encode.object keyValues
-    ]
-        |> Encode.object
-        |> toJs
+    type_
+        |> withPayload (Encode.object keyValues)
 
 
 noPayload : String -> Cmd msg
-noPayload type_ =
+noPayload =
+    withPayload Encode.null
+
+
+withPayload : Value -> String -> Cmd msg
+withPayload payload type_ =
     [ "type" := Encode.string type_
-    , "payload" := Encode.null
+    , "payload" := payload
     ]
         |> Encode.object
         |> toJs
@@ -58,6 +61,10 @@ send msg =
 
         OpenPaintApp ->
             noPayload "open paint app"
+
+        OpenUrlInPaintApp url ->
+            "open url in paint app"
+                |> withPayload (Encode.string url)
 
         Register { email, name, password, browser } ->
             [ "email" := Encode.string email

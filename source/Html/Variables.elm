@@ -12,4 +12,4 @@ navHeight =
 
 leftSideWidth : Float
 leftSideWidth =
-    158
+    154

@@ -71,7 +71,7 @@ update msg model =
 
         LoginClicked ->
             if model.status == Success then
-                model & Route.goTo Route.Home
+                model & Route.goTo Route.Login
             else
                 model & Cmd.none
 

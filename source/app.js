@@ -90,6 +90,13 @@ Desktop = function(manifest) {
                 })
                 break;
 
+            case "open paint app":
+                window.location = "/app";
+                break;
+
+            case "open url in paint app":
+                window.location = "/app/?url=" + msg.payload;
+
             default:
                 console.log("Unknown js msg type", msg.type);
         }

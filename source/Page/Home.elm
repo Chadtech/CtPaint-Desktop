@@ -10,10 +10,8 @@ module Page.Home
 
 import Chadtech.Colors exposing (backgroundx2)
 import Css exposing (..)
-import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Drawing exposing (Drawing)
-import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
 import Html exposing (Html, a, div, img, p, text)
 import Html.Attributes as Attrs
@@ -30,13 +28,11 @@ import Tuple.Infix exposing ((&))
 
 
 type Msg
-    = OpenCtPaintClicked
+    = Noop
 
 
 type alias Model =
-    { ctPaintMenuOpen : Bool
-    , drawings : List Drawing
-    }
+    { drawings : List Drawing }
 
 
 
@@ -45,9 +41,7 @@ type alias Model =
 
 init : User -> ( Model, Cmd Msg )
 init user =
-    { ctPaintMenuOpen = False
-    , drawings = []
-    }
+    { drawings = [] }
         & Ports.send GetDrawings
 
 
@@ -57,17 +51,10 @@ init user =
 
 update : Msg -> Model -> ( Model, Cmd Msg, Reply )
 update msg model =
-    case msg of
-        OpenCtPaintClicked ->
-            ( openCtPaintMenu model
-            , Cmd.none
-            , NoReply
-            )
-
-
-openCtPaintMenu : Model -> Model
-openCtPaintMenu model =
-    { model | ctPaintMenuOpen = True }
+    ( model
+    , Cmd.none
+    , NoReply
+    )
 
 
 
@@ -81,21 +68,22 @@ type Class
     | Profile
     | BioContainer
     | Name
+    | LeftSide
 
 
 css : Stylesheet
 css =
     [ (Css.class Drawings << List.append Html.Custom.indent)
         [ position absolute
-        , top (px 0)
-        , left (px leftSideWidth)
-        , right (px 2)
-        , bottom (px 6)
+        , top (px 8)
+        , left (px (leftSideWidth + 16))
+        , right (px 8)
+        , bottom (px 12)
         , backgroundColor backgroundx2
         ]
     , (Css.class ProfilePictureContainer << List.append Html.Custom.indent)
-        [ width (px (leftSideWidth - 8))
-        , height (px (leftSideWidth - 8))
+        [ width (px (leftSideWidth - 4))
+        , height (px (leftSideWidth - 4))
         , backgroundColor backgroundx2
         , overflow hidden
         , position absolute
@@ -103,7 +91,7 @@ css =
         , top (px 0)
         ]
     , Css.class ProfilePicture
-        [ width (px (leftSideWidth - 8)) ]
+        [ width (px (leftSideWidth - 4)) ]
     , Css.class Profile
         []
     , Css.class BioContainer
@@ -113,6 +101,13 @@ css =
         ]
     , Css.class Name
         []
+    , Css.class LeftSide
+        [ position absolute
+        , left (px 8)
+        , top (px 8)
+        , width (px leftSideWidth)
+        , bottom (px 0)
+        ]
     ]
         |> namespace homeNamespace
         |> stylesheet
@@ -137,37 +132,18 @@ type NotLoggedIn
     | LoggingIn
 
 
-view : Taco -> Model -> List (Html Msg)
-view taco model =
-    case taco.user of
-        User.LoggedIn user ->
-            loggedInView user
-
-        User.Offline ->
-            loggedOutView Offline
-
-        User.LoggedOut ->
-            loggedOutView LoggedOut
-
-        User.LoggingIn ->
-            loggedOutView LoggingIn
-
-
-loggedInView : User -> List (Html Msg)
-loggedInView user =
-    [ openCtPaintButton
-    , profile user
+view : User -> Model -> List (Html Msg)
+view user model =
+    [ leftSide user
     , drawings
     ]
 
 
-openCtPaintButton : Html Msg
-openCtPaintButton =
-    Html.Custom.container []
-        [ a
-            [ onClick OpenCtPaintClicked ]
-            [ Html.text "open ctpaint" ]
-        ]
+leftSide : User -> Html Msg
+leftSide user =
+    div
+        [ class [ LeftSide ] ]
+        [ profile user ]
 
 
 profile : User -> Html Msg
@@ -211,12 +187,3 @@ drawings =
     div
         [ class [ Drawings ] ]
         []
-
-
-
--- LOGGED OUT VIEW --
-
-
-loggedOutView : NotLoggedIn -> List (Html Msg)
-loggedOutView notLoggedin =
-    []

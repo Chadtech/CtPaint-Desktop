@@ -5,13 +5,14 @@ import UrlParser as Url exposing ((</>), Parser, s)
 
 
 type Route
-    = Home
+    = Landing
+    | InitDrawing
+    | About
     | Settings
     | Login
     | Logout
     | Register
     | Verify String String
-    | PaintApp
 
 
 fromLocation : Location -> Maybe Route
@@ -21,12 +22,13 @@ fromLocation =
 
 route : Parser (Route -> a) a
 route =
-    [ Url.map Home (s "")
+    [ Url.map Landing (s "")
+    , Url.map InitDrawing (s "init")
+    , Url.map About (s "about")
     , Url.map Login (s "login")
     , Url.map Logout (s "logout")
     , Url.map Register (s "register")
     , Url.map Settings (s "settings")
-    , Url.map PaintApp (s "app")
     , Url.map Verify (s "verify" </> Url.string </> Url.string)
     ]
         |> Url.oneOf
@@ -40,8 +42,14 @@ toUrl route =
 toPieces : Route -> List String
 toPieces route =
     case route of
-        Home ->
+        Landing ->
             []
+
+        InitDrawing ->
+            [ "init" ]
+
+        About ->
+            [ "about" ]
 
         Settings ->
             [ "settings" ]
@@ -57,9 +65,6 @@ toPieces route =
 
         Verify email code ->
             [ "verify", email, code ]
-
-        PaintApp ->
-            [ "app" ]
 
 
 goTo : Route -> Cmd msg

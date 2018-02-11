@@ -3,12 +3,13 @@ module Update exposing (update)
 import Comply
 import Data.Taco as Taco
 import Data.User as User
-import Html.Nav as Nav
 import Model exposing (Model)
 import Msg exposing (Msg(..))
+import Nav
 import Page exposing (Page(..), Problem(..))
 import Page.Error as Error
 import Page.Home as Home
+import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
@@ -38,7 +39,7 @@ update msg model =
         LogInSucceeded user ->
             model
                 |> Model.setUser (User.LoggedIn user)
-                & Route.goTo Route.Home
+                & Route.goTo Route.Landing
 
         LogOutSucceeded ->
             model
@@ -63,13 +64,19 @@ update msg model =
                 _ ->
                     model & Cmd.none
 
-        SplashMsg subMsg ->
-            case ( model.page, model.taco.user ) of
-                ( Page.Splash, User.LoggedOut ) ->
-                    model & Cmd.map SplashMsg (Splash.update subMsg)
+        InitDrawingMsg subMsg ->
+            case model.page of
+                Page.InitDrawing subModel ->
+                    subModel
+                        |> InitDrawing.update subMsg
+                        |> Tuple.mapFirst (integrateInitDrawing model)
+                        |> Tuple.mapSecond (Cmd.map InitDrawingMsg)
 
                 _ ->
                     model & Cmd.none
+
+        SplashMsg subMsg ->
+            model & Cmd.map SplashMsg (Splash.update subMsg)
 
         OfflineMsg subMsg ->
             case ( model.page, model.taco.user ) of
@@ -159,7 +166,10 @@ update msg model =
                     model & Route.goTo Route.Login
 
         NavMsg subMsg ->
-            model & Cmd.map NavMsg (Nav.update subMsg)
+            model.nav
+                |> Nav.update subMsg
+                |> Tuple.mapFirst (integrateNav model)
+                |> Tuple.mapSecond (Cmd.map NavMsg)
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
@@ -179,17 +189,12 @@ handleRoute destination model =
             { model | page = Page.Register Register.init }
                 |> logout
 
-        Route.Home ->
+        Route.Landing ->
             case model.taco.user of
                 User.LoggedIn user ->
-                    let
-                        ( subModel, cmd ) =
-                            Home.init user
-                    in
-                    { model
-                        | page = Page.Home subModel
-                    }
-                        & Cmd.map HomeMsg cmd
+                    Home.init user
+                        |> Tuple.mapFirst (integrateHome model)
+                        |> Tuple.mapSecond (Cmd.map HomeMsg)
 
                 User.Offline ->
                     { model | page = Page.Offline }
@@ -201,6 +206,17 @@ handleRoute destination model =
                     }
                         & Cmd.none
 
+        Route.InitDrawing ->
+            { model
+                | page =
+                    Page.InitDrawing InitDrawing.init
+            }
+                & Cmd.none
+
+        Route.About ->
+            { model | page = Page.About }
+                & Cmd.none
+
         Route.Settings ->
             case model.taco.user of
                 User.LoggedIn user ->
@@ -211,9 +227,6 @@ handleRoute destination model =
 
                 _ ->
                     model & Route.goTo Route.Login
-
-        Route.PaintApp ->
-            model & Ports.send OpenPaintApp
 
         Route.Verify email code ->
             { model
@@ -228,6 +241,11 @@ integrateSettings model settingsModel =
     { model | page = Page.Settings settingsModel }
 
 
+integrateInitDrawing : Model -> InitDrawing.Model -> Model
+integrateInitDrawing model initDrawingModel =
+    { model | page = Page.InitDrawing initDrawingModel }
+
+
 integrateHome : Model -> Home.Model -> Model
 integrateHome model homeModel =
     { model | page = Page.Home homeModel }
@@ -236,6 +254,11 @@ integrateHome model homeModel =
 integrateVerify : Model -> Verify.Model -> Model
 integrateVerify model verifyModel =
     { model | page = Page.Verify verifyModel }
+
+
+integrateNav : Model -> Nav.Model -> Model
+integrateNav model navModel =
+    { model | nav = navModel }
 
 
 logout : Model -> ( Model, Cmd Msg )

@@ -2,15 +2,16 @@ module Msg exposing (..)
 
 import Data.Taco exposing (Taco)
 import Data.User as User exposing (User)
-import Html.Nav as Nav
 import Json.Decode as Decode
     exposing
         ( Decoder
         , Value
         , decodeValue
         )
+import Nav
 import Page.Error as Error
 import Page.Home as Home
+import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
@@ -36,6 +37,7 @@ type Msg
     | SplashMsg Splash.Msg
     | OfflineMsg Offline.Msg
     | SettingsMsg Settings.Msg
+    | InitDrawingMsg InitDrawing.Msg
     | MsgDecodeFailed DecodeProblem
 
 

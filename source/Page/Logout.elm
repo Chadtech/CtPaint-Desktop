@@ -6,7 +6,7 @@ import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Process
-import Route exposing (Route(Home))
+import Route exposing (Route(Landing))
 import Task exposing (Task)
 import Tuple.Infix exposing ((&))
 
@@ -45,7 +45,7 @@ update msg model =
             Fail err & Cmd.none
 
         DoneWaiting ->
-            model & Route.goTo Home
+            model & Route.goTo Landing
 
 
 wait : Cmd Msg

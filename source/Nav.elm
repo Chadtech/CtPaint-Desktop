@@ -1,12 +1,19 @@
-module Html.Nav
+module Nav
     exposing
-        ( Msg
+        ( Model
+        , Msg
         , css
+        , init
         , update
         , view
         )
 
-import Chadtech.Colors exposing (ignorable2)
+import Chadtech.Colors
+    exposing
+        ( ignorable1
+        , ignorable2
+        , ignorable3
+        )
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Taco as Taco exposing (Taco)
@@ -17,36 +24,58 @@ import Html.Custom
 import Html.Events exposing (onClick)
 import Html.Variables
 import Route
+import Tuple.Infix exposing ((&))
 
 
 -- TYPES --
 
 
+type alias Model =
+    ()
+
+
 type Msg
     = HomeClicked
+    | AboutClicked
     | LoginClicked
     | LogoutClicked
     | RegisterClicked
+    | DrawClicked
+
+
+
+-- INIT --
+
+
+init : Model
+init =
+    ()
 
 
 
 -- UPDATE --
 
 
-update : Msg -> Cmd Msg
-update msg =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
+        DrawClicked ->
+            model & Route.goTo Route.InitDrawing
+
         HomeClicked ->
-            Route.goTo Route.Home
+            model & Route.goTo Route.Landing
+
+        AboutClicked ->
+            model & Route.goTo Route.About
 
         LoginClicked ->
-            Route.goTo Route.Login
+            model & Route.goTo Route.Login
 
         LogoutClicked ->
-            Route.goTo Route.Logout
+            model & Route.goTo Route.Logout
 
         RegisterClicked ->
-            Route.goTo Route.Register
+            model & Route.goTo Route.Register
 
 
 
@@ -55,6 +84,7 @@ update msg =
 
 type Class
     = Nav
+    | Divider
     | Button
     | User
 
@@ -65,10 +95,23 @@ css =
         [ height (px Html.Variables.navHeight)
         , backgroundColor ignorable2
         , padding (px 2)
+        , borderBottom3 (px 2) solid ignorable3
+        ]
+    , Css.class Divider
+        [ borderLeft3 (px 2) solid ignorable3
+        , borderRight3 (px 2) solid ignorable1
+        , height (px 32)
+        , width zero
+        , marginLeft (px 8)
+        , marginRight (px 8)
+        , paddingLeft zero
+        , paddingRight zero
+        , display inline
         ]
     , Css.class Button
         [ Css.withClass User
             [ float right ]
+        , marginLeft (px 2)
         ]
     ]
         |> namespace navNamespace
@@ -88,9 +131,13 @@ navNamespace =
     Html.CssHelpers.withNamespace navNamespace
 
 
-view : Taco -> Html Msg
-view taco =
-    [ button "home" HomeClicked ]
+view : Taco -> Model -> Html Msg
+view taco model =
+    [ button "draw" DrawClicked
+    , a [ class [ Divider ] ] []
+    , button "home" HomeClicked
+    , button "about" AboutClicked
+    ]
         |> mixinUserButtons taco
         |> div [ class [ Nav ] ]
 

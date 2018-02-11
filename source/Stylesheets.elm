@@ -3,9 +3,11 @@ port module Stylesheets exposing (..)
 import Css.File exposing (CssCompilerProgram, CssFileStructure)
 import Html.Custom
 import Html.Main
-import Html.Nav
+import Nav
+import Page.About
 import Page.Error
 import Page.Home
+import Page.InitDrawing
 import Page.Login
 import Page.Offline
 import Page.Register
@@ -26,10 +28,12 @@ main =
     , Page.Settings.css
     , Html.Main.css
     , Page.Splash.css
-    , Html.Nav.css
+    , Nav.css
     , Html.Custom.css
     , Page.Home.css
     , Page.Offline.css
+    , Page.About.css
+    , Page.InitDrawing.css
     ]
         |> Css.File.compile
         |> (,) "./public/desktop-styles.css"

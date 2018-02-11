@@ -95,7 +95,6 @@ css =
         ]
     , Css.class Container
         [ position relative
-        , marginLeft (px 2)
         , marginBottom (px 2)
         , width (px (leftSideWidth - 4))
         , children

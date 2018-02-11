@@ -1,5 +1,14 @@
-module Page.Login exposing (Model, Msg(..), css, init, update, view)
+module Page.Login
+    exposing
+        ( Model
+        , Msg(LoginFailed)
+        , css
+        , init
+        , update
+        , view
+        )
 
+import Chadtech.Colors exposing (backgroundx2)
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Html exposing (Attribute, Html, a, div, form, input, p, text)
@@ -133,12 +142,21 @@ validate =
 type Class
     = Text
     | Long
+    | Background
 
 
 css : Stylesheet
 css =
     [ Css.class Text [ width (px 120) ]
     , Css.class Long [ width (px 300) ]
+    , Css.class Background
+        [ position absolute
+        , top zero
+        , left zero
+        , bottom zero
+        , right zero
+        , backgroundColor backgroundx2
+        ]
     ]
         |> namespace loginNamespace
         |> stylesheet
@@ -168,36 +186,38 @@ view model =
         errorView_ =
             fieldErrorView model.errors
     in
-    Html.Custom.cardSolitary []
-        [ Html.Custom.header
-            { text = "CtPaint"
-            , closability = Html.Custom.NotClosable
-            }
-        , Html.Custom.cardBody []
-            [ form
-                [ onSubmit Submitted ]
-                [ field "email"
-                    [ value_ model.email
-                    , onInput_ Email
-                    ]
-                , errorView_ Email
-                , field "password"
-                    [ value_ model.password
-                    , Attr.type_ "password"
-                    , onInput_ Password
-                    ]
-                , responseErrorView model.responseError
-                , input
-                    [ Attr.type_ "submit"
-                    , Attr.hidden True
-                    ]
-                    []
-                , Html.Custom.menuButton
-                    [ onClick LoginClicked ]
-                    [ Html.text "log in" ]
+    [ Html.Custom.header
+        { text = "CtPaint"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ form
+            [ onSubmit Submitted ]
+            [ field "email"
+                [ value_ model.email
+                , onInput_ Email
                 ]
+            , errorView_ Email
+            , field "password"
+                [ value_ model.password
+                , Attr.type_ "password"
+                , onInput_ Password
+                ]
+            , responseErrorView model.responseError
+            , input
+                [ Attr.type_ "submit"
+                , Attr.hidden True
+                ]
+                []
+            , Html.Custom.menuButton
+                [ onClick LoginClicked ]
+                [ Html.text "log in" ]
             ]
         ]
+    ]
+        |> Html.Custom.cardSolitary []
+        |> List.singleton
+        |> div [ class [ Background ] ]
 
 
 

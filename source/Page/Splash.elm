@@ -14,13 +14,17 @@ import Html exposing (Html, a, div, img, p, video)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
+import Html.Events exposing (onClick)
+import Ports exposing (JsMsg(OpenPaintApp))
+import Route exposing (Route(About))
 
 
 -- TYPES --
 
 
 type Msg
-    = Noop
+    = LearnMoreClicked
+    | DrawClicked
 
 
 
@@ -28,8 +32,13 @@ type Msg
 
 
 update : Msg -> Cmd Msg
-update Noop =
-    Cmd.none
+update msg =
+    case msg of
+        LearnMoreClicked ->
+            Route.goTo About
+
+        DrawClicked ->
+            Ports.send OpenPaintApp
 
 
 
@@ -123,10 +132,14 @@ view taco =
     , div
         [ class [ ButtonsContainer ] ]
         [ a
-            [ class [ Button ] ]
+            [ class [ Button ]
+            , onClick DrawClicked
+            ]
             [ Html.text "start drawing" ]
         , a
-            [ class [ Button ] ]
+            [ class [ Button ]
+            , onClick LearnMoreClicked
+            ]
             [ Html.text "learn more" ]
         ]
     , video

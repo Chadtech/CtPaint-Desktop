@@ -28,7 +28,7 @@ type Msg
 
 update : Msg -> Cmd msg
 update GoHomeClicked =
-    Route.goTo Route.Home
+    Route.goTo Route.Landing
 
 
 
