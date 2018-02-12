@@ -10,6 +10,8 @@ import Chadtech.Colors exposing (backgroundx1, backgroundx2, ignorable1)
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
+import Data.User as User
 import Html exposing (Attribute, Html, a, div, img, p)
 import Html.CssHelpers
 import Html.Custom
@@ -53,6 +55,7 @@ type Class
     | Name
     | Price
     | Disabled
+    | Header
 
 
 subscriptionWidth : Float
@@ -73,7 +76,7 @@ css =
         , flex (int 1)
         , children
             [ Css.Elements.a
-                [ width (px 306)
+                [ width (px (subscriptionWidth - 20))
                 , textAlign center
                 ]
             ]
@@ -88,13 +91,23 @@ css =
     , Css.class Feature
         [ padding2 (px 4) (px 8) ]
     , Css.class Name
-        [ marginBottom (px 2) ]
+        [ marginBottom (px 8) ]
     , Css.class Price
         [ marginBottom (px 8) ]
     , Css.class Disabled
-        [ backgroundColor ignorable1 ]
+        [ backgroundColor ignorable1
+        , active Html.Custom.outdent
+        , cursor default
+        ]
     , Css.class Odd
         [ backgroundColor backgroundx1 ]
+    , Css.class Header
+        [ margin auto
+        , marginBottom (px 8)
+        , textAlign center
+        , display block
+        , width (px 800)
+        ]
     ]
         |> namespace pricingNamespace
         |> stylesheet
@@ -113,14 +126,17 @@ pricingNamespace =
     Html.CssHelpers.withNamespace pricingNamespace
 
 
-view : List (Html Msg)
-view =
-    [ subscriptions
+view : Taco -> List (Html Msg)
+view taco =
+    [ p
+        [ class [ Header ] ]
+        [ Html.text "subscription tiers" ]
+    , subscriptions taco
     ]
 
 
-subscriptions : Html Msg
-subscriptions =
+subscriptions : Taco -> Html Msg
+subscriptions taco =
     [ subscription
         { name = "no account"
         , price = "free"
@@ -135,7 +151,13 @@ subscriptions =
         { name = "account"
         , price = "free"
         , buttonLabel = "register"
-        , buttonMsg = Just RegisterClicked
+        , buttonMsg =
+            case taco.user of
+                User.Offline ->
+                    Nothing
+
+                _ ->
+                    Just RegisterClicked
         , features =
             [ "CtPaint"
             , "unlimited access"
@@ -145,7 +167,7 @@ subscriptions =
         }
     , subscription
         { name = "bronze"
-        , price = "$5.00/month"
+        , price = "$3.50 per month"
         , buttonLabel = "coming soon"
         , buttonMsg = Nothing
         , features =

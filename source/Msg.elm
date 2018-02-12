@@ -9,6 +9,7 @@ import Json.Decode as Decode
         , decodeValue
         )
 import Nav
+import Page.Contact as Contact
 import Page.Error as Error
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
@@ -17,6 +18,7 @@ import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Pricing as Pricing
 import Page.Register as Register
+import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
@@ -30,6 +32,8 @@ type Msg
     | LogOutFailed String
     | HomeMsg Home.Msg
     | PricingMsg Pricing.Msg
+    | RoadMapMsg RoadMap.Msg
+    | ContactMsg Contact.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
     | LogoutMsg Logout.Msg

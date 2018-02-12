@@ -22,6 +22,7 @@ import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Pricing as Pricing
 import Page.Register as Register
+import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
@@ -146,12 +147,18 @@ viewModel model =
                 |> viewWithNav model identity
 
         Page.Pricing ->
-            Pricing.view
+            Pricing.view model.taco
                 |> viewWithNav model PricingMsg
 
-        Page.Contact ->
-            [ Contact.view ]
-                |> viewWithNav model identity
+        Page.RoadMap subModel ->
+            subModel
+                |> RoadMap.view model.taco
+                |> viewWithNav model RoadMapMsg
+
+        Page.Contact subModel ->
+            subModel
+                |> Contact.view
+                |> viewWithNav model ContactMsg
 
         Page.Offline ->
             Offline.view

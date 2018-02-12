@@ -10,6 +10,7 @@ type Route
     | About
     | Contact
     | Pricing
+    | RoadMap
     | Settings
     | Login
     | Logout
@@ -29,6 +30,7 @@ route =
     , Url.map About (s "about")
     , Url.map Contact (s "contact")
     , Url.map Pricing (s "pricing")
+    , Url.map RoadMap (s "roadmap")
     , Url.map Login (s "login")
     , Url.map Logout (s "logout")
     , Url.map Register (s "register")
@@ -60,6 +62,9 @@ toPieces route =
 
         Pricing ->
             [ "pricing" ]
+
+        RoadMap ->
+            [ "roadmap" ]
 
         Settings ->
             [ "settings" ]

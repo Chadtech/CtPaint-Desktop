@@ -67,6 +67,7 @@ type Class
     | Divider
     | Button
     | User
+    | Offline
 
 
 css : Stylesheet
@@ -92,6 +93,10 @@ css =
         [ Css.withClass User
             [ float right ]
         , marginLeft (px 2)
+        ]
+    , Css.class Offline
+        [ float right
+        , padding (px 8)
         ]
     ]
         |> namespace navNamespace
@@ -119,6 +124,7 @@ view taco model =
     , button "about" (RouteClicked Route.About)
     , button "contact" (RouteClicked Route.Contact)
     , button "pricing" (RouteClicked Route.Pricing)
+    , button "road map" (RouteClicked Route.RoadMap)
     ]
         |> mixinUserButtons taco
         |> div [ class [ Nav ] ]
@@ -133,7 +139,10 @@ userButtons : Taco -> List (Html Msg)
 userButtons taco =
     case taco.user of
         User.Offline ->
-            [ p [] [ Html.text "offline" ] ]
+            [ p
+                [ class [ Offline ] ]
+                [ Html.text "offline" ]
+            ]
 
         User.LoggedOut ->
             [ userButton "register" (RouteClicked Route.Register)

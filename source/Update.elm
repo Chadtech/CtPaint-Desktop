@@ -7,6 +7,7 @@ import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Nav
 import Page exposing (Page(..), Problem(..))
+import Page.Contact as Contact
 import Page.Error as Error
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
@@ -15,6 +16,7 @@ import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Pricing as Pricing
 import Page.Register as Register
+import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
@@ -80,6 +82,28 @@ update msg model =
             case model.page of
                 Page.Pricing ->
                     model & Cmd.map PricingMsg (Pricing.update subMsg)
+
+                _ ->
+                    model & Cmd.none
+
+        RoadMapMsg subMsg ->
+            case model.page of
+                Page.RoadMap subModel ->
+                    subModel
+                        |> RoadMap.update subMsg
+                        |> Tuple.mapFirst (integrateRoadMap model)
+                        |> Tuple.mapSecond (Cmd.map RoadMapMsg)
+
+                _ ->
+                    model & Cmd.none
+
+        ContactMsg subMsg ->
+            case model.page of
+                Page.Contact subModel ->
+                    subModel
+                        |> Contact.update subMsg
+                        |> Tuple.mapFirst (integrateContact model)
+                        |> Tuple.mapSecond (Cmd.map ContactMsg)
 
                 _ ->
                     model & Cmd.none
@@ -227,11 +251,15 @@ handleRoute destination model =
                 & Cmd.none
 
         Route.Contact ->
-            { model | page = Page.Contact }
+            { model | page = Page.Contact Contact.init }
                 & Cmd.none
 
         Route.Pricing ->
             { model | page = Page.Pricing }
+                & Cmd.none
+
+        Route.RoadMap ->
+            { model | page = Page.RoadMap RoadMap.init }
                 & Cmd.none
 
         Route.Settings ->
@@ -251,6 +279,16 @@ handleRoute destination model =
             }
                 |> logout
                 |> Util.addCmd (Ports.send (VerifyEmail email code))
+
+
+integrateContact : Model -> Contact.Model -> Model
+integrateContact model contactModel =
+    { model | page = Page.Contact contactModel }
+
+
+integrateRoadMap : Model -> RoadMap.Model -> Model
+integrateRoadMap model roadMapModel =
+    { model | page = Page.RoadMap roadMapModel }
 
 
 integrateSettings : Model -> Settings.Model -> Model

@@ -13,6 +13,7 @@ import Page.Login
 import Page.Offline
 import Page.Pricing
 import Page.Register
+import Page.RoadMap
 import Page.Settings
 import Page.Splash
 import Page.Verify
@@ -38,6 +39,7 @@ main =
     , Page.Pricing.css
     , Page.Contact.css
     , Page.InitDrawing.css
+    , Page.RoadMap.css
     ]
         |> Css.File.compile
         |> (,) "./public/desktop-styles.css"

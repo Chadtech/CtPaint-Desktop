@@ -1,10 +1,12 @@
 module Page exposing (..)
 
+import Page.Contact as Contact
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Register as Register
+import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Verify as Verify
 
@@ -13,8 +15,9 @@ type Page
     = Home Home.Model
     | InitDrawing InitDrawing.Model
     | About
-    | Contact
+    | Contact Contact.Model
     | Pricing
+    | RoadMap RoadMap.Model
     | Settings Settings.Model
     | Register Register.Model
     | Login Login.Model
