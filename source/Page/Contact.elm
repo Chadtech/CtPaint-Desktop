@@ -8,7 +8,7 @@ module Page.Contact
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx2, point)
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Html exposing (Html, br, div, p, textarea)
@@ -75,8 +75,8 @@ css =
         [ outline none
         , fontFamilies [ "hfnss" ]
         , fontSize (em 2)
-        , backgroundColor backgroundx2
-        , color point
+        , backgroundColor Ct.background2
+        , color Ct.point0
         , width (px 486)
         , height (px 222)
         , marginBottom (px 8)

@@ -6,7 +6,7 @@ module Page.Pricing
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx1, backgroundx2, ignorable1)
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
@@ -85,7 +85,7 @@ css =
         [ width (px (subscriptionWidth - 4))
         , height (px 300)
         , overflow scroll
-        , backgroundColor backgroundx2
+        , backgroundColor Ct.background2
         , marginBottom (px 8)
         ]
     , Css.class Feature
@@ -95,12 +95,12 @@ css =
     , Css.class Price
         [ marginBottom (px 8) ]
     , Css.class Disabled
-        [ backgroundColor ignorable1
+        [ backgroundColor Ct.ignorable1
         , active Html.Custom.outdent
         , cursor default
         ]
     , Css.class Odd
-        [ backgroundColor backgroundx1 ]
+        [ backgroundColor Ct.background1 ]
     , Css.class Header
         [ margin auto
         , marginBottom (px 8)

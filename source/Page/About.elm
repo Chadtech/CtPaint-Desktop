@@ -4,7 +4,7 @@ module Page.About
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx2)
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
@@ -51,7 +51,7 @@ css =
         [ margin auto
         , display block
         , width (px 800)
-        , backgroundColor backgroundx2
+        , backgroundColor Ct.background2
         , marginBottom (px 8)
         ]
     , (Css.class Divider << List.append Html.Custom.indent)
@@ -73,7 +73,7 @@ css =
     , (Css.class FeatureImageContainer << List.append Html.Custom.indent)
         [ width (px (imageSize - 4))
         , height (px (imageSize - 4))
-        , backgroundColor backgroundx2
+        , backgroundColor Ct.background2
         , overflow hidden
         , float left
         , marginRight (px 8)

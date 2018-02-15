@@ -8,7 +8,7 @@ module Page.Home
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx2)
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Drawing exposing (Drawing)
@@ -79,12 +79,12 @@ css =
         , left (px (leftSideWidth + 16))
         , right (px 8)
         , bottom (px 12)
-        , backgroundColor backgroundx2
+        , backgroundColor Ct.background2
         ]
     , (Css.class ProfilePictureContainer << List.append Html.Custom.indent)
         [ width (px (leftSideWidth - 4))
         , height (px (leftSideWidth - 4))
-        , backgroundColor backgroundx2
+        , backgroundColor Ct.background2
         , overflow hidden
         , position absolute
         , left (px 0)

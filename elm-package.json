@@ -8,7 +8,7 @@
     ],
     "exposed-modules": [],
     "dependencies": {
-        "Chadtech/ct-colors": "1.0.1 <= v < 2.0.0",
+        "Chadtech/ct-colors": "2.0.0 <= v < 3.0.0",
         "Chadtech/ctpaint-keys": "5.0.0 <= v < 6.0.0",
         "Chadtech/id": "1.0.3 <= v < 2.0.0",
         "Chadtech/keyboard-extra-browser": "1.0.2 <= v < 2.0.0",

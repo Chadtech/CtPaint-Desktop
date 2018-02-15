@@ -6,7 +6,7 @@ module Page.Splash
         , view
         )
 
-import Chadtech.Colors exposing (backgroundx2)
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Config as Config
@@ -66,7 +66,7 @@ css =
         [ margin auto
         , display block
         , width (px 800)
-        , backgroundColor backgroundx2
+        , backgroundColor Ct.background2
         , marginBottom (px 8)
         ]
     , (Css.class Video << List.append Html.Custom.indent)
