@@ -11,11 +11,11 @@ module Page.Contact
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Html exposing (Html, br, div, p, textarea)
+import Html exposing (Html, a, br, div, p, textarea)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Tuple.Infix exposing ((&))
 
 
@@ -62,6 +62,7 @@ update msg model =
 type Class
     = TextContainer
     | CommentBox
+    | SendButton
 
 
 css : Stylesheet
@@ -77,10 +78,20 @@ css =
         , fontSize (em 2)
         , backgroundColor Ct.background2
         , color Ct.point0
-        , width (px 486)
-        , height (px 222)
+        , width (px 800)
+        , height (px 300)
         , marginBottom (px 8)
         , property "-webkit-font-smoothing" "none"
+        , display block
+        , margin auto
+        , marginTop (px 8)
+        , resize none
+        ]
+    , Css.class SendButton
+        [ display block
+        , margin auto
+        , marginTop (px 8)
+        , maxWidth maxContent
         ]
     ]
         |> namespace contactNamespace
@@ -109,6 +120,11 @@ view model =
         , Attrs.spellcheck False
         ]
         [ Html.text model.field ]
+    , a
+        [ class [ SendButton ]
+        , onClick SendClicked
+        ]
+        [ Html.text "send" ]
     ]
 
 

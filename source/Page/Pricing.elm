@@ -100,7 +100,7 @@ css =
         , cursor default
         ]
     , Css.class Odd
-        [ backgroundColor Ct.background1 ]
+        [ backgroundColor Ct.background3 ]
     , Css.class Header
         [ margin auto
         , marginBottom (px 8)
