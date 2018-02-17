@@ -90,7 +90,7 @@ update msg model =
             case model.page of
                 Page.RoadMap subModel ->
                     subModel
-                        |> RoadMap.update subMsg
+                        |> RoadMap.update model.taco subMsg
                         |> Tuple.mapFirst (integrateRoadMap model)
                         |> Tuple.mapSecond (Cmd.map RoadMapMsg)
 
@@ -259,7 +259,14 @@ handleRoute destination model =
                 & Cmd.none
 
         Route.RoadMap ->
-            { model | page = Page.RoadMap RoadMap.init }
+            let
+                ( roadMapModel, newSeed ) =
+                    RoadMap.init model.taco.seed
+            in
+            { model
+                | page = Page.RoadMap roadMapModel
+                , taco = Taco.setSeed newSeed model.taco
+            }
                 & Cmd.none
 
         Route.Settings ->

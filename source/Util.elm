@@ -14,6 +14,14 @@ addCmd newCmd ( model, cmd ) =
     model & Cmd.batch [ newCmd, cmd ]
 
 
+cmdIf : Bool -> Cmd msg -> Cmd msg
+cmdIf condition cmd =
+    if condition then
+        cmd
+    else
+        Cmd.none
+
+
 
 -- GENERAL --
 

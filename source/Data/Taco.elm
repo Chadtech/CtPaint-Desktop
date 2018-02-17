@@ -2,6 +2,7 @@ module Data.Taco
     exposing
         ( Taco
         , fromFlags
+        , setSeed
         , setUser
         )
 
@@ -23,6 +24,11 @@ type alias Taco =
 setUser : User.Model -> Taco -> Taco
 setUser user taco =
     { taco | user = user }
+
+
+setSeed : Seed -> Taco -> Taco
+setSeed seed taco =
+    { taco | seed = seed }
 
 
 fromFlags : Flags -> Taco

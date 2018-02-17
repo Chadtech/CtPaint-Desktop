@@ -96,6 +96,11 @@ Desktop = function(manifest) {
 
             case "open url in paint app":
                 window.location = "/app/?url=" + msg.payload;
+                break;
+
+            case "track":
+                track(msg.payload);
+                break;
 
             default:
                 console.log("Unknown js msg type", msg.type);

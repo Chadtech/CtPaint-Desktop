@@ -1,8 +1,10 @@
 port module Ports exposing (..)
 
 import Data.Keys as Keys
+import Data.Taco exposing (Taco)
 import Json.Encode as Encode exposing (Value)
 import Keyboard.Extra.Browser exposing (Browser)
+import Tracking
 import Tuple.Infix exposing ((:=))
 
 
@@ -18,6 +20,7 @@ type JsMsg
     | VerifyEmail String String
     | GetUserAttributes
     | GetDrawings
+    | Track Tracking.Payload
 
 
 type alias RegistrationPayload =
@@ -26,6 +29,11 @@ type alias RegistrationPayload =
     , password : String
     , browser : Browser
     }
+
+
+track : Taco -> Tracking.Event -> Cmd msg
+track taco =
+    Tracking.fromTaco taco >> Track >> send
 
 
 fromKeyValues : String -> List ( String, Value ) -> Cmd msg
@@ -91,6 +99,10 @@ send msg =
 
         GetDrawings ->
             noPayload "get drawings"
+
+        Track payload ->
+            "track"
+                |> withPayload (Tracking.encode payload)
 
 
 port toJs : Value -> Cmd msg
