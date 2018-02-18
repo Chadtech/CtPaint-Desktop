@@ -153,6 +153,7 @@ isEmailValid email =
 type Class
     = Text
     | Long
+    | SendingText
 
 
 css : Stylesheet
@@ -161,6 +162,8 @@ css =
         [ marginRight (px 8) ]
     , Css.class Long
         [ width (px 300) ]
+    , Css.class SendingText
+        [ marginBottom (px 8) ]
     ]
         |> namespace forgotPasswordNamespace
         |> stylesheet
@@ -199,6 +202,9 @@ body model =
         Ready readyModel ->
             readyBody readyModel
 
+        Sending ->
+            sendingBody
+
         _ ->
             Html.text ""
 
@@ -222,6 +228,17 @@ readyBody { email, problem } =
         , Html.Custom.menuButton
             [ onClick SubmitClicked ]
             [ Html.text "reset password" ]
+        ]
+
+
+sendingBody : Html Msg
+sendingBody =
+    div
+        []
+        [ p
+            [ class [ SendingText ] ]
+            [ Html.text "working.." ]
+        , Html.Custom.spinner
         ]
 
 
