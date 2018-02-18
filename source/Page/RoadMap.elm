@@ -183,6 +183,7 @@ type Class
     | Clicked
     | OtherSuggestionBox
     | SendSuggestionButton
+    | Divider
 
 
 css : Stylesheet
@@ -229,9 +230,14 @@ css =
         ]
     , Css.class SendSuggestionButton
         [ display table
-        , marginTop (px 8)
-        , margin auto
+        , margin2 (px 8) auto
         , withClass Clicked Html.Custom.outdent
+        ]
+    , (Css.class Divider << List.append Html.Custom.indent)
+        [ width (px 800)
+        , margin auto
+        , display block
+        , marginBottom (px 8)
         ]
     ]
         |> namespace roadMapNamespace
@@ -252,36 +258,68 @@ roadMapNamespace =
 
 
 view : Taco -> Model -> List (Html Msg)
-view taco { clickedWants, wants, otherWant, otherWantClicked } =
+view taco model =
     [ div
         [ class [ Body ] ]
         [ p
             [ class [ Text ] ]
             [ Html.text wantsSideText ]
+        , wantsView model
+        , suggestionBox model
+        , suggestionSendButton model.otherWantClicked
         , div
-            [ class [ WantsContainer ] ]
-            (List.map (wantView clickedWants) wants)
-        , textarea
-            [ classList
-                [ ( Clicked, otherWantClicked )
-                , ( OtherSuggestionBox, True )
-                ]
-            , onInput OtherWantUpdated
-            , Attrs.placeholder "enter a suggestion here"
-            , Attrs.spellcheck False
-            , Attrs.value otherWant
-            ]
+            [ class [ Divider ] ]
             []
-        , a
-            [ classList
-                [ ( SendSuggestionButton, True )
-                , ( Clicked, otherWantClicked )
-                ]
-            , onClick OtherWantClicked
-            ]
-            [ Html.text "send suggestion" ]
+        , p
+            [ class [ Text ] ]
+            [ Html.text immediateFeatures ]
         ]
     ]
+
+
+immediateFeatures : String
+immediateFeatures =
+    """
+    In the immediate future, I will be working on the
+    silver subscription tier of ctpaint, url image sharing,
+    and social media posting. In the more distant future
+    I would like to develope a more advanced version of
+    CtPaint with features more suited towards pixel artists.
+    """
+
+
+wantsView : Model -> Html Msg
+wantsView { clickedWants, wants } =
+    div
+        [ class [ WantsContainer ] ]
+        (List.map (wantView clickedWants) wants)
+
+
+suggestionBox : Model -> Html Msg
+suggestionBox model =
+    textarea
+        [ classList
+            [ ( Clicked, model.otherWantClicked )
+            , ( OtherSuggestionBox, True )
+            ]
+        , onInput OtherWantUpdated
+        , Attrs.placeholder "enter a suggestion here"
+        , Attrs.spellcheck False
+        , Attrs.value model.otherWant
+        ]
+        []
+
+
+suggestionSendButton : Bool -> Html Msg
+suggestionSendButton otherWantClicked =
+    a
+        [ classList
+            [ ( SendSuggestionButton, True )
+            , ( Clicked, otherWantClicked )
+            ]
+        , onClick OtherWantClicked
+        ]
+        [ Html.text "send suggestion" ]
 
 
 wantsSideText : String
@@ -290,7 +328,7 @@ wantsSideText =
     Below is a list of features I would like to implement into CtPaint.
     Click on the ones you would like to see added to CtPaint,
     so I can prioritize them in development.
-    You can also fill in the "other" field at the bottom and
+    You can also fill in the suggestion field at the bottom and
     submit your own ideas.
     """
 
