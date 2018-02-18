@@ -22,6 +22,11 @@ cmdIf condition cmd =
         Cmd.none
 
 
+noCmd : a -> ( a, Cmd msg )
+noCmd model =
+    ( model, Cmd.none )
+
+
 
 -- GENERAL --
 

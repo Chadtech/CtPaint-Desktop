@@ -396,30 +396,15 @@ update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
 update taco msg model =
     case msg of
         Submitted ->
-            case model of
-                Ready fields ->
-                    attemptRegistration taco fields
-
-                _ ->
-                    model & Cmd.none
+            ifFields (attemptRegistration taco) model
 
         SubmitClicked ->
-            case model of
-                Ready fields ->
-                    attemptRegistration taco fields
-
-                _ ->
-                    model & Cmd.none
+            ifFields (attemptRegistration taco) model
 
         FieldUpdated field str ->
-            case model of
-                Ready fields ->
-                    updateField field str fields
-                        |> Ready
-                        & Cmd.none
-
-                _ ->
-                    model & Cmd.none
+            ifFields
+                (updateField field str >> Util.noCmd)
+                model
 
         Succeeded email ->
             Success email & Cmd.none
@@ -428,44 +413,44 @@ update taco msg model =
             Fail problem & Cmd.none
 
         TosAgreeClicked ->
-            case model of
-                Ready fields ->
-                    { fields
-                        | agreesToTermsOfService =
-                            not fields.agreesToTermsOfService
-                    }
-                        |> Ready
-                        & Cmd.none
-
-                _ ->
-                    model & Cmd.none
+            ifFields toggleTos model
 
         ReadTosClicked ->
-            case model of
-                Ready fields ->
-                    { fields
-                        | termsOfServiceView = True
-                    }
-                        |> Ready
-                        & Cmd.none
-
-                _ ->
-                    model & Cmd.none
+            ifFields (setTermsOfServiceView True) model
 
         GoBackFromTosClicked ->
-            case model of
-                Ready fields ->
-                    { fields
-                        | termsOfServiceView = False
-                    }
-                        |> Ready
-                        & Cmd.none
-
-                _ ->
-                    model & Cmd.none
+            ifFields (setTermsOfServiceView False) model
 
 
-attemptRegistration : Taco -> Fields -> ( Model, Cmd Msg )
+toggleTos : Fields -> ( Fields, Cmd Msg )
+toggleTos fields =
+    { fields
+        | agreesToTermsOfService =
+            not fields.agreesToTermsOfService
+    }
+        & Cmd.none
+
+
+setTermsOfServiceView : Bool -> Fields -> ( Fields, Cmd Msg )
+setTermsOfServiceView bool fields =
+    { fields
+        | termsOfServiceView = bool
+    }
+        & Cmd.none
+
+
+ifFields : (Fields -> ( Fields, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+ifFields fieldsChanger model =
+    case model of
+        Ready fields ->
+            fieldsChanger fields
+                |> Tuple.mapFirst Ready
+
+        _ ->
+            model & Cmd.none
+
+
+attemptRegistration : Taco -> Fields -> ( Fields, Cmd Msg )
 attemptRegistration taco fields =
     let
         errors =
@@ -488,7 +473,6 @@ attemptRegistration taco fields =
             , passwordConfirm = ""
             , show = False
         }
-            |> Ready
             & cmd
     else
         { fields
@@ -496,7 +480,6 @@ attemptRegistration taco fields =
             , password = ""
             , passwordConfirm = ""
         }
-            |> Ready
             & Cmd.none
 
 
