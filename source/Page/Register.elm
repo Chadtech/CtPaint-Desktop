@@ -120,6 +120,7 @@ type Class
     | LockContainer
     | TosLink
     | TosTitle
+    | Submit
 
 
 css : Stylesheet
@@ -131,6 +132,11 @@ css =
     , Css.Elements.input
         [ Css.withClass Long
             [ width (px 300) ]
+        ]
+    , Css.class Submit
+        [ marginTop (px 0)
+        , display table
+        , margin auto
         ]
     , Css.class Main
         [ width (px 480) ]
@@ -152,7 +158,7 @@ css =
             ]
         ]
     , Css.class Field
-        [ margin4 (px 4) (px 0) (px 0) (px 0)
+        [ marginBottom (px 8)
         , children
             [ Css.Elements.input
                 [ width (px 80)
@@ -320,8 +326,10 @@ fieldsView fields =
             , Attr.hidden True
             ]
             []
-        , Html.Custom.menuButton
-            [ onClick SubmitClicked ]
+        , a
+            [ class [ Submit ]
+            , onClick SubmitClicked
+            ]
             [ Html.text "submit" ]
         ]
     ]
