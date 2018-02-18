@@ -8,14 +8,26 @@ module Page.Login
         , view
         )
 
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Html exposing (Attribute, Html, a, div, form, input, p, text)
+import Html
+    exposing
+        ( Attribute
+        , Html
+        , a
+        , div
+        , form
+        , input
+        , p
+        , span
+        )
 import Html.Attributes as Attr
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..))
+import Route
 import Tuple.Infix exposing ((&))
 import Util
 import Validate exposing (ifBlank)
@@ -40,6 +52,7 @@ type Msg
     | Submitted
     | LoginClicked
     | LoginFailed String
+    | ForgotPasswordClicked
 
 
 
@@ -82,6 +95,9 @@ update msg model =
                 , show = True
             }
                 & Cmd.none
+
+        ForgotPasswordClicked ->
+            model & Route.goTo Route.ForgotPassword
 
 
 attemptLogin : Model -> ( Model, Cmd Msg )
@@ -141,13 +157,22 @@ validate =
 type Class
     = Text
     | Long
-    | Background
+    | ForgotLink
 
 
 css : Stylesheet
 css =
-    [ Css.class Text [ width (px 120) ]
-    , Css.class Long [ width (px 300) ]
+    [ Css.class Text
+        [ width (px 120) ]
+    , Css.class Long
+        [ width (px 300) ]
+    , Css.class ForgotLink
+        [ color Ct.important0
+        , hover
+            [ cursor pointer
+            , color Ct.important1
+            ]
+        ]
     ]
         |> namespace loginNamespace
         |> stylesheet
@@ -200,6 +225,14 @@ view model =
                 , Attr.hidden True
                 ]
                 []
+            , p
+                []
+                [ span
+                    [ class [ ForgotLink ]
+                    , onClick ForgotPasswordClicked
+                    ]
+                    [ Html.text "I forgot my password" ]
+                ]
             , Html.Custom.menuButton
                 [ onClick LoginClicked ]
                 [ Html.text "log in" ]

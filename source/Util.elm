@@ -41,6 +41,19 @@ maybeCons maybe list =
             list
 
 
+firstJust : List (Maybe a) -> Maybe a
+firstJust maybes =
+    case maybes of
+        (Just v) :: rest ->
+            Just v
+
+        Nothing :: rest ->
+            firstJust rest
+
+        [] ->
+            Nothing
+
+
 contains : List a -> a -> Bool
 contains =
     flip List.member
@@ -87,3 +100,48 @@ viewMaybe maybe htmlFunc =
 
         Nothing ->
             Html.text ""
+
+
+
+-- EMAIL --
+
+
+isValidEmail : String -> Bool
+isValidEmail email =
+    case String.split "@" email of
+        "" :: _ ->
+            False
+
+        local :: domain :: [] ->
+            separateDomain domain local
+
+        _ ->
+            False
+
+
+separateDomain : String -> String -> Bool
+separateDomain domain local =
+    case String.split "." domain of
+        _ :: "" :: [] ->
+            False
+
+        "" :: _ :: [] ->
+            False
+
+        name :: extension :: [] ->
+            [ local, name, extension ]
+                |> String.concat
+                |> String.all isAlphanumeric
+
+        _ ->
+            False
+
+
+isAlphanumeric : Char -> Bool
+isAlphanumeric char =
+    String.contains (String.fromChar char) alphanumeric
+
+
+alphanumeric : String
+alphanumeric =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

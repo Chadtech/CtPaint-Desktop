@@ -15,6 +15,7 @@ import Nav
 import Page exposing (Page(..), Problem(..))
 import Page.Contact as Contact
 import Page.Error as Error
+import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
 import Page.Login as Login
@@ -128,15 +129,10 @@ update msg model =
         RegisterMsg subMsg ->
             case model.page of
                 Page.Register subModel ->
-                    let
-                        ( newSubModel, cmd ) =
-                            Register.update model.taco subMsg subModel
-                    in
-                    { model
-                        | page =
-                            Page.Register newSubModel
-                    }
-                        & Cmd.map RegisterMsg cmd
+                    subModel
+                        |> Register.update model.taco subMsg
+                        |> return2 Page.Register model
+                        |> Tuple.mapSecond (Cmd.map RegisterMsg)
 
                 _ ->
                     model & Cmd.none
@@ -144,15 +140,21 @@ update msg model =
         LoginMsg subMsg ->
             case model.page of
                 Page.Login subModel ->
-                    let
-                        ( newSubModel, cmd ) =
-                            Login.update subMsg subModel
-                    in
-                    { model
-                        | page =
-                            Page.Login newSubModel
-                    }
-                        & Cmd.map LoginMsg cmd
+                    subModel
+                        |> Login.update subMsg
+                        |> return2 Page.Login model
+                        |> Tuple.mapSecond (Cmd.map LoginMsg)
+
+                _ ->
+                    model & Cmd.none
+
+        ForgotPasswordMsg subMsg ->
+            case model.page of
+                Page.ForgotPassword subModel ->
+                    subModel
+                        |> ForgotPassword.update subMsg
+                        |> return2 Page.ForgotPassword model
+                        |> Tuple.mapSecond (Cmd.map ForgotPasswordMsg)
 
                 _ ->
                     model & Cmd.none
@@ -160,15 +162,10 @@ update msg model =
         LogoutMsg subMsg ->
             case model.page of
                 Page.Logout subModel ->
-                    let
-                        ( newSubModel, cmd ) =
-                            Logout.update subMsg subModel
-                    in
-                    { model
-                        | page =
-                            Page.Logout newSubModel
-                    }
-                        & Cmd.map LogoutMsg cmd
+                    subModel
+                        |> Logout.update subMsg
+                        |> return2 Page.Logout model
+                        |> Tuple.mapSecond (Cmd.map LogoutMsg)
 
                 _ ->
                     model & Cmd.none
@@ -214,6 +211,13 @@ handleRoute destination model =
         Route.Login ->
             { model
                 | page = Page.Login Login.init
+            }
+                |> logout
+
+        Route.ForgotPassword ->
+            { model
+                | page =
+                    Page.ForgotPassword ForgotPassword.init
             }
                 |> logout
 

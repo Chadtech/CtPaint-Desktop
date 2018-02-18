@@ -7,6 +7,7 @@ import Nav
 import Page.About
 import Page.Contact
 import Page.Error
+import Page.ForgotPassword
 import Page.Home
 import Page.InitDrawing
 import Page.Login
@@ -41,6 +42,7 @@ main =
     , Page.Contact.css
     , Page.InitDrawing.css
     , Page.RoadMap.css
+    , Page.ForgotPassword.css
     , Tos.css
     ]
         |> Css.File.compile

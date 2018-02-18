@@ -1,6 +1,7 @@
 module Page exposing (..)
 
 import Page.Contact as Contact
+import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
 import Page.Login as Login
@@ -22,6 +23,7 @@ type Page
     | Settings Settings.Model
     | Register Register.Model
     | Login Login.Model
+    | ForgotPassword ForgotPassword.Model
     | Logout Logout.Model
     | Verify Verify.Model
     | Splash

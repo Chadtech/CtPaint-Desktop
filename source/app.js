@@ -98,6 +98,10 @@ Desktop = function(manifest) {
                 window.location = "/app/?url=" + msg.payload;
                 break;
 
+            case "forgot password":
+                console.log(msg.payload);
+                break;
+
             case "track":
                 track(msg.payload);
                 break;

@@ -11,6 +11,7 @@ import Json.Decode as Decode
 import Nav
 import Page.Contact as Contact
 import Page.Error as Error
+import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
 import Page.Login as Login
@@ -36,6 +37,7 @@ type Msg
     | ContactMsg Contact.Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
+    | ForgotPasswordMsg ForgotPassword.Msg
     | LogoutMsg Logout.Msg
     | VerifyMsg Verify.Msg
     | ErrorMsg Error.Msg

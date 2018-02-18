@@ -20,6 +20,7 @@ type JsMsg
     | VerifyEmail String String
     | GetUserAttributes
     | GetDrawings
+    | ForgotPassword String
     | Track Tracking.Payload
 
 
@@ -100,6 +101,10 @@ send msg =
 
         GetDrawings ->
             noPayload "get drawings"
+
+        ForgotPassword email ->
+            "forgot password"
+                |> withPayload (Encode.string email)
 
         Track payload ->
             "track"

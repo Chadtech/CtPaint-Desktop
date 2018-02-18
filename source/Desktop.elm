@@ -14,6 +14,7 @@ import Page.About as About
 import Page.Contact as Contact
 import Page.Documentation as Documentation
 import Page.Error as Error
+import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
 import Page.Loading as Loading
@@ -183,6 +184,10 @@ viewModel model =
         Page.Login subModel ->
             [ Login.view subModel ]
                 |> viewWithNav model LoginMsg
+
+        Page.ForgotPassword subModel ->
+            [ ForgotPassword.view subModel ]
+                |> viewWithNav model ForgotPasswordMsg
 
         Page.Logout subModel ->
             Html.map LogoutMsg (Logout.view subModel)

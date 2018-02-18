@@ -605,64 +605,11 @@ validate =
 
 
 validEmail : Fields -> List ( Field, String )
-validEmail model =
-    case String.split "@" model.email of
-        "" :: _ ->
-            invalidEmail
-
-        local :: rest ->
-            case rest of
-                [ domain ] ->
-                    separateDomain domain local
-
-                _ ->
-                    invalidEmail
-
-        _ ->
-            invalidEmail
-
-
-separateDomain : String -> String -> List ( Field, String )
-separateDomain domain local =
-    case String.split "." domain of
-        _ :: [ "" ] ->
-            invalidEmail
-
-        name :: [ extension ] ->
-            let
-                allAlphanumeric =
-                    List.foldr
-                        (onlyAlphaNumeric >> (&&))
-                        True
-                        [ local, name, extension ]
-            in
-            if allAlphanumeric then
-                []
-            else
-                invalidEmail
-
-        _ ->
-            invalidEmail
-
-
-invalidEmail : List ( Field, String )
-invalidEmail =
-    [ ( Email, "Please enter a valid email address" ) ]
-
-
-onlyAlphaNumeric : String -> Bool
-onlyAlphaNumeric =
-    String.all isAlphanumeric
-
-
-isAlphanumeric : Char -> Bool
-isAlphanumeric char =
-    String.contains (String.fromChar char) alphanumeric
-
-
-alphanumeric : String
-alphanumeric =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+validEmail { email } =
+    if Util.isValidEmail email then
+        []
+    else
+        [ ( Email, "Please enter a valid email address" ) ]
 
 
 atLeastOneLowerCaseInPassword : Fields -> List ( Field, String )
