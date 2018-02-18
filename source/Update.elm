@@ -222,8 +222,16 @@ handleRoute destination model =
                 |> logout
 
         Route.Register ->
-            { model | page = Page.Register Register.init }
-                |> logout
+            case model.page of
+                Page.Register _ ->
+                    model & Cmd.none
+
+                _ ->
+                    { model
+                        | page =
+                            Page.Register Register.init
+                    }
+                        |> logout
 
         Route.Landing ->
             case model.taco.user of
@@ -258,8 +266,13 @@ handleRoute destination model =
                 & Cmd.none
 
         Route.Contact ->
-            { model | page = Page.Contact Contact.init }
-                & Cmd.none
+            case model.page of
+                Page.Contact _ ->
+                    model & Cmd.none
+
+                _ ->
+                    { model | page = Page.Contact Contact.init }
+                        & Cmd.none
 
         Route.Pricing ->
             { model | page = Page.Pricing }
