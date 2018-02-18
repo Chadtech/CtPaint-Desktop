@@ -21,16 +21,6 @@ type alias Taco =
     }
 
 
-setUser : User.Model -> Taco -> Taco
-setUser user taco =
-    { taco | user = user }
-
-
-setSeed : Seed -> Taco -> Taco
-setSeed seed taco =
-    { taco | seed = seed }
-
-
 fromFlags : Flags -> Taco
 fromFlags flags =
     let
@@ -42,3 +32,17 @@ fromFlags flags =
     , config = config
     , entities = Entities.empty
     }
+
+
+
+-- HELPERS --
+
+
+setUser : User.Model -> Taco -> Taco
+setUser user taco =
+    { taco | user = user }
+
+
+setSeed : Seed -> Taco -> Taco
+setSeed seed taco =
+    { taco | seed = seed }

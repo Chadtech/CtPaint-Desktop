@@ -17,6 +17,7 @@ import Page.RoadMap
 import Page.Settings
 import Page.Splash
 import Page.Verify
+import Tos
 
 
 port files : CssFileStructure -> Cmd msg
@@ -40,6 +41,7 @@ main =
     , Page.Contact.css
     , Page.InitDrawing.css
     , Page.RoadMap.css
+    , Tos.css
     ]
         |> Css.File.compile
         |> (,) "./public/desktop-styles.css"

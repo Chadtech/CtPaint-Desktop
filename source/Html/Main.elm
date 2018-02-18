@@ -8,11 +8,11 @@ module Html.Main
 import Chadtech.Colors exposing (ignorable2)
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
 import Html exposing (Html, div)
 import Html.CssHelpers
 import Html.Custom
 import Html.Variables
+import Model exposing (Model)
 import Msg exposing (Msg(NavMsg))
 import Nav
 
@@ -72,11 +72,12 @@ view =
         [ class [ Main ] ]
 
 
-viewWithNav : Taco -> Nav.Model -> List (Html Msg) -> Html Msg
-viewWithNav taco navModel children =
+viewWithNav : Model -> List (Html Msg) -> Html Msg
+viewWithNav model children =
     div
         [ class [ Main ] ]
-        [ Html.map NavMsg (Nav.view taco navModel)
+        [ Nav.view model
+            |> Html.map NavMsg
         , div
             [ class [ Body ] ]
             children

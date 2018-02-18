@@ -3,7 +3,13 @@ module Update exposing (update)
 import Comply
 import Data.Taco as Taco
 import Data.User as User
-import Model exposing (Model)
+import Model
+    exposing
+        ( Model
+        , return
+        , return2
+        , return3
+        )
 import Msg exposing (Msg(..))
 import Nav
 import Page exposing (Page(..), Problem(..))
@@ -60,7 +66,7 @@ update msg model =
                 ( Page.Home subModel, User.LoggedIn user ) ->
                     subModel
                         |> Home.update subMsg
-                        |> Tuple3.mapFirst (integrateHome model)
+                        |> return3 Page.Home model
                         |> Tuple3.mapSecond (Cmd.map HomeMsg)
                         |> Comply.fromTriple
 
@@ -72,7 +78,7 @@ update msg model =
                 Page.InitDrawing subModel ->
                     subModel
                         |> InitDrawing.update subMsg
-                        |> Tuple.mapFirst (integrateInitDrawing model)
+                        |> return2 Page.InitDrawing model
                         |> Tuple.mapSecond (Cmd.map InitDrawingMsg)
 
                 _ ->
@@ -91,7 +97,7 @@ update msg model =
                 Page.RoadMap subModel ->
                     subModel
                         |> RoadMap.update model.taco subMsg
-                        |> Tuple.mapFirst (integrateRoadMap model)
+                        |> return2 Page.RoadMap model
                         |> Tuple.mapSecond (Cmd.map RoadMapMsg)
 
                 _ ->
@@ -102,7 +108,7 @@ update msg model =
                 Page.Contact subModel ->
                     subModel
                         |> Contact.update subMsg
-                        |> Tuple.mapFirst (integrateContact model)
+                        |> return2 Page.Contact model
                         |> Tuple.mapSecond (Cmd.map ContactMsg)
 
                 _ ->
@@ -172,7 +178,7 @@ update msg model =
                 Page.Verify subModel ->
                     subModel
                         |> Verify.update subMsg
-                        |> Tuple.mapFirst (integrateVerify model)
+                        |> return2 Page.Verify model
                         |> Tuple.mapSecond (Cmd.map VerifyMsg)
 
                 _ ->
@@ -191,7 +197,7 @@ update msg model =
                 ( Page.Settings subModel, User.LoggedIn user ) ->
                     subModel
                         |> Settings.update subMsg user
-                        |> Tuple3.mapFirst (integrateSettings model)
+                        |> return3 Page.Settings model
                         |> Tuple3.mapSecond (Cmd.map SettingsMsg)
                         |> Comply.fromTriple
 
@@ -199,10 +205,7 @@ update msg model =
                     model & Route.goTo Route.Login
 
         NavMsg subMsg ->
-            model.nav
-                |> Nav.update subMsg
-                |> Tuple.mapFirst (integrateNav model)
-                |> Tuple.mapSecond (Cmd.map NavMsg)
+            model & Cmd.map NavMsg (Nav.update subMsg)
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
@@ -226,7 +229,7 @@ handleRoute destination model =
             case model.taco.user of
                 User.LoggedIn user ->
                     Home.init user
-                        |> Tuple.mapFirst (integrateHome model)
+                        |> Tuple.mapFirst (return Page.Home model)
                         |> Tuple.mapSecond (Cmd.map HomeMsg)
 
                 User.Offline ->
@@ -263,68 +266,31 @@ handleRoute destination model =
                 & Cmd.none
 
         Route.RoadMap ->
-            let
-                ( roadMapModel, newSeed ) =
+            case model.page of
+                Page.RoadMap _ ->
+                    model & Cmd.none
+
+                _ ->
                     RoadMap.init model.taco.seed
-            in
-            { model
-                | page = Page.RoadMap roadMapModel
-                , taco = Taco.setSeed newSeed model.taco
-            }
-                & Cmd.none
+                        |> return2 Page.RoadMap model
+                        |> Model.mixinSeed
+                        & Cmd.none
 
         Route.Settings ->
             case model.taco.user of
                 User.LoggedIn user ->
-                    { model
-                        | page = Page.Settings Settings.init
-                    }
+                    Settings.init
+                        |> return Page.Settings model
                         & Cmd.none
 
                 _ ->
                     model & Route.goTo Route.Login
 
         Route.Verify email code ->
-            { model
-                | page = Page.Verify (Verify.init email)
-            }
+            Verify.init email
+                |> return Page.Verify model
                 |> logout
                 |> Util.addCmd (Ports.send (VerifyEmail email code))
-
-
-integrateContact : Model -> Contact.Model -> Model
-integrateContact model contactModel =
-    { model | page = Page.Contact contactModel }
-
-
-integrateRoadMap : Model -> RoadMap.Model -> Model
-integrateRoadMap model roadMapModel =
-    { model | page = Page.RoadMap roadMapModel }
-
-
-integrateSettings : Model -> Settings.Model -> Model
-integrateSettings model settingsModel =
-    { model | page = Page.Settings settingsModel }
-
-
-integrateInitDrawing : Model -> InitDrawing.Model -> Model
-integrateInitDrawing model initDrawingModel =
-    { model | page = Page.InitDrawing initDrawingModel }
-
-
-integrateHome : Model -> Home.Model -> Model
-integrateHome model homeModel =
-    { model | page = Page.Home homeModel }
-
-
-integrateVerify : Model -> Verify.Model -> Model
-integrateVerify model verifyModel =
-    { model | page = Page.Verify verifyModel }
-
-
-integrateNav : Model -> Nav.Model -> Model
-integrateNav model navModel =
-    { model | nav = navModel }
 
 
 logout : Model -> ( Model, Cmd Msg )

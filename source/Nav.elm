@@ -1,9 +1,7 @@
 module Nav
     exposing
-        ( Model
-        , Msg
+        ( Msg
         , css
-        , init
         , update
         , view
         )
@@ -23,15 +21,12 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
 import Html.Variables
+import Model exposing (Model)
+import Page exposing (Page)
 import Route exposing (Route)
-import Tuple.Infix exposing ((&))
 
 
 -- TYPES --
-
-
-type alias Model =
-    ()
 
 
 type Msg
@@ -39,23 +34,14 @@ type Msg
 
 
 
--- INIT --
-
-
-init : Model
-init =
-    ()
-
-
-
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         RouteClicked route ->
-            model & Route.goTo route
+            Route.goTo route
 
 
 
@@ -68,6 +54,7 @@ type Class
     | Button
     | User
     | Offline
+    | Selected
 
 
 css : Stylesheet
@@ -93,6 +80,8 @@ css =
         [ Css.withClass User
             [ float right ]
         , marginLeft (px 2)
+        , withClass Selected
+            Html.Custom.indent
         ]
     , Css.class Offline
         [ float right
@@ -112,23 +101,82 @@ navNamespace =
 -- VIEW --
 
 
-{ class } =
+{ classList, class } =
     Html.CssHelpers.withNamespace navNamespace
 
 
-view : Taco -> Model -> Html Msg
-view taco model =
-    [ button "draw" (RouteClicked Route.InitDrawing)
+view : Model -> Html Msg
+view { page, taco } =
+    let
+        button_ =
+            button page
+    in
+    [ button_
+        { label = "draw"
+        , route = Route.InitDrawing
+        }
     , a [ class [ Divider ] ] []
-    , button "home" (RouteClicked Route.Landing)
-    , button "about" (RouteClicked Route.About)
-    , button "documentation" (RouteClicked Route.Documentation)
-    , button "contact" (RouteClicked Route.Contact)
-    , button "pricing" (RouteClicked Route.Pricing)
-    , button "road map" (RouteClicked Route.RoadMap)
+    , button_
+        { label = "home"
+        , route = Route.Landing
+        }
+    , button_
+        { label = "about"
+        , route = Route.About
+        }
+    , button_
+        { label = "documentation"
+        , route = Route.Documentation
+        }
+    , button_
+        { label = "contact"
+        , route = Route.Contact
+        }
+    , button_
+        { label = "pricing"
+        , route = Route.Pricing
+        }
+    , button_
+        { label = "road map"
+        , route = Route.RoadMap
+        }
     ]
         |> mixinUserButtons taco
         |> div [ class [ Nav ] ]
+
+
+isSelected : Page -> Route -> Bool
+isSelected page route =
+    case ( page, route ) of
+        ( Page.Home _, Route.Landing ) ->
+            True
+
+        ( Page.About, Route.About ) ->
+            True
+
+        ( Page.Documentation, Route.Documentation ) ->
+            True
+
+        ( Page.Contact _, Route.Contact ) ->
+            True
+
+        ( Page.Pricing, Route.Pricing ) ->
+            True
+
+        ( Page.RoadMap _, Route.RoadMap ) ->
+            True
+
+        ( Page.Settings _, Route.Settings ) ->
+            True
+
+        ( Page.Splash, Route.Landing ) ->
+            True
+
+        ( Page.Offline, Route.Landing ) ->
+            True
+
+        _ ->
+            False
 
 
 mixinUserButtons : Taco -> List (Html Msg) -> List (Html Msg)
@@ -168,10 +216,19 @@ userButton label clickMsg =
         [ Html.text label ]
 
 
-button : String -> Msg -> Html Msg
-button label clickMsg =
+type alias ButtonModel =
+    { label : String
+    , route : Route
+    }
+
+
+button : Page -> ButtonModel -> Html Msg
+button page { label, route } =
     a
-        [ class [ Button ]
-        , onClick clickMsg
+        [ classList
+            [ ( Button, True )
+            , ( Selected, isSelected page route )
+            ]
+        , onClick (RouteClicked route)
         ]
         [ Html.text label ]

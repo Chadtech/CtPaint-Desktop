@@ -79,6 +79,7 @@ css =
         , backgroundColor Ct.background2
         , color Ct.point0
         , width (px 800)
+        , padding (px 8)
         , height (px 300)
         , marginBottom (px 8)
         , property "-webkit-font-smoothing" "none"

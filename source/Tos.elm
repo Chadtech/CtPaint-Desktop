@@ -1,4 +1,54 @@
-module Tos exposing (Section, tos)
+module Tos
+    exposing
+        ( Section
+        , css
+        , tos
+        , view
+        )
+
+import Chadtech.Colors as Ct
+import Css exposing (..)
+import Css.Namespace exposing (namespace)
+import Html exposing (Html, div)
+import Html.CssHelpers
+import Html.Custom
+
+
+-- STYLES --
+
+
+type Class
+    = Container
+
+
+css : Stylesheet
+css =
+    [ (Css.class Container << List.append Html.Custom.indent)
+        [ backgroundColor Ct.background2
+        ]
+    ]
+        |> namespace tosNamespace
+        |> stylesheet
+
+
+tosNamespace : String
+tosNamespace =
+    Html.Custom.makeNamespace "TermsOfService"
+
+
+
+-- VIEW --
+
+
+{ class } =
+    Html.CssHelpers.withNamespace tosNamespace
+
+
+view : Html msg
+view =
+    div
+        [ class [ Container ] ]
+        []
 
 
 type alias Section =

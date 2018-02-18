@@ -29,6 +29,7 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..), RegistrationPayload)
+import Tos
 import Tuple.Infix exposing ((&), (:=))
 import Util
 import Validate exposing (ifBlank)
@@ -51,6 +52,8 @@ type alias Fields =
     , passwordConfirm : String
     , errors : List ( Field, String )
     , show : Bool
+    , termsOfServiceView : Bool
+    , agreesToTermsOfService : Bool
     }
 
 
@@ -89,6 +92,8 @@ init =
     , passwordConfirm = ""
     , errors = []
     , show = True
+    , termsOfServiceView = False
+    , agreesToTermsOfService = False
     }
         |> Ready
 
@@ -99,6 +104,7 @@ init =
 
 type Class
     = Long
+    | Main
 
 
 css : Stylesheet
@@ -111,6 +117,8 @@ css =
         [ Css.withClass Long
             [ width (px 300) ]
         ]
+    , Css.class Main
+        [ width (px 480) ]
     ]
         |> namespace registerNamespace
         |> stylesheet
@@ -183,6 +191,19 @@ successView email =
 
 registeringView : Fields -> List (Html Msg)
 registeringView fields =
+    if fields.termsOfServiceView then
+        termsOfServiceView
+    else
+        fieldsView fields
+
+
+termsOfServiceView : List (Html Msg)
+termsOfServiceView =
+    [ Tos.view ]
+
+
+fieldsView : Fields -> List (Html Msg)
+fieldsView fields =
     let
         value_ : String -> Attribute Msg
         value_ =
@@ -193,7 +214,9 @@ registeringView fields =
             errorView fields.errors
     in
     [ form
-        [ onSubmit Submitted ]
+        [ class [ Main ]
+        , onSubmit Submitted
+        ]
         [ field
             "name"
             [ value_ fields.name
@@ -326,7 +349,7 @@ attemptRegistration taco fields =
         errors =
             validate fields
     in
-    if List.isEmpty errors then
+    if fields.agreesToTermsOfService && List.isEmpty errors then
         let
             cmd =
                 { email = fields.email

@@ -8,7 +8,6 @@ import Html.Main
 import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
 import Msg exposing (Msg(..))
-import Nav
 import Navigation exposing (Location)
 import Page exposing (HoldUp(..), Page(..), Problem(..))
 import Page.About as About
@@ -72,7 +71,6 @@ init json location =
     case Decode.decodeValue Flags.decoder json of
         Ok flags ->
             { page = Error NoPageLoaded
-            , nav = Nav.init
             , taco = Taco.fromFlags flags
             }
                 |> initPage location
@@ -121,9 +119,9 @@ errorView =
 
 
 viewWithNav : Model -> (subMsg -> Msg) -> List (Html subMsg) -> Html Msg
-viewWithNav { taco, nav } toMsg =
+viewWithNav model toMsg =
     List.map (Html.map toMsg)
-        >> Html.Main.viewWithNav taco nav
+        >> Html.Main.viewWithNav model
 
 
 viewModel : Model -> Html Msg
