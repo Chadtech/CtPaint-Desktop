@@ -17,7 +17,6 @@ import Html exposing (Html, a, div, img, p, text)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
-import Html.Events exposing (onClick)
 import Html.Variables exposing (leftSideWidth)
 import Ports exposing (JsMsg(GetDrawings))
 import Reply exposing (Reply(NoReply))

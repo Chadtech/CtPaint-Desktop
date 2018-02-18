@@ -107,7 +107,7 @@ update msg model =
             case model.page of
                 Page.Contact subModel ->
                     subModel
-                        |> Contact.update subMsg
+                        |> Contact.update model.taco subMsg
                         |> return2 Page.Contact model
                         |> Tuple.mapSecond (Cmd.map ContactMsg)
 

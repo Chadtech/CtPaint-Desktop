@@ -123,15 +123,25 @@ type Class
     | Submit
 
 
+cardWidth : Float
+cardWidth =
+    530
+
+
+fieldTextWidth : Float
+fieldTextWidth =
+    180
+
+
 css : Stylesheet
 css =
     [ Css.Elements.p
         [ Css.withClass Long
-            [ width (px 180) ]
+            [ width (px fieldTextWidth) ]
         ]
     , Css.Elements.input
         [ Css.withClass Long
-            [ width (px 300) ]
+            [ width (px (cardWidth - fieldTextWidth)) ]
         ]
     , Css.class Submit
         [ marginTop (px 0)
@@ -139,7 +149,7 @@ css =
         , margin auto
         ]
     , Css.class Main
-        [ width (px 480) ]
+        [ width (px cardWidth) ]
     , Css.class LockContainer
         [ display inlineBlock
         , children
@@ -196,13 +206,15 @@ registerNamespace =
 
 view : Model -> Html Msg
 view model =
-    Html.Custom.cardSolitary []
-        [ Html.Custom.header
-            { text = "register"
-            , closability = Html.Custom.NotClosable
-            }
-        , Html.Custom.cardBody [] (viewContent model)
-        ]
+    [ Html.Custom.header
+        { text = "register"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody [] (viewContent model)
+    ]
+        |> Html.Custom.cardSolitary []
+        |> List.singleton
+        |> Html.Custom.background []
 
 
 viewContent : Model -> List (Html Msg)
@@ -352,7 +364,7 @@ emailCheck checked =
             []
         , p
             []
-            [ Html.text "You can email me sometimes about updates" ]
+            [ Html.text "you can email me sometimes about CtPaint news" ]
         ]
 
 
@@ -515,6 +527,7 @@ attemptRegistration taco fields =
                 , name = fields.name
                 , password = fields.password
                 , browser = taco.config.browser
+                , emailable = fields.isOkayWithEmails
                 }
                     |> Register
                     |> Ports.send

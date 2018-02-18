@@ -28,6 +28,7 @@ type alias RegistrationPayload =
     , name : String
     , password : String
     , browser : Browser
+    , emailable : Bool
     }
 
 

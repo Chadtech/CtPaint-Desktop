@@ -9,14 +9,12 @@ module Page.Settings
         )
 
 import Css exposing (..)
-import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.User exposing (User)
 import Html exposing (Html)
 import Html.CssHelpers
 import Html.Custom
 import Reply exposing (Reply(NoReply, SetUser))
-import Tuple.Infix exposing ((&))
 
 
 -- TYPES --

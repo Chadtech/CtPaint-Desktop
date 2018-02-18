@@ -177,7 +177,8 @@ viewModel model =
                 |> viewWithNav model SettingsMsg
 
         Page.Register subModel ->
-            Html.map RegisterMsg (Register.view subModel)
+            [ Register.view subModel ]
+                |> viewWithNav model RegisterMsg
 
         Page.Login subModel ->
             [ Login.view subModel ]

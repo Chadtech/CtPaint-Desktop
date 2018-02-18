@@ -178,7 +178,7 @@ view model =
             fieldErrorView model.errors
     in
     [ Html.Custom.header
-        { text = "CtPaint"
+        { text = "login"
         , closability = Html.Custom.NotClosable
         }
     , Html.Custom.cardBody []

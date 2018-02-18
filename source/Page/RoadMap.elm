@@ -84,6 +84,10 @@ wants =
     , "multi-select palette colors"
     , "circle tool"
     , "blur"
+    , "customizable key commands"
+    , "unlimited storage"
+    , "private drawings"
+    , "svg software"
     ]
 
 

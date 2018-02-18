@@ -11,11 +11,14 @@ module Page.Contact
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Html exposing (Html, a, br, div, p, textarea)
+import Data.Taco exposing (Taco)
+import Html exposing (Html, a, br, div, p, span, textarea)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput)
+import Ports
+import Tracking
 import Tuple.Infix exposing ((&))
 
 
@@ -28,7 +31,9 @@ type Msg
 
 
 type alias Model =
-    { field : String }
+    { field : String
+    , sendClicked : Bool
+    }
 
 
 
@@ -37,22 +42,38 @@ type alias Model =
 
 init : Model
 init =
-    { field = "" }
+    { field = ""
+    , sendClicked = False
+    }
 
 
 
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         FieldUpdated field ->
-            { model | field = field }
-                & Cmd.none
+            if model.sendClicked then
+                model & Cmd.none
+            else
+                { model | field = field }
+                    & Cmd.none
 
         SendClicked ->
-            model & Cmd.none
+            { model
+                | sendClicked = True
+            }
+                & trackingCmd taco model
+
+
+trackingCmd : Taco -> Model -> Cmd Msg
+trackingCmd taco model =
+    if model.field /= "" then
+        Ports.track taco (Tracking.CommentSubmitted model.field)
+    else
+        Cmd.none
 
 
 
@@ -62,7 +83,9 @@ update msg model =
 type Class
     = TextContainer
     | CommentBox
+    | Disabled
     | SendButton
+    | Email
 
 
 css : Stylesheet
@@ -87,13 +110,21 @@ css =
         , margin auto
         , marginTop (px 8)
         , resize none
+        , withClass Disabled
+            [ backgroundColor Ct.ignorable1 ]
         ]
     , Css.class SendButton
         [ display block
         , margin auto
         , marginTop (px 8)
         , maxWidth maxContent
+        , withClass Disabled
+            [ hover [ color Ct.point0 ]
+            , backgroundColor Ct.ignorable1
+            ]
         ]
+    , Css.class Email
+        [ color Ct.important0 ]
     ]
         |> namespace contactNamespace
         |> stylesheet
@@ -108,7 +139,7 @@ contactNamespace =
 -- VIEW --
 
 
-{ class } =
+{ class, classList } =
     Html.CssHelpers.withNamespace contactNamespace
 
 
@@ -116,35 +147,55 @@ view : Model -> List (Html Msg)
 view model =
     [ words
     , textarea
-        [ class [ CommentBox ]
+        [ classList
+            [ ( CommentBox, True )
+            , ( Disabled, model.sendClicked )
+            ]
         , onInput FieldUpdated
         , Attrs.spellcheck False
+        , Attrs.value (commentBoxText model)
+        , Attrs.placeholder "enter your comment here"
         ]
-        [ Html.text model.field ]
+        []
     , a
-        [ class [ SendButton ]
+        [ classList
+            [ ( SendButton, True )
+            , ( Disabled, model.sendClicked )
+            ]
         , onClick SendClicked
         ]
         [ Html.text "send" ]
     ]
 
 
+commentBoxText : Model -> String
+commentBoxText model =
+    if model.sendClicked then
+        "sent! Thank you"
+    else
+        model.field
+
+
 words : Html Msg
 words =
-    [ comment0
-    , email
-    , comment1
-    ]
-        |> List.map p_
-        |> List.intersperse (br [] [])
-        |> div [ class [ TextContainer ] ]
+    div
+        [ class [ TextContainer ] ]
+        [ p
+            []
+            [ Html.text comment0
+            , span
+                [ class [ Email ] ]
+                [ Html.text email ]
+            , Html.text comment1
+            ]
+        ]
 
 
 comment0 : String
 comment0 =
     """
     Send your  questions, comments, criticisms, and bug reports
-    to..
+    to
     """
 
 
@@ -158,12 +209,5 @@ email =
 comment1 : String
 comment1 =
     """
-    ..or fill out and submit the form below. I would love to hear from you!
+    or fill out and submit the form below. I would love to hear from you!
     """
-
-
-p_ : String -> Html msg
-p_ str =
-    p
-        []
-        [ Html.text str ]

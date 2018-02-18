@@ -183,12 +183,12 @@ headerStyle : Snippet
 headerStyle =
     [ backgroundColor Ct.point0
     , height (px 25)
-    , width (calc (pct 100) minus (px 8))
+    , width (calc (pct 100) minus (px 10))
     , position absolute
     , padding (px 2)
     , margin (px 2)
     , lineHeight (px 25)
-    , paddingLeft (px 2)
+    , paddingLeft (px 4)
     , children
         [ p
             [ color Ct.ignorable3

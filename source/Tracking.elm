@@ -39,6 +39,7 @@ type Event
     = AppInitialized
     | AppFailedToInitialize String
     | WantClicked String
+    | CommentSubmitted String
 
 
 encode : Payload -> Value
@@ -66,5 +67,11 @@ encodeEvent event =
         WantClicked want ->
             [ "name" := Encode.string "want clicked"
             , "want" := Encode.string want
+            ]
+                |> Encode.object
+
+        CommentSubmitted comment ->
+            [ "name" := Encode.string "comment clicked"
+            , "comment" := Encode.string comment
             ]
                 |> Encode.object
