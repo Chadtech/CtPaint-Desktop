@@ -9,6 +9,7 @@ module Page.Register
         , view
         )
 
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
@@ -23,6 +24,7 @@ import Html
         , form
         , input
         , p
+        , span
         )
 import Html.Attributes as Attr
 import Html.CssHelpers
@@ -77,6 +79,9 @@ type Msg
     | SubmitClicked
     | Succeeded String
     | Failed Problem
+    | TosAgreeClicked
+    | ReadTosClicked
+    | GoBackFromTosClicked
 
 
 
@@ -105,6 +110,11 @@ init =
 type Class
     = Long
     | Main
+    | Field
+    | Lock
+    | LockContainer
+    | TosLink
+    | TosTitle
 
 
 css : Stylesheet
@@ -119,6 +129,42 @@ css =
         ]
     , Css.class Main
         [ width (px 480) ]
+    , Css.class LockContainer
+        [ display inlineBlock
+        , children
+            [ Css.Elements.p
+                [ display inlineBlock
+                , marginLeft (px 8)
+                ]
+            ]
+        ]
+    , Css.class Lock
+        [ height (px 24)
+        , cursor pointer
+        , children
+            [ Css.Elements.input
+                [ width auto ]
+            ]
+        ]
+    , Css.class Field
+        [ margin4 (px 4) (px 0) (px 0) (px 0)
+        , children
+            [ Css.Elements.input
+                [ width (px 80)
+                , withClass Lock
+                    [ width (px 24) ]
+                ]
+            ]
+        ]
+    , Css.class TosLink
+        [ color Ct.important0
+        , cursor pointer
+        , marginLeft (px 11)
+        , hover
+            [ color Ct.important1 ]
+        ]
+    , Css.class TosTitle
+        [ marginBottom (px 8) ]
     ]
         |> namespace registerNamespace
         |> stylesheet
@@ -199,7 +245,14 @@ registeringView fields =
 
 termsOfServiceView : List (Html Msg)
 termsOfServiceView =
-    [ Tos.view ]
+    [ p
+        [ class [ TosTitle ] ]
+        [ Html.text "CtPaint Terms of Service" ]
+    , Tos.view
+    , Html.Custom.menuButton
+        [ onClick GoBackFromTosClicked ]
+        [ Html.text "go back" ]
+    ]
 
 
 fieldsView : Fields -> List (Html Msg)
@@ -249,6 +302,7 @@ fieldsView fields =
             , onInput_ PasswordConfirm
             ]
         , errorView_ PasswordConfirm
+        , lock fields.agreesToTermsOfService
 
         -- This input is here, because without it
         -- the enter key does not cause submission
@@ -266,6 +320,37 @@ fieldsView fields =
 
 
 -- COMPONENT HTML --
+
+
+lock : Bool -> Html Msg
+lock locked =
+    form
+        [ class [ Field, LockContainer ] ]
+        [ input
+            [ class [ Lock ]
+            , lockedValue locked
+            , onClick TosAgreeClicked
+            , Attr.type_ "button"
+            ]
+            []
+        , p
+            []
+            [ Html.text "I agree to the"
+            , span
+                [ class [ TosLink ]
+                , onClick ReadTosClicked
+                ]
+                [ Html.text "CtPaint terms of service" ]
+            ]
+        ]
+
+
+lockedValue : Bool -> Attribute Msg
+lockedValue locked =
+    if locked then
+        Attr.value "x"
+    else
+        Attr.value " "
 
 
 field : String -> List (Attribute Msg) -> Html Msg
@@ -341,6 +426,43 @@ update taco msg model =
 
         Failed problem ->
             Fail problem & Cmd.none
+
+        TosAgreeClicked ->
+            case model of
+                Ready fields ->
+                    { fields
+                        | agreesToTermsOfService =
+                            not fields.agreesToTermsOfService
+                    }
+                        |> Ready
+                        & Cmd.none
+
+                _ ->
+                    model & Cmd.none
+
+        ReadTosClicked ->
+            case model of
+                Ready fields ->
+                    { fields
+                        | termsOfServiceView = True
+                    }
+                        |> Ready
+                        & Cmd.none
+
+                _ ->
+                    model & Cmd.none
+
+        GoBackFromTosClicked ->
+            case model of
+                Ready fields ->
+                    { fields
+                        | termsOfServiceView = False
+                    }
+                        |> Ready
+                        & Cmd.none
+
+                _ ->
+                    model & Cmd.none
 
 
 attemptRegistration : Taco -> Fields -> ( Model, Cmd Msg )
