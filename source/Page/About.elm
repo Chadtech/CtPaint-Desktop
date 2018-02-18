@@ -8,7 +8,7 @@ import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
-import Data.Config as Config
+import Data.Config as Config exposing (Config)
 import Data.Taco exposing (Taco)
 import Html exposing (Html, br, div, img, p)
 import Html.Attributes as Attrs
@@ -100,7 +100,7 @@ aboutNamespace =
 
 view : Taco -> List (Html msg)
 view taco =
-    topPart taco ++ features taco
+    topPart taco
 
 
 topPart : Taco -> List (Html msg)
@@ -113,60 +113,35 @@ topPart { config } =
             ]
             []
         ]
-    , div
-        [ class [ TextContainer ] ]
-        [ p
-            []
-            [ Html.text intro ]
-        , br [] []
-        , p
-            []
-            [ Html.text personal ]
-        ]
-    , div
-        [ class [ Divider ] ]
-        []
-    , div
-        [ class [ TextContainer ] ]
-        [ p
-            []
-            [ Html.text "feature list" ]
-        ]
+    , textContent config
     ]
 
 
-features : Taco -> List (Html msg)
-features taco =
-    [ feature
-        "Open stuff"
-        "Opening stuff is great"
-        ""
-    , feature
-        "Save stuff too"
-        "I love saving stuff"
-        ""
-    ]
-
-
-feature : String -> String -> String -> Html msg
-feature title words url =
-    div
-        [ class [ Feature ] ]
-        [ div
-            [ class [ FeatureImageContainer ] ]
-            [ img
-                [ class [ FeatureImage ]
-                , Attrs.src url
-                ]
-                []
-            ]
-        , p
-            []
-            [ Html.text title ]
-        , p
-            []
-            [ Html.text words ]
+textContent : Config -> Html msg
+textContent { buildNumber } =
+    [ intro
+    , personal
+    , tech
+    , thanks
+    , String.join " "
+        [ "This is build number"
+        , toString buildNumber
+        , "of this software"
         ]
+    ]
+        |> List.map p_
+        |> List.intersperse break
+        |> div [ class [ TextContainer ] ]
+
+
+break : Html msg
+break =
+    br [] []
+
+
+p_ : String -> Html msg
+p_ str =
+    p [] [ Html.text str ]
 
 
 intro : String
@@ -185,4 +160,36 @@ personal =
     """
     It was made by one guy named "Chadtech" over the course of two years
     in his free time.
+    """
+
+
+tech : String
+tech =
+    """
+    It was made with the following technology: Elm, Elm-Css, Elm-Canvas,
+    Browserify, Amazon Web Services, and Gulp.
+    """
+
+
+thanks : String
+thanks =
+    """
+    Ive worked on this project for a long time, and so I have worked with
+    a lot of different people during the course of this project. In chronological
+    order, here are my thank yous. Thanks to Funkytek who caused me to get into
+    JavaScript whereafter I began working on CtPaint. Thanks to Jack Hou, a contributor
+    to Chromium, who added 'image rendering : pixelated' to Google Chromium,
+    a development I followed closely and has been essential to the technology
+    behind CtPaint. Thanks to the meet ups NodeAZ, VegasJS, QueensJS, and
+    Elm Berlin for letting me talk about CtPaint. Thanks to my friend Jacob
+    Rosenthal who was always there to talk to me about code, and initially proposed
+    the idea of doing a kickstarter. Thanks to Ethan Hartman, Taylor Alexander, and
+    Alex Rees, all of whom were marketers who had great feedback about kickstarter campaigns.
+    Thanks to Patrick Gram, Bob Laudner, and David Urbanic, who  did a really good job
+    helping me put together my kickstarter video.Thanks to everyone who contributed to
+    the original kick starter even tho it wasnt successful. Thanks Sascha Naderer,
+    Andreas Kullenberg, Jun, Bo, and Erik 'Kasumi' from the pixelation community,
+    for either their thorough and knowledgeable opinions on pixel art software, as
+    well as their time using the CtPaint alpha to provide feedback, or the pixel art
+    they have contributed to this project.
     """

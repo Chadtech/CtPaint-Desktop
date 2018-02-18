@@ -250,6 +250,10 @@ handleRoute destination model =
             { model | page = Page.About }
                 & Cmd.none
 
+        Route.Documentation ->
+            { model | page = Page.Documentation }
+                & Cmd.none
+
         Route.Contact ->
             { model | page = Page.Contact Contact.init }
                 & Cmd.none

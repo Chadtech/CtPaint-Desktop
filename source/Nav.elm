@@ -122,6 +122,7 @@ view taco model =
     , a [ class [ Divider ] ] []
     , button "home" (RouteClicked Route.Landing)
     , button "about" (RouteClicked Route.About)
+    , button "documentation" (RouteClicked Route.Documentation)
     , button "contact" (RouteClicked Route.Contact)
     , button "pricing" (RouteClicked Route.Pricing)
     , button "road map" (RouteClicked Route.RoadMap)

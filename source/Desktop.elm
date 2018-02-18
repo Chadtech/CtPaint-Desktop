@@ -13,6 +13,7 @@ import Navigation exposing (Location)
 import Page exposing (HoldUp(..), Page(..), Problem(..))
 import Page.About as About
 import Page.Contact as Contact
+import Page.Documentation as Documentation
 import Page.Error as Error
 import Page.Home as Home
 import Page.InitDrawing as InitDrawing
@@ -144,6 +145,10 @@ viewModel model =
 
         Page.About ->
             About.view model.taco
+                |> viewWithNav model identity
+
+        Page.Documentation ->
+            Documentation.view model.taco
                 |> viewWithNav model identity
 
         Page.Pricing ->

@@ -15,6 +15,7 @@ type Page
     = Home Home.Model
     | InitDrawing InitDrawing.Model
     | About
+    | Documentation
     | Contact Contact.Model
     | Pricing
     | RoadMap RoadMap.Model

@@ -8,6 +8,7 @@ type Route
     = Landing
     | InitDrawing
     | About
+    | Documentation
     | Contact
     | Pricing
     | RoadMap
@@ -28,6 +29,7 @@ route =
     [ Url.map Landing (s "")
     , Url.map InitDrawing (s "init")
     , Url.map About (s "about")
+    , Url.map Documentation (s "documentation")
     , Url.map Contact (s "contact")
     , Url.map Pricing (s "pricing")
     , Url.map RoadMap (s "roadmap")
@@ -56,6 +58,9 @@ toPieces route =
 
         About ->
             [ "about" ]
+
+        Documentation ->
+            [ "documentation" ]
 
         Contact ->
             [ "contact" ]

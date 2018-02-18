@@ -27,6 +27,7 @@ type alias Config =
     , mountPath : String
     , logoSrc : String
     , videoSrc : String
+    , buildNumber : Int
     }
 
 
@@ -42,6 +43,7 @@ fromFlags flags =
         , mountPath = flags.mountPath
         , logoSrc = "splash-image.png"
         , videoSrc = "splash-video.mp4"
+        , buildNumber = flags.buildNumber
         }
         seed
 
