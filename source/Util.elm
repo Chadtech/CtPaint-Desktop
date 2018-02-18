@@ -77,3 +77,13 @@ viewIf condition html =
         html
     else
         Html.text ""
+
+
+viewMaybe : Maybe a -> (a -> Html msg) -> Html msg
+viewMaybe maybe htmlFunc =
+    case maybe of
+        Just value ->
+            htmlFunc value
+
+        Nothing ->
+            Html.text ""

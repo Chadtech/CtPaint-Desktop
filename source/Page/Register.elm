@@ -53,9 +53,11 @@ type alias Fields =
     , password : String
     , passwordConfirm : String
     , errors : List ( Field, String )
+    , generalError : Maybe String
     , show : Bool
     , termsOfServiceView : Bool
     , agreesToTermsOfService : Bool
+    , isOkayWithEmails : Bool
     }
 
 
@@ -82,6 +84,7 @@ type Msg
     | TosAgreeClicked
     | ReadTosClicked
     | GoBackFromTosClicked
+    | EmailAgreeClicked
 
 
 
@@ -96,9 +99,11 @@ init =
     , password = ""
     , passwordConfirm = ""
     , errors = []
+    , generalError = Nothing
     , show = True
     , termsOfServiceView = False
     , agreesToTermsOfService = False
+    , isOkayWithEmails = False
     }
         |> Ready
 
@@ -302,7 +307,11 @@ fieldsView fields =
             , onInput_ PasswordConfirm
             ]
         , errorView_ PasswordConfirm
-        , lock fields.agreesToTermsOfService
+        , tosCheck fields.agreesToTermsOfService
+        , emailCheck fields.isOkayWithEmails
+        , Util.viewMaybe
+            fields.generalError
+            Html.Custom.error
 
         -- This input is here, because without it
         -- the enter key does not cause submission
@@ -322,13 +331,30 @@ fieldsView fields =
 -- COMPONENT HTML --
 
 
-lock : Bool -> Html Msg
-lock locked =
+emailCheck : Bool -> Html Msg
+emailCheck checked =
     form
         [ class [ Field, LockContainer ] ]
         [ input
             [ class [ Lock ]
-            , lockedValue locked
+            , checkedValue checked
+            , onClick EmailAgreeClicked
+            , Attr.type_ "button"
+            ]
+            []
+        , p
+            []
+            [ Html.text "You can email me sometimes about updates" ]
+        ]
+
+
+tosCheck : Bool -> Html Msg
+tosCheck checked =
+    form
+        [ class [ Field, LockContainer ] ]
+        [ input
+            [ class [ Lock ]
+            , checkedValue checked
             , onClick TosAgreeClicked
             , Attr.type_ "button"
             ]
@@ -345,9 +371,9 @@ lock locked =
         ]
 
 
-lockedValue : Bool -> Attribute Msg
-lockedValue locked =
-    if locked then
+checkedValue : Bool -> Attribute Msg
+checkedValue checked =
+    if checked then
         Attr.value "x"
     else
         Attr.value " "
@@ -421,6 +447,18 @@ update taco msg model =
         GoBackFromTosClicked ->
             ifFields (setTermsOfServiceView False) model
 
+        EmailAgreeClicked ->
+            ifFields toggleEmail model
+
+
+toggleEmail : Fields -> ( Fields, Cmd Msg )
+toggleEmail fields =
+    { fields
+        | isOkayWithEmails =
+            not fields.isOkayWithEmails
+    }
+        & Cmd.none
+
 
 toggleTos : Fields -> ( Fields, Cmd Msg )
 toggleTos fields =
@@ -456,7 +494,13 @@ attemptRegistration taco fields =
         errors =
             validate fields
     in
-    if fields.agreesToTermsOfService && List.isEmpty errors then
+    if not fields.agreesToTermsOfService then
+        { fields
+            | generalError =
+                Just "You have to agree to the terms of service to use this site"
+        }
+            & Cmd.none
+    else if List.isEmpty errors then
         let
             cmd =
                 { email = fields.email
