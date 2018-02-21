@@ -150,15 +150,5 @@ decodePayload decoder json =
 
 
 decodeStringPayload : Value -> Result String String
-decodeStringPayload json =
-    Decode.decodeValue stringPayload json
-
-
-stringPayload : Decoder String
-stringPayload =
-    Decode.field "payload" Decode.string
-
-
-typeDecoder : Decoder String
-typeDecoder =
-    Decode.field "type" Decode.string
+decodeStringPayload =
+    decodePayload Decode.string

@@ -87,7 +87,9 @@ wants =
     , "customizable key commands"
     , "unlimited storage"
     , "private drawings"
-    , "svg software"
+
+    --, "svg software"
+    , "imgur upload"
     ]
 
 
