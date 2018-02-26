@@ -82,7 +82,7 @@ Desktop = function(manifest) {
             case "get drawings":
                 Client.getDrawings({
                     onSuccess: function(result) {
-                        console.log("Result!", result);
+                        toElm("drawings loaded", result.data)
                     },
                     onFailure: function(err) {
                         console.log("Error!", err);

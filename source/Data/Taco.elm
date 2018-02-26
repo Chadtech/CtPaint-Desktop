@@ -2,6 +2,7 @@ module Data.Taco
     exposing
         ( Taco
         , fromFlags
+        , setEntities
         , setSeed
         , setUser
         )
@@ -46,3 +47,8 @@ setUser user taco =
 setSeed : Seed -> Taco -> Taco
 setSeed seed taco =
     { taco | seed = seed }
+
+
+setEntities : Taco -> Entities -> Taco
+setEntities taco entities =
+    { taco | entities = entities }

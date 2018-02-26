@@ -132,7 +132,7 @@ viewModel model =
             case model.taco.user of
                 User.LoggedIn user ->
                     subModel
-                        |> Home.view user
+                        |> Home.view model.taco user
                         |> viewWithNav model HomeMsg
 
                 _ ->

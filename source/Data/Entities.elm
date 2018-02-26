@@ -2,10 +2,11 @@ module Data.Entities
     exposing
         ( Entities
         , empty
+        , loadDrawings
         )
 
 import Data.Drawing exposing (Drawing)
-import Dict exposing (Dict)
+import Id
 
 
 {-|
@@ -20,9 +21,19 @@ import Dict exposing (Dict)
 
 -}
 type alias Entities =
-    { drawings : Dict String Drawing }
+    { drawings : Id.Dict Drawing }
+
+
+loadDrawings : Entities -> List Drawing -> Entities
+loadDrawings entities drawings =
+    { entities
+        | drawings =
+            drawings
+                |> Id.toDict .id
+                |> Id.merge entities.drawings
+    }
 
 
 empty : Entities
 empty =
-    { drawings = Dict.empty }
+    { drawings = Id.emptyDict .id }

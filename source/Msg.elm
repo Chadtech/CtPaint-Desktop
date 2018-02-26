@@ -1,5 +1,6 @@
 module Msg exposing (..)
 
+import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
 import Data.User as User exposing (User)
 import Json.Decode as Decode
@@ -46,6 +47,7 @@ type Msg
     | OfflineMsg Offline.Msg
     | SettingsMsg Settings.Msg
     | InitDrawingMsg InitDrawing.Msg
+    | DrawingsLoaded (List Drawing)
     | MsgDecodeFailed DecodeProblem
 
 
@@ -57,7 +59,7 @@ type DecodeProblem
 
 decode : Taco -> Value -> Msg
 decode taco json =
-    case decodeValue (decoder taco json) json of
+    case decodeValue (decoder taco) json of
         Ok msg ->
             msg
 
@@ -65,88 +67,67 @@ decode taco json =
             MsgDecodeFailed (Other err)
 
 
-decoder : Taco -> Value -> Decoder Msg
-decoder taco json =
+decoder : Taco -> Decoder Msg
+decoder taco =
     Decode.field "type" Decode.string
-        |> Decode.andThen
-            (Decode.succeed << toMsg taco json)
+        |> Decode.andThen (toMsg taco)
 
 
-toMsg : Taco -> Value -> String -> Msg
-toMsg taco json type_ =
+toMsg : Taco -> String -> Decoder Msg
+toMsg taco type_ =
     case type_ of
         "login succeeded" ->
-            let
-                userDecoder =
-                    User.userDecoder taco.config.browser
-            in
-            case decodePayload userDecoder json of
-                Ok user ->
-                    LogInSucceeded user
-
-                Err err ->
-                    MsgDecodeFailed (FailedToDecoderUser err)
+            userDecoder taco
+                |> Decode.map LogInSucceeded
 
         "login failed" ->
-            case decodeStringPayload json of
-                Ok err ->
-                    LoginMsg (Login.LoginFailed err)
-
-                Err err ->
-                    LoginMsg (Login.LoginFailed err)
+            payload Decode.string
+                |> Decode.map (LoginMsg << Login.LoginFailed)
 
         "logout succeeded" ->
-            LogOutSucceeded
+            Decode.succeed LogOutSucceeded
 
         "logout failed" ->
-            case decodeStringPayload json of
-                Ok err ->
-                    LogOutFailed err
-
-                Err err ->
-                    LogOutFailed err
+            payload Decode.string
+                |> Decode.map LogOutFailed
 
         "verification succeeded" ->
             VerifyMsg Verify.Succeeded
+                |> Decode.succeed
 
         "verification failed" ->
-            case decodeStringPayload json of
-                Ok err ->
-                    VerifyMsg (Verify.Failed err)
-
-                Err err ->
-                    VerifyMsg (Verify.Failed err)
+            payload Decode.string
+                |> Decode.map (Verify.Failed >> VerifyMsg)
 
         "registration succeeded" ->
-            case decodeStringPayload json of
-                Ok email ->
-                    RegisterMsg (Register.Succeeded email)
-
-                Err err ->
-                    Register.CouldntDecodeSuccess
-                        |> Register.Failed
-                        |> RegisterMsg
+            payload Decode.string
+                |> Decode.map (Register.Succeeded >> RegisterMsg)
 
         "registration failed" ->
-            case decodeStringPayload json of
-                Ok err ->
-                    err
-                        |> Register.Other
-                        |> Register.Failed
-                        |> RegisterMsg
+            payload Decode.string
+                |> Decode.map (Register.Other >> Register.Failed >> RegisterMsg)
 
-                Err err ->
-                    Register.CouldntDecodeFail
-                        |> Register.Failed
-                        |> RegisterMsg
+        "drawings loaded" ->
+            payload (Decode.list Drawing.decoder)
+                |> Decode.map DrawingsLoaded
 
-        type_ ->
-            MsgDecodeFailed (UnrecognizedType type_)
+        _ ->
+            Decode.fail ("Unrecognized Js Msg : " ++ type_)
+
+
+userDecoder : Taco -> Decoder User
+userDecoder taco =
+    User.userDecoder taco.config.browser
 
 
 decodePayload : Decoder a -> Value -> Result String a
 decodePayload decoder json =
     Decode.decodeValue (Decode.field "payload" decoder) json
+
+
+payload : Decoder a -> Decoder a
+payload =
+    Decode.field "payload"
 
 
 decodeStringPayload : Value -> Result String String

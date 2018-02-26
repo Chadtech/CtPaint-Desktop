@@ -10,14 +10,17 @@ module Page.Home
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
+import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Drawing exposing (Drawing)
+import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
 import Html exposing (Html, a, div, img, p, text)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Variables exposing (leftSideWidth)
+import Id
 import Ports exposing (JsMsg(GetDrawings))
 import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
@@ -31,7 +34,7 @@ type Msg
 
 
 type alias Model =
-    { drawings : List Drawing }
+    ()
 
 
 
@@ -40,7 +43,7 @@ type alias Model =
 
 init : User -> ( Model, Cmd Msg )
 init user =
-    { drawings = [] }
+    ()
         & Ports.send GetDrawings
 
 
@@ -62,6 +65,10 @@ update msg model =
 
 type Class
     = Drawings
+    | DrawingContainer
+    | DrawingImageContainer
+    | DrawingTitle
+    | Drawing
     | ProfilePictureContainer
     | ProfilePicture
     | Profile
@@ -79,6 +86,43 @@ css =
         , right (px 8)
         , bottom (px 12)
         , backgroundColor Ct.background2
+        ]
+    , Css.class DrawingContainer
+        [ width (px 200)
+        , height (px 200)
+        , border3 (px 2) solid Ct.point0
+        , overflow hidden
+        , marginTop (px 8)
+        , marginLeft (px 8)
+        , display inlineBlock
+        , position relative
+        , cursor pointer
+        , hover
+            [ border3 (px 2) solid Ct.point1
+            , children
+                [ Css.class DrawingTitle
+                    [ backgroundColor Ct.background3
+                    , children
+                        [ Css.Elements.p
+                            [ color Ct.point1 ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    , Css.class DrawingTitle
+        [ position absolute
+        , width (pct 100)
+        , left (px 0)
+        , bottom (px 0)
+        , backgroundColor Ct.background1
+        , padding (px 4)
+        , textAlign center
+        ]
+    , Css.class Drawing
+        [ width (px 220)
+        , marginLeft (px -10)
+        , marginTop (px -10)
         ]
     , (Css.class ProfilePictureContainer << List.append Html.Custom.indent)
         [ width (px (leftSideWidth - 4))
@@ -131,10 +175,10 @@ type NotLoggedIn
     | LoggingIn
 
 
-view : User -> Model -> List (Html Msg)
-view user model =
+view : Taco -> User -> Model -> List (Html Msg)
+view taco user model =
     [ leftSide user
-    , drawings
+    , drawings (Id.values taco.entities.drawings)
     ]
 
 
@@ -181,8 +225,23 @@ profilePicture url =
         ]
 
 
-drawings : Html Msg
-drawings =
+drawings : List Drawing -> Html Msg
+drawings drawings =
     div
         [ class [ Drawings ] ]
-        []
+        (List.map drawing drawings |> List.repeat 40 |> List.concat)
+
+
+drawing : Drawing -> Html Msg
+drawing drawing =
+    div
+        [ class [ DrawingContainer ] ]
+        [ img
+            [ class [ Drawing ]
+            , Attrs.src drawing.data
+            ]
+            []
+        , div
+            [ class [ DrawingTitle ] ]
+            [ p [] [ Html.text drawing.name ] ]
+        ]

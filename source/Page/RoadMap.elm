@@ -87,8 +87,8 @@ wants =
     , "customizable key commands"
     , "unlimited storage"
     , "private drawings"
-
-    --, "svg software"
+    , "search all ctpaint images"
+    , "svg software"
     , "imgur upload"
     ]
 

@@ -1,6 +1,7 @@
 module Update exposing (update)
 
 import Comply
+import Data.Entities as Entities
 import Data.Taco as Taco
 import Data.User as User
 import Model
@@ -203,6 +204,16 @@ update msg model =
 
         NavMsg subMsg ->
             model & Cmd.map NavMsg (Nav.update subMsg)
+
+        DrawingsLoaded drawings ->
+            { model
+                | taco =
+                    drawings
+                        |> Entities.loadDrawings
+                            model.taco.entities
+                        |> Taco.setEntities model.taco
+            }
+                & Cmd.none
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
