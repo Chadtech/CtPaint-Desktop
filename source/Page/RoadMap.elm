@@ -281,8 +281,7 @@ view taco model =
         [ class [ Body ] ]
         [ p
             [ class [ Text ] ]
-            [ Html.text wantsSideText ]
-        , loggedInNotice isLoggedIn
+            [ Html.text (wantsSideText isLoggedIn) ]
         , wantsView isLoggedIn model
         , suggestionBox isLoggedIn model
         , suggestionSendButton isLoggedIn model.otherWantClicked
@@ -294,20 +293,6 @@ view taco model =
             [ Html.text immediateFeatures ]
         ]
     ]
-
-
-loggedInNotice : Bool -> Html Msg
-loggedInNotice isLoggedIn =
-    if isLoggedIn then
-        Html.text ""
-    else
-        div
-            []
-            [ br [] []
-            , p
-                [ class [ Text ] ]
-                [ Html.text "You must be logged in to click suggestions." ]
-            ]
 
 
 immediateFeatures : String
@@ -376,15 +361,23 @@ suggestionSendButton isLoggedIn otherWantClicked =
         [ Html.text "send suggestion" ]
 
 
-wantsSideText : String
-wantsSideText =
-    """
-    Below is a list of features I would like to implement into CtPaint.
-    Click on the ones you would like to see added to CtPaint,
-    so I can prioritize them in development.
-    You can also fill in the suggestion field at the bottom and
-    submit your own ideas.
-    """
+wantsSideText : Bool -> String
+wantsSideText isLoggedIn =
+    if isLoggedIn then
+        """
+        Below is a list of features I would like to implement into CtPaint.
+        Click on the ones you would like to see added to CtPaint,
+        and I will get a message letting me know. This helps me prioritize
+        features. You can also fill in the suggestion field at the bottom and
+        submit your own ideas.
+        """
+    else
+        """
+        Below is a list of features I would like to implement into CtPaint.
+        If you log in, you can click on the ones you would like to see added
+        to CtPaint, and I will get a message letting me know. This helps me
+        prioritize features. They will remain disabled until you log in.
+        """
 
 
 wantView : Bool -> Set String -> String -> Html Msg
