@@ -6,7 +6,7 @@ module Data.Entities
         )
 
 import Data.Drawing exposing (Drawing)
-import Id
+import Id exposing (Db)
 
 
 {-|
@@ -21,19 +21,20 @@ import Id
 
 -}
 type alias Entities =
-    { drawings : Id.Dict Drawing }
+    { drawings : Db Drawing }
 
 
 loadDrawings : Entities -> List Drawing -> Entities
 loadDrawings entities drawings =
     { entities
         | drawings =
-            drawings
-                |> Id.toDict .id
-                |> Id.merge entities.drawings
+            List.foldr
+                Id.insert
+                entities.drawings
+                drawings
     }
 
 
 empty : Entities
 empty =
-    { drawings = Id.emptyDict .id }
+    { drawings = Id.emptyDb .id }

@@ -2,7 +2,6 @@ module Comply
     exposing
         ( fromDouble
         , fromTriple
-        , noReply
         )
 
 import Data.User as User exposing (User)
@@ -10,11 +9,6 @@ import Model exposing (Model)
 import Reply exposing (Reply(..))
 import Tuple.Infix exposing ((&))
 import Util
-
-
-noReply : ( model, Cmd msg ) -> ( model, Cmd msg, Reply )
-noReply ( model, cmd ) =
-    ( model, cmd, NoReply )
 
 
 fromTriple : ( Model, Cmd msg, Reply ) -> ( Model, Cmd msg )

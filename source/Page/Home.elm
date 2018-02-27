@@ -10,7 +10,6 @@ module Page.Home
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Drawing exposing (Drawing)
 import Data.Taco as Taco exposing (Taco)
@@ -19,8 +18,9 @@ import Html exposing (Html, a, div, img, p, text)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
+import Html.Events exposing (onClick)
 import Html.Variables exposing (leftSideWidth)
-import Id
+import Id exposing (Id)
 import Ports exposing (JsMsg(GetDrawings))
 import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
@@ -30,11 +30,12 @@ import Tuple.Infix exposing ((&))
 
 
 type Msg
-    = Noop
+    = DrawingClicked Id
+    | NewDrawingClicked
 
 
 type alias Model =
-    ()
+    { focusedDrawing : Maybe Id }
 
 
 
@@ -43,7 +44,7 @@ type alias Model =
 
 init : User -> ( Model, Cmd Msg )
 init user =
-    ()
+    { focusedDrawing = Nothing }
         & Ports.send GetDrawings
 
 
@@ -53,10 +54,14 @@ init user =
 
 update : Msg -> Model -> ( Model, Cmd Msg, Reply )
 update msg model =
-    ( model
-    , Cmd.none
-    , NoReply
-    )
+    case msg of
+        DrawingClicked id ->
+            { model | focusedDrawing = Just id }
+                |> Reply.nothing
+
+        NewDrawingClicked ->
+            model
+                |> Reply.nothing
 
 
 
@@ -67,7 +72,8 @@ type Class
     = Drawings
     | DrawingContainer
     | DrawingImageContainer
-    | DrawingTitle
+    | FocusedDrawingContainer
+    | FocusedDrawing
     | Drawing
     | ProfilePictureContainer
     | ProfilePicture
@@ -88,60 +94,43 @@ css =
         , backgroundColor Ct.background2
         ]
     , Css.class DrawingContainer
-        [ width (px 200)
-        , height (px 200)
-        , border3 (px 2) solid Ct.point0
-        , overflow hidden
-        , marginTop (px 8)
+        [ marginTop (px 8)
         , marginLeft (px 8)
         , display inlineBlock
         , position relative
-        , cursor pointer
-        , hover
-            [ border3 (px 2) solid Ct.point1
-            , children
-                [ Css.class DrawingTitle
-                    [ backgroundColor Ct.background3
-                    , children
-                        [ Css.Elements.p
-                            [ color Ct.point1 ]
-                        ]
-                    ]
-                ]
-            ]
         ]
-    , Css.class DrawingTitle
-        [ position absolute
-        , width (pct 100)
-        , left (px 0)
-        , bottom (px 0)
-        , backgroundColor Ct.background1
-        , padding (px 4)
-        , textAlign center
+    , (Css.class DrawingImageContainer << List.append Html.Custom.indent)
+        [ overflow hidden
+        , width (px 200)
+        , height (px 200)
         ]
+    , Css.class FocusedDrawingContainer
+        [ top (px 8)
+        , position absolute
+        , left (px (leftSideWidth + 16))
+        , right (px 8)
+        , bottom (px 12)
+        ]
+    , (Css.class FocusedDrawing << List.append Html.Custom.indent)
+        []
     , Css.class Drawing
         [ width (px 220)
         , marginLeft (px -10)
         , marginTop (px -10)
+        , cursor pointer
         ]
     , (Css.class ProfilePictureContainer << List.append Html.Custom.indent)
         [ width (px (leftSideWidth - 4))
         , height (px (leftSideWidth - 4))
         , backgroundColor Ct.background2
         , overflow hidden
-        , position absolute
-        , left (px 0)
-        , top (px 0)
         ]
     , Css.class ProfilePicture
         [ width (px (leftSideWidth - 4)) ]
     , Css.class Profile
         []
     , Css.class BioContainer
-        [ left (px 0)
-        , top (px 156)
-        , position absolute
-        ]
+        []
     , Css.class Name
         []
     , Css.class LeftSide
@@ -178,8 +167,41 @@ type NotLoggedIn
 view : Taco -> User -> Model -> List (Html Msg)
 view taco user model =
     [ leftSide user
-    , drawings (Id.values taco.entities.drawings)
+    , rightSide taco user model
     ]
+
+
+rightSide : Taco -> User -> Model -> Html Msg
+rightSide taco user model =
+    case model.focusedDrawing of
+        Just id ->
+            case Id.get id taco.entities.drawings of
+                Just drawing ->
+                    focusedDrawingView drawing
+
+                Nothing ->
+                    errorView
+
+        Nothing ->
+            drawings (Id.items taco.entities.drawings)
+
+
+focusedDrawingView : Drawing -> Html Msg
+focusedDrawingView drawing =
+    div
+        [ class [ FocusedDrawingContainer ] ]
+        [ img
+            [ class [ FocusedDrawing ]
+            , Attrs.src drawing.data
+            ]
+            []
+        , p [] [ Html.text drawing.name ]
+        ]
+
+
+errorView : Html Msg
+errorView =
+    Html.text ""
 
 
 leftSide : User -> Html Msg
@@ -229,19 +251,62 @@ drawings : List Drawing -> Html Msg
 drawings drawings =
     div
         [ class [ Drawings ] ]
-        (List.map drawing drawings |> List.repeat 40 |> List.concat)
+        (drawingsChildren drawings)
+
+
+drawingsChildren : List Drawing -> List (Html Msg)
+drawingsChildren drawings =
+    case drawings of
+        [] ->
+            [ noDrawingsView ]
+
+        _ ->
+            List.map drawing drawings
+                ++ [ newDrawing ]
+
+
+noDrawingsView : Html Msg
+noDrawingsView =
+    [ Html.Custom.header
+        { text = "no drawings"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ p [] [ Html.text "You have no drawings" ] ]
+    ]
+        |> Html.Custom.cardSolitary []
+
+
+newDrawing : Html Msg
+newDrawing =
+    [ Html.Custom.cardBody []
+        [ p
+            []
+            [ Html.text ""
+            ]
+        ]
+    ]
+        |> Html.Custom.card
+            [ class [ DrawingContainer ] ]
 
 
 drawing : Drawing -> Html Msg
 drawing drawing =
-    div
-        [ class [ DrawingContainer ] ]
-        [ img
-            [ class [ Drawing ]
-            , Attrs.src drawing.data
+    [ Html.Custom.header
+        { text = drawing.name
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ div
+            [ class [ DrawingImageContainer ] ]
+            [ img
+                [ class [ Drawing ]
+                , Attrs.src drawing.data
+                , onClick (DrawingClicked drawing.id)
+                ]
+                []
             ]
-            []
-        , div
-            [ class [ DrawingTitle ] ]
-            [ p [] [ Html.text drawing.name ] ]
         ]
+    ]
+        |> Html.Custom.card
+            [ class [ DrawingContainer ] ]
