@@ -3,6 +3,7 @@ module Data.User
         ( Model(..)
         , User
         , decoder
+        , isLoggedIn
         , userDecoder
         )
 
@@ -107,3 +108,17 @@ ifNotEnded str =
 
         other ->
             other
+
+
+
+-- Helpers --
+
+
+isLoggedIn : Model -> Bool
+isLoggedIn model =
+    case model of
+        LoggedIn _ ->
+            True
+
+        _ ->
+            False

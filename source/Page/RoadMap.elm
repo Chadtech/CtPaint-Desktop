@@ -12,7 +12,8 @@ import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
-import Html exposing (Attribute, Html, a, div, p, textarea)
+import Data.User as User
+import Html exposing (Attribute, Html, a, br, div, p, textarea)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
@@ -187,6 +188,7 @@ type Class
     | WantsContainer
     | Want
     | Clicked
+    | Disabled
     | OtherSuggestionBox
     | SendSuggestionButton
     | Divider
@@ -217,6 +219,10 @@ css =
         [ backgroundColor Ct.ignorable1
         , hover [ color Ct.point0 ]
         ]
+    , Css.class Disabled
+        [ backgroundColor Ct.ignorable1
+        , hover [ color Ct.point0 ]
+        ]
     , (Css.class OtherSuggestionBox << List.append Html.Custom.indent)
         [ outline none
         , fontFamilies [ "hfnss" ]
@@ -232,6 +238,8 @@ css =
         , resize none
         , padding (px 8)
         , withClass Clicked
+            [ backgroundColor Ct.ignorable1 ]
+        , withClass Disabled
             [ backgroundColor Ct.ignorable1 ]
         ]
     , Css.class SendSuggestionButton
@@ -265,14 +273,19 @@ roadMapNamespace =
 
 view : Taco -> Model -> List (Html Msg)
 view taco model =
+    let
+        isLoggedIn =
+            User.isLoggedIn taco.user
+    in
     [ div
         [ class [ Body ] ]
         [ p
             [ class [ Text ] ]
             [ Html.text wantsSideText ]
-        , wantsView model
-        , suggestionBox model
-        , suggestionSendButton model.otherWantClicked
+        , loggedInNotice isLoggedIn
+        , wantsView isLoggedIn model
+        , suggestionBox isLoggedIn model
+        , suggestionSendButton isLoggedIn model.otherWantClicked
         , div
             [ class [ Divider ] ]
             []
@@ -281,6 +294,20 @@ view taco model =
             [ Html.text immediateFeatures ]
         ]
     ]
+
+
+loggedInNotice : Bool -> Html Msg
+loggedInNotice isLoggedIn =
+    if isLoggedIn then
+        Html.text ""
+    else
+        div
+            []
+            [ br [] []
+            , p
+                [ class [ Text ] ]
+                [ Html.text "You must be logged in to click suggestions." ]
+            ]
 
 
 immediateFeatures : String
@@ -294,34 +321,55 @@ immediateFeatures =
     """
 
 
-wantsView : Model -> Html Msg
-wantsView { clickedWants, wants } =
+wantsView : Bool -> Model -> Html Msg
+wantsView isLoggedIn { clickedWants, wants } =
     div
         [ class [ WantsContainer ] ]
-        (List.map (wantView clickedWants) wants)
+        (List.map (wantView isLoggedIn clickedWants) wants)
 
 
-suggestionBox : Model -> Html Msg
-suggestionBox model =
-    textarea
-        [ classList
-            [ ( Clicked, model.otherWantClicked )
-            , ( OtherSuggestionBox, True )
-            ]
-        , onInput OtherWantUpdated
-        , Attrs.placeholder "enter a suggestion here"
-        , Attrs.spellcheck False
-        , Attrs.value model.otherWant
+suggestionBox : Bool -> Model -> Html Msg
+suggestionBox isLoggedIn model =
+    textarea (suggestionBoxAttrs isLoggedIn model) []
+
+
+suggestionBoxAttrs : Bool -> Model -> List (Attribute Msg)
+suggestionBoxAttrs isLoggedIn model =
+    [ classList
+        [ ( Clicked, model.otherWantClicked )
+        , ( Disabled, not isLoggedIn )
+        , ( OtherSuggestionBox, True )
         ]
-        []
+    , Attrs.placeholder (suggestionPlaceholder isLoggedIn)
+    , Attrs.spellcheck False
+    , Attrs.value model.otherWant
+    ]
+        |> Util.maybeCons (shouldInput isLoggedIn)
 
 
-suggestionSendButton : Bool -> Html Msg
-suggestionSendButton otherWantClicked =
+shouldInput : Bool -> Maybe (Attribute Msg)
+shouldInput isLoggedIn =
+    if isLoggedIn then
+        Just (onInput OtherWantUpdated)
+    else
+        Nothing
+
+
+suggestionPlaceholder : Bool -> String
+suggestionPlaceholder isLoggedIn =
+    if isLoggedIn then
+        "enter a suggestion here"
+    else
+        "you must be logged into send suggestions"
+
+
+suggestionSendButton : Bool -> Bool -> Html Msg
+suggestionSendButton isLoggedIn otherWantClicked =
     a
         [ classList
             [ ( SendSuggestionButton, True )
             , ( Clicked, otherWantClicked )
+            , ( Disabled, not isLoggedIn )
             ]
         , onClick OtherWantClicked
         ]
@@ -339,16 +387,18 @@ wantsSideText =
     """
 
 
-wantView : Set String -> String -> Html Msg
-wantView clickedWants want =
+wantView : Bool -> Set String -> String -> Html Msg
+wantView isLoggedIn clickedWants want =
     a
-        (wantAttrs clickedWants want)
+        (wantAttrs isLoggedIn clickedWants want)
         [ Html.text want ]
 
 
-wantAttrs : Set String -> String -> List (Attribute Msg)
-wantAttrs clickedAlready want =
-    if Set.member want clickedAlready then
+wantAttrs : Bool -> Set String -> String -> List (Attribute Msg)
+wantAttrs isLoggedIn clickedAlready want =
+    if not isLoggedIn then
+        [ class [ Want, Disabled ] ]
+    else if Set.member want clickedAlready then
         [ class [ Want, Clicked ] ]
     else
         [ class [ Want ]
