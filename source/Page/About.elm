@@ -6,14 +6,13 @@ module Page.About
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Config as Config exposing (Config)
 import Data.Taco exposing (Taco)
 import Html exposing (Html, br, div, img, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
-import Html.Custom
+import Html.Custom exposing (p_)
 
 
 -- STYLES --
@@ -24,9 +23,6 @@ type Class
     | Logo
     | LogoContainer
     | Divider
-    | Feature
-    | FeatureImageContainer
-    | FeatureImage
 
 
 imageSize : Float
@@ -60,26 +56,6 @@ css =
         , display block
         , marginBottom (px 8)
         ]
-    , Css.class Feature
-        [ width (px 800)
-        , margin auto
-        , display table
-        , marginBottom (px 8)
-        , children
-            [ Css.Elements.p
-                [ marginBottom (px 8) ]
-            ]
-        ]
-    , (Css.class FeatureImageContainer << List.append Html.Custom.indent)
-        [ width (px (imageSize - 4))
-        , height (px (imageSize - 4))
-        , backgroundColor Ct.background2
-        , overflow hidden
-        , float left
-        , marginRight (px 8)
-        ]
-    , Css.class FeatureImage
-        [ width (px (imageSize - 4)) ]
     ]
         |> namespace aboutNamespace
         |> stylesheet
@@ -99,12 +75,7 @@ aboutNamespace =
 
 
 view : Taco -> List (Html msg)
-view taco =
-    topPart taco
-
-
-topPart : Taco -> List (Html msg)
-topPart { config } =
+view { config } =
     [ div
         [ class [ LogoContainer ] ]
         [ img
@@ -137,11 +108,6 @@ textContent { buildNumber } =
 break : Html msg
 break =
     br [] []
-
-
-p_ : String -> Html msg
-p_ str =
-    p [] [ Html.text str ]
 
 
 intro : String

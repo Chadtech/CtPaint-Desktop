@@ -171,7 +171,7 @@ view model =
 commentBoxText : Model -> String
 commentBoxText model =
     if model.sendClicked then
-        "sent! Thank you"
+        "Sent! Thank you"
     else
         model.field
 

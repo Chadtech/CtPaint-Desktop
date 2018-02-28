@@ -65,7 +65,8 @@ errorNamespace =
 
 view : String -> Html Msg
 view msg =
-    Html.Custom.cardSolitary [ class [ Card ] ]
+    Html.Custom.cardSolitary
+        [ class [ Card ] ]
         [ Html.Custom.header
             { text = "error"
             , closability = Html.Custom.NotClosable

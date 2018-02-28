@@ -4,6 +4,7 @@ module Data.Drawing
         , decoder
         )
 
+import Date exposing (Date)
 import Id exposing (Id)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
@@ -13,6 +14,8 @@ type alias Drawing =
     { id : Id
     , data : String
     , name : String
+    , createdAt : Date
+    , updatedAt : Date
     }
 
 
@@ -22,3 +25,10 @@ decoder =
         |> required "drawingId" Id.decoder
         |> required "canvas" Decode.string
         |> required "name" Decode.string
+        |> required "createdAt" dateDecoder
+        |> required "updatedAt" dateDecoder
+
+
+dateDecoder : Decoder Date
+dateDecoder =
+    Decode.map Date.fromTime Decode.float

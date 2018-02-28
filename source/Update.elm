@@ -212,6 +212,15 @@ update msg model =
                         |> Entities.loadDrawings
                             model.taco.entities
                         |> Taco.setEntities model.taco
+                , page =
+                    case model.page of
+                        Page.Home subModel ->
+                            subModel
+                                |> Home.drawingsLoaded
+                                |> Page.Home
+
+                        _ ->
+                            model.page
             }
                 & Cmd.none
 
@@ -250,8 +259,8 @@ handleRoute destination model =
 
         Route.Landing ->
             case model.taco.user of
-                User.LoggedIn user ->
-                    Home.init user
+                User.LoggedIn _ ->
+                    Home.init
                         |> Tuple.mapFirst (return Page.Home model)
                         |> Tuple.mapSecond (Cmd.map HomeMsg)
 

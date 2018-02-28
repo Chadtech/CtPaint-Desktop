@@ -16,6 +16,7 @@ module Html.Custom
         , makeNamespace
         , menuButton
         , outdent
+        , p_
         , spinner
         , toolButton
         )
@@ -425,3 +426,8 @@ container attrs =
 background : List (Attribute msg) -> List (Html msg) -> Html msg
 background attrs =
     Html.div (class [ Background ] :: attrs)
+
+
+p_ : String -> Html msg
+p_ str =
+    Html.p [] [ Html.text str ]

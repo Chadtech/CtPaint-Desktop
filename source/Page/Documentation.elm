@@ -12,7 +12,7 @@ import Data.Taco exposing (Taco)
 import Html exposing (Html, br, div, img, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
-import Html.Custom
+import Html.Custom exposing (p_)
 
 
 -- STYLES --
@@ -147,12 +147,8 @@ feature title words url =
                 ]
                 []
             ]
-        , p
-            []
-            [ Html.text title ]
-        , p
-            []
-            [ Html.text words ]
+        , p_ title
+        , p_ words
         ]
 
 

@@ -3,6 +3,7 @@ module Page.Home
         ( Model
         , Msg
         , css
+        , drawingsLoaded
         , init
         , update
         , view
@@ -14,6 +15,8 @@ import Css.Namespace exposing (namespace)
 import Data.Drawing exposing (Drawing)
 import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
+import Date exposing (Date)
+import Date.Extra
 import Html exposing (Html, a, div, img, p, text)
 import Html.Attributes as Attrs
 import Html.CssHelpers
@@ -21,7 +24,13 @@ import Html.Custom
 import Html.Events exposing (onClick)
 import Html.Variables exposing (leftSideWidth)
 import Id exposing (Id)
-import Ports exposing (JsMsg(GetDrawings))
+import Ports
+    exposing
+        ( JsMsg
+            ( GetDrawings
+            , OpenDrawingInPaintApp
+            )
+        )
 import Reply exposing (Reply(NoReply))
 import Tuple.Infix exposing ((&))
 
@@ -32,20 +41,29 @@ import Tuple.Infix exposing ((&))
 type Msg
     = DrawingClicked Id
     | NewDrawingClicked
+    | CloseDrawingClicked
+    | HeaderMouseDown
+    | OpenDrawingInCtPaint Id
+    | DeleteDrawingClicked Id
+    | DeleteYesClicked
+    | DeleteNoClicked
 
 
-type alias Model =
-    { focusedDrawing : Maybe Id }
+type Model
+    = SpecificDrawing Id
+    | DeleteDrawing Id
+    | DrawingsView
+    | Loading
+    | Deleting
 
 
 
 -- INIT --
 
 
-init : User -> ( Model, Cmd Msg )
-init user =
-    { focusedDrawing = Nothing }
-        & Ports.send GetDrawings
+init : ( Model, Cmd Msg )
+init =
+    Loading & Ports.send GetDrawings
 
 
 
@@ -56,12 +74,59 @@ update : Msg -> Model -> ( Model, Cmd Msg, Reply )
 update msg model =
     case msg of
         DrawingClicked id ->
-            { model | focusedDrawing = Just id }
+            SpecificDrawing id
                 |> Reply.nothing
+
+        CloseDrawingClicked ->
+            DrawingsView
+                |> Reply.nothing
+
+        HeaderMouseDown ->
+            model |> Reply.nothing
 
         NewDrawingClicked ->
             model
                 |> Reply.nothing
+
+        OpenDrawingInCtPaint id ->
+            ( model
+            , Ports.send (OpenDrawingInPaintApp id)
+            , NoReply
+            )
+
+        DeleteDrawingClicked id ->
+            DeleteDrawing id
+                |> Reply.nothing
+
+        DeleteYesClicked ->
+            case model of
+                DeleteDrawing id ->
+                    ( Deleting
+                    , Ports.send (Ports.DeleteDrawing id)
+                    , NoReply
+                    )
+
+                _ ->
+                    model |> Reply.nothing
+
+        DeleteNoClicked ->
+            case model of
+                DeleteDrawing id ->
+                    SpecificDrawing id
+                        |> Reply.nothing
+
+                _ ->
+                    model |> Reply.nothing
+
+
+drawingsLoaded : Model -> Model
+drawingsLoaded model =
+    case model of
+        Loading ->
+            DrawingsView
+
+        _ ->
+            model
 
 
 
@@ -74,7 +139,12 @@ type Class
     | DrawingImageContainer
     | FocusedDrawingContainer
     | FocusedDrawing
+    | FocusedDrawingText
     | Drawing
+    | CenteredCard
+    | Text
+    | Button
+    | ButtonsContainer
     | ProfilePictureContainer
     | ProfilePicture
     | Profile
@@ -105,20 +175,39 @@ css =
         , height (px 200)
         ]
     , Css.class FocusedDrawingContainer
-        [ top (px 8)
-        , position absolute
-        , left (px (leftSideWidth + 16))
-        , right (px 8)
-        , bottom (px 12)
+        [ position relative
+        , display inlineBlock
+        , translate2 (pct -50) (pct -50)
+            |> transform
+        , top (pct 50)
+        , left (pct 50)
         ]
+    , Css.class FocusedDrawingText
+        [ marginBottom (px 8) ]
     , (Css.class FocusedDrawing << List.append Html.Custom.indent)
-        []
+        [ marginBottom (px 8) ]
     , Css.class Drawing
         [ width (px 220)
         , marginLeft (px -10)
         , marginTop (px -10)
         , cursor pointer
         ]
+    , Css.class CenteredCard
+        [ position relative
+        , display inlineBlock
+        , translate2 (pct -50) (pct -50)
+            |> transform
+        , top (pct 50)
+        , left (pct 50)
+        ]
+    , Css.class Text
+        [ marginBottom (px 8) ]
+    , Css.class ButtonsContainer
+        [ justifyContent center
+        , displayFlex
+        ]
+    , Css.class Button
+        [ marginLeft (px 8) ]
     , (Css.class ProfilePictureContainer << List.append Html.Custom.indent)
         [ width (px (leftSideWidth - 4))
         , height (px (leftSideWidth - 4))
@@ -167,36 +256,154 @@ type NotLoggedIn
 view : Taco -> User -> Model -> List (Html Msg)
 view taco user model =
     [ leftSide user
-    , rightSide taco user model
+    , div
+        [ class [ Drawings ] ]
+        (rightSide taco user model)
     ]
 
 
-rightSide : Taco -> User -> Model -> Html Msg
+rightSide : Taco -> User -> Model -> List (Html Msg)
 rightSide taco user model =
-    case model.focusedDrawing of
-        Just id ->
+    case model of
+        SpecificDrawing id ->
             case Id.get id taco.entities.drawings of
                 Just drawing ->
-                    focusedDrawingView drawing
+                    [ focusedDrawingView drawing ]
 
                 Nothing ->
-                    errorView
+                    [ errorView ]
 
-        Nothing ->
+        Loading ->
+            [ loadingView ]
+
+        DrawingsView ->
             drawings (Id.items taco.entities.drawings)
+
+        DeleteDrawing id ->
+            case Id.get id taco.entities.drawings of
+                Just drawing ->
+                    [ deleteDrawingView drawing ]
+
+                Nothing ->
+                    [ errorView ]
+
+        Deleting ->
+            [ deletingView ]
+
+
+deleteDrawingView : Drawing -> Html Msg
+deleteDrawingView drawing =
+    [ Html.Custom.header
+        { text = "delete drawing"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ p
+            [ class [ Text ] ]
+            [ Html.text (deleteStr drawing) ]
+        , div
+            [ class [ ButtonsContainer ] ]
+            [ a
+                [ class [ Button ]
+                , onClick DeleteYesClicked
+                ]
+                [ Html.text "yes" ]
+            , a
+                [ class [ Button ]
+                , onClick DeleteNoClicked
+                ]
+                [ Html.text "no" ]
+            ]
+        ]
+    ]
+        |> Html.Custom.card [ class [ CenteredCard ] ]
+
+
+deleteStr : Drawing -> String
+deleteStr { name } =
+    [ "Are you sure you want to delete \""
+    , name
+    , "\"?"
+    ]
+        |> String.concat
+
+
+loadingView : Html Msg
+loadingView =
+    [ Html.Custom.header
+        { text = "loading drawings"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ p
+            [ class [ Text ] ]
+            [ Html.text "please wait" ]
+        , Html.Custom.spinner
+        ]
+    ]
+        |> Html.Custom.card [ class [ CenteredCard ] ]
+
+
+deletingView : Html Msg
+deletingView =
+    [ Html.Custom.header
+        { text = "deleting drawing"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ p
+            [ class [ Text ] ]
+            [ Html.text "please wait" ]
+        , Html.Custom.spinner
+        ]
+    ]
+        |> Html.Custom.card [ class [ CenteredCard ] ]
 
 
 focusedDrawingView : Drawing -> Html Msg
 focusedDrawingView drawing =
-    div
-        [ class [ FocusedDrawingContainer ] ]
+    [ Html.Custom.header
+        { text = drawing.name
+        , closability =
+            { headerMouseDown = always HeaderMouseDown
+            , xClick = CloseDrawingClicked
+            }
+                |> Html.Custom.Closable
+        }
+    , Html.Custom.cardBody []
         [ img
             [ class [ FocusedDrawing ]
             , Attrs.src drawing.data
             ]
             []
-        , p [] [ Html.text drawing.name ]
+        , p
+            [ class [ FocusedDrawingText ] ]
+            [ Html.text ("created at : " ++ formatDate drawing.createdAt) ]
+        , p
+            [ class [ FocusedDrawingText ] ]
+            [ Html.text ("updated at : " ++ formatDate drawing.updatedAt) ]
+        , div
+            [ class [ ButtonsContainer ] ]
+            [ a
+                [ class [ Button ]
+                , onClick (OpenDrawingInCtPaint drawing.id)
+                ]
+                [ Html.text "open in ctpaint" ]
+            , a
+                [ class [ Button ]
+                , onClick (DeleteDrawingClicked drawing.id)
+                ]
+                [ Html.text "delete" ]
+            ]
         ]
+    ]
+        |> Html.Custom.card
+            [ class [ FocusedDrawingContainer ] ]
+
+
+formatDate : Date -> String
+formatDate =
+    Date.Extra.toFormattedString "y/M/d H:m"
 
 
 errorView : Html Msg
@@ -247,15 +454,8 @@ profilePicture url =
         ]
 
 
-drawings : List Drawing -> Html Msg
+drawings : List Drawing -> List (Html Msg)
 drawings drawings =
-    div
-        [ class [ Drawings ] ]
-        (drawingsChildren drawings)
-
-
-drawingsChildren : List Drawing -> List (Html Msg)
-drawingsChildren drawings =
     case drawings of
         [] ->
             [ noDrawingsView ]

@@ -2,6 +2,7 @@ port module Ports exposing (..)
 
 import Data.Keys as Keys
 import Data.Taco exposing (Taco)
+import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Keyboard.Extra.Browser exposing (Browser)
 import Tracking
@@ -15,6 +16,8 @@ type JsMsg
     = Logout
     | OpenPaintApp
     | OpenUrlInPaintApp String
+    | OpenDrawingInPaintApp Id
+    | DeleteDrawing Id
     | Register RegistrationPayload
     | Login String String
     | VerifyEmail String String
@@ -75,6 +78,14 @@ send msg =
         OpenUrlInPaintApp url ->
             "open url in paint app"
                 |> withPayload (Encode.string url)
+
+        OpenDrawingInPaintApp id ->
+            "open drawing in paint app"
+                |> withPayload (Id.encode id)
+
+        DeleteDrawing id ->
+            "delete drawing"
+                |> withPayload (Id.encode id)
 
         Register { email, name, password, browser } ->
             [ "email" := Encode.string email

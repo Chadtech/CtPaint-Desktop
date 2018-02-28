@@ -1,4 +1,8 @@
-module Msg exposing (..)
+module Msg
+    exposing
+        ( Msg(..)
+        , decode
+        )
 
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
