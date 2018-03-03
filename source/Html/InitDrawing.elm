@@ -1,4 +1,4 @@
-module Page.InitDrawing
+module Html.InitDrawing
     exposing
         ( Model
         , Msg
@@ -106,24 +106,16 @@ initDrawingNamespace =
 
 view : Model -> Html Msg
 view model =
-    [ Html.Custom.header
-        { text = "open ctpaint"
-        , closability = Html.Custom.NotClosable
-        }
-    , Html.Custom.cardBody []
-        [ form
-            [ onSubmit Submitted ]
-            [ Html.Custom.field []
-                [ p
-                    [ class [ Text ] ]
-                    [ Html.text "from url" ]
-                , input
-                    [ class [] ]
-                    []
-                ]
+    [ form
+        [ onSubmit Submitted ]
+        [ Html.Custom.field []
+            [ p
+                [ class [ Text ] ]
+                [ Html.text "from url" ]
+            , input
+                [ class [] ]
+                []
             ]
         ]
     ]
-        |> Html.Custom.cardSolitary []
-        |> List.singleton
-        |> Html.Custom.background []
+        |> Html.Custom.cardBody []

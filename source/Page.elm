@@ -1,9 +1,9 @@
 module Page exposing (..)
 
+import Html.InitDrawing as InitDrawing
 import Page.Contact as Contact
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
-import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Register as Register

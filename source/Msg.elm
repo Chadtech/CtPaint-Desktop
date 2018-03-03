@@ -7,18 +7,20 @@ module Msg
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
 import Data.User as User exposing (User)
+import Html.InitDrawing as InitDrawing
+import Id exposing (Id)
 import Json.Decode as Decode
     exposing
         ( Decoder
         , Value
         , decodeValue
         )
+import Json.Decode.Pipeline as Pipeline exposing (required)
 import Nav
 import Page.Contact as Contact
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
-import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
@@ -52,13 +54,8 @@ type Msg
     | SettingsMsg Settings.Msg
     | InitDrawingMsg InitDrawing.Msg
     | DrawingsLoaded (List Drawing)
-    | MsgDecodeFailed DecodeProblem
-
-
-type DecodeProblem
-    = UnrecognizedType String
-    | FailedToDecoderUser String
-    | Other String
+    | DrawingDeleted (Result ( Id, String ) Id)
+    | MsgDecodeFailed String
 
 
 decode : Taco -> Value -> Msg
@@ -68,7 +65,7 @@ decode taco json =
             msg
 
         Err err ->
-            MsgDecodeFailed (Other err)
+            MsgDecodeFailed err
 
 
 decoder : Taco -> Decoder Msg
@@ -109,11 +106,23 @@ toMsg taco type_ =
 
         "registration failed" ->
             payload Decode.string
-                |> Decode.map (Register.Other >> Register.Failed >> RegisterMsg)
+                |> Decode.map
+                    (Register.Other >> Register.Failed >> RegisterMsg)
 
         "drawings loaded" ->
             payload (Decode.list Drawing.decoder)
                 |> Decode.map DrawingsLoaded
+
+        "delete succeeded" ->
+            payload Id.decoder
+                |> Decode.map (Ok >> DrawingDeleted)
+
+        "delete failed" ->
+            Pipeline.decode (,)
+                |> required "id" Id.decoder
+                |> required "error" Decode.string
+                |> payload
+                |> Decode.map (Err >> DrawingDeleted)
 
         _ ->
             Decode.fail ("Unrecognized Js Msg : " ++ type_)

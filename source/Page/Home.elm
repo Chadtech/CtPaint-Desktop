@@ -3,6 +3,7 @@ module Page.Home
         ( Model
         , Msg
         , css
+        , drawingDeleted
         , drawingsLoaded
         , init
         , update
@@ -47,6 +48,8 @@ type Msg
     | DeleteDrawingClicked Id
     | DeleteYesClicked
     | DeleteNoClicked
+    | BackToDrawingsClicked
+    | TryAgainClicked Id
 
 
 type Model
@@ -55,6 +58,9 @@ type Model
     | DrawingsView
     | Loading
     | Deleting
+    | Deleted String
+    | DidntDelete Id
+    | NewDrawing
 
 
 
@@ -85,8 +91,7 @@ update msg model =
             model |> Reply.nothing
 
         NewDrawingClicked ->
-            model
-                |> Reply.nothing
+            NewDrawing |> Reply.nothing
 
         OpenDrawingInCtPaint id ->
             ( model
@@ -101,10 +106,7 @@ update msg model =
         DeleteYesClicked ->
             case model of
                 DeleteDrawing id ->
-                    ( Deleting
-                    , Ports.send (Ports.DeleteDrawing id)
-                    , NoReply
-                    )
+                    delete id
 
                 _ ->
                     model |> Reply.nothing
@@ -118,6 +120,25 @@ update msg model =
                 _ ->
                     model |> Reply.nothing
 
+        BackToDrawingsClicked ->
+            DrawingsView |> Reply.nothing
+
+        TryAgainClicked id ->
+            case model of
+                DidntDelete id ->
+                    delete id
+
+                _ ->
+                    model |> Reply.nothing
+
+
+delete : Id -> ( Model, Cmd Msg, Reply )
+delete id =
+    ( Deleting
+    , Ports.send (Ports.DeleteDrawing id)
+    , NoReply
+    )
+
 
 drawingsLoaded : Model -> Model
 drawingsLoaded model =
@@ -129,17 +150,32 @@ drawingsLoaded model =
             model
 
 
+drawingDeleted : Result Id String -> Model -> Model
+drawingDeleted result model =
+    case ( result, model ) of
+        ( Ok name, Deleting ) ->
+            Deleted name
+
+        ( Err id, Deleting ) ->
+            DidntDelete id
+
+        _ ->
+            model
+
+
 
 -- STYLES --
 
 
 type Class
-    = Drawings
+    = DrawingsContainer
     | DrawingContainer
     | DrawingImageContainer
     | FocusedDrawingContainer
     | FocusedDrawing
     | FocusedDrawingText
+    | NewDrawingCard
+    | NewDrawingText
     | Drawing
     | CenteredCard
     | Text
@@ -149,25 +185,28 @@ type Class
     | ProfilePicture
     | Profile
     | BioContainer
+    | ErrorBody
     | Name
     | LeftSide
 
 
 css : Stylesheet
 css =
-    [ (Css.class Drawings << List.append Html.Custom.indent)
+    [ (Css.class DrawingsContainer << List.append Html.Custom.indent)
         [ position absolute
         , top (px 8)
         , left (px (leftSideWidth + 16))
         , right (px 8)
         , bottom (px 12)
         , backgroundColor Ct.background2
+        , paddingRight (px 8)
         ]
     , Css.class DrawingContainer
         [ marginTop (px 8)
         , marginLeft (px 8)
         , display inlineBlock
         , position relative
+        , overflow auto
         ]
     , (Css.class DrawingImageContainer << List.append Html.Custom.indent)
         [ overflow hidden
@@ -184,6 +223,18 @@ css =
         ]
     , Css.class FocusedDrawingText
         [ marginBottom (px 8) ]
+    , Css.class NewDrawingCard
+        [ cursor pointer
+        , active Html.Custom.indent
+        ]
+    , Css.class NewDrawingText
+        [ height (px 204)
+        , width (px 204)
+        , verticalAlign middle
+        , textAlign center
+        , display tableCell
+        , paddingBottom (px 32)
+        ]
     , (Css.class FocusedDrawing << List.append Html.Custom.indent)
         [ marginBottom (px 8) ]
     , Css.class Drawing
@@ -199,6 +250,7 @@ css =
             |> transform
         , top (pct 50)
         , left (pct 50)
+        , margin (px 8)
         ]
     , Css.class Text
         [ marginBottom (px 8) ]
@@ -220,6 +272,8 @@ css =
         []
     , Css.class BioContainer
         []
+    , Css.class ErrorBody
+        [ backgroundColor Ct.lowWarning ]
     , Css.class Name
         []
     , Css.class LeftSide
@@ -257,7 +311,7 @@ view : Taco -> User -> Model -> List (Html Msg)
 view taco user model =
     [ leftSide user
     , div
-        [ class [ Drawings ] ]
+        [ class [ DrawingsContainer ] ]
         (rightSide taco user model)
     ]
 
@@ -289,6 +343,96 @@ rightSide taco user model =
 
         Deleting ->
             [ deletingView ]
+
+        Deleted name ->
+            [ deletedView name ]
+
+        DidntDelete id ->
+            case Id.get id taco.entities.drawings of
+                Just drawing ->
+                    [ deleteFailedView drawing ]
+
+                Nothing ->
+                    [ errorView ]
+
+        NewDrawing ->
+            [ newDrawingView ]
+
+
+newDrawingView : Html Msg
+newDrawingView =
+    Html.text ""
+
+
+deleteFailedView : Drawing -> Html Msg
+deleteFailedView { name, id } =
+    [ Html.Custom.header
+        { text = "delete failed"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody
+        [ class [ ErrorBody ] ]
+        [ p
+            [ class [ Text ] ]
+            [ Html.text (didntDeleteStr name) ]
+        , div
+            [ class [ ButtonsContainer ] ]
+            [ a
+                [ class [ Button ]
+                , onClick (TryAgainClicked id)
+                ]
+                [ Html.text "try again" ]
+            , a
+                [ class [ Button ]
+                , onClick BackToDrawingsClicked
+                ]
+                [ Html.text "go back to drawings" ]
+            ]
+        ]
+    ]
+        |> Html.Custom.card [ class [ CenteredCard ] ]
+
+
+didntDeleteStr : String -> String
+didntDeleteStr name =
+    [ "Something didnt work. "
+    , "\""
+    , name
+    , "\" might not have been deleted."
+    ]
+        |> String.concat
+
+
+deletedView : String -> Html Msg
+deletedView name =
+    [ Html.Custom.header
+        { text = "delete complete"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ p
+            [ class [ Text ] ]
+            [ Html.text (deletedStr name) ]
+        , div
+            [ class [ ButtonsContainer ] ]
+            [ a
+                [ class [ Button ]
+                , onClick BackToDrawingsClicked
+                ]
+                [ Html.text "go back to drawings" ]
+            ]
+        ]
+    ]
+        |> Html.Custom.card [ class [ CenteredCard ] ]
+
+
+deletedStr : String -> String
+deletedStr name =
+    [ "\""
+    , name
+    , "\" has been deleted"
+    ]
+        |> String.concat
 
 
 deleteDrawingView : Drawing -> Html Msg
@@ -461,8 +605,9 @@ drawings drawings =
             [ noDrawingsView ]
 
         _ ->
-            List.map drawing drawings
-                ++ [ newDrawing ]
+            drawings
+                |> List.map drawing
+                |> flip List.append [ newDrawing ]
 
 
 noDrawingsView : Html Msg
@@ -479,15 +624,20 @@ noDrawingsView =
 
 newDrawing : Html Msg
 newDrawing =
-    [ Html.Custom.cardBody []
+    [ Html.Custom.cardBody
+        []
         [ p
-            []
-            [ Html.text ""
-            ]
+            [ class [ NewDrawingText ] ]
+            [ Html.text "Add new drawing" ]
         ]
     ]
         |> Html.Custom.card
-            [ class [ DrawingContainer ] ]
+            [ class
+                [ NewDrawingCard
+                , DrawingContainer
+                ]
+            , onClick NewDrawingClicked
+            ]
 
 
 drawing : Drawing -> Html Msg

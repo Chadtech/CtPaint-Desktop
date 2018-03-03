@@ -1,12 +1,13 @@
 module Data.Entities
     exposing
         ( Entities
+        , deleteDrawing
         , empty
         , loadDrawings
         )
 
 import Data.Drawing exposing (Drawing)
-import Id exposing (Db)
+import Id exposing (Db, Id)
 
 
 {-|
@@ -32,6 +33,14 @@ loadDrawings entities drawings =
                 Id.insert
                 entities.drawings
                 drawings
+    }
+
+
+deleteDrawing : Id -> Entities -> Entities
+deleteDrawing id entities =
+    { entities
+        | drawings =
+            Id.remove id entities.drawings
     }
 
 

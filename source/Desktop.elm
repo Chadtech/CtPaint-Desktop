@@ -4,6 +4,8 @@ import Data.Flags as Flags
 import Data.Taco as Taco
 import Data.User as User
 import Html exposing (Html)
+import Html.Custom
+import Html.InitDrawing
 import Html.Main
 import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
@@ -16,7 +18,6 @@ import Page.Documentation as Documentation
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
-import Page.InitDrawing as InitDrawing
 import Page.Loading as Loading
 import Page.Login as Login
 import Page.Logout as Logout
@@ -139,7 +140,16 @@ viewModel model =
                     errorView "Something went wrong with your authentication, sorry"
 
         Page.InitDrawing subModel ->
-            [ InitDrawing.view subModel ]
+            [ Html.Custom.header
+                { text = "open ctpaint"
+                , closability = Html.Custom.NotClosable
+                }
+            , Html.InitDrawing.view subModel
+            ]
+                |> Html.Custom.cardSolitary []
+                |> List.singleton
+                |> Html.Custom.background []
+                |> List.singleton
                 |> viewWithNav model InitDrawingMsg
 
         Page.About ->

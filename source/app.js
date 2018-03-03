@@ -98,6 +98,20 @@ Desktop = function(manifest) {
                 window.location = "/app/?url=" + msg.payload;
                 break;
 
+            case "delete drawing":
+                Client.deleteDrawing(msg.payload, {
+                    onSuccess: function(result) {
+                        toElm("delete succeeded", msg.payload);
+                    }, 
+                    onFailure: function(error) {
+                        toElm("delete failed", {
+                            id: payload,
+                            error: String(error)
+                        });
+                    }
+                });
+                break;
+
             case "forgot password":
                 console.log(msg.payload);
                 break;

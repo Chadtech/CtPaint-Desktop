@@ -4,6 +4,8 @@ import Comply
 import Data.Entities as Entities
 import Data.Taco as Taco
 import Data.User as User
+import Html.InitDrawing as InitDrawing
+import Id
 import Model
     exposing
         ( Model
@@ -18,7 +20,6 @@ import Page.Contact as Contact
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
-import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
@@ -36,7 +37,7 @@ import Util
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ taco, page } as model) =
     case msg of
         RouteChanged (Just route) ->
             handleRoute route model
@@ -64,7 +65,7 @@ update msg model =
             model & Cmd.none
 
         HomeMsg subMsg ->
-            case ( model.page, model.taco.user ) of
+            case ( page, taco.user ) of
                 ( Page.Home subModel, User.LoggedIn user ) ->
                     subModel
                         |> Home.update subMsg
@@ -76,7 +77,7 @@ update msg model =
                     model & Cmd.none
 
         InitDrawingMsg subMsg ->
-            case model.page of
+            case page of
                 Page.InitDrawing subModel ->
                     subModel
                         |> InitDrawing.update subMsg
@@ -87,7 +88,7 @@ update msg model =
                     model & Cmd.none
 
         PricingMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Pricing ->
                     model & Cmd.map PricingMsg (Pricing.update subMsg)
 
@@ -95,10 +96,10 @@ update msg model =
                     model & Cmd.none
 
         RoadMapMsg subMsg ->
-            case model.page of
+            case page of
                 Page.RoadMap subModel ->
                     subModel
-                        |> RoadMap.update model.taco subMsg
+                        |> RoadMap.update taco subMsg
                         |> return2 Page.RoadMap model
                         |> Tuple.mapSecond (Cmd.map RoadMapMsg)
 
@@ -106,10 +107,10 @@ update msg model =
                     model & Cmd.none
 
         ContactMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Contact subModel ->
                     subModel
-                        |> Contact.update model.taco subMsg
+                        |> Contact.update taco subMsg
                         |> return2 Page.Contact model
                         |> Tuple.mapSecond (Cmd.map ContactMsg)
 
@@ -120,7 +121,7 @@ update msg model =
             model & Cmd.map SplashMsg (Splash.update subMsg)
 
         OfflineMsg subMsg ->
-            case ( model.page, model.taco.user ) of
+            case ( page, taco.user ) of
                 ( Page.Offline, User.Offline ) ->
                     model & Cmd.map OfflineMsg (Offline.update subMsg)
 
@@ -128,10 +129,10 @@ update msg model =
                     model & Cmd.none
 
         RegisterMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Register subModel ->
                     subModel
-                        |> Register.update model.taco subMsg
+                        |> Register.update taco subMsg
                         |> return2 Page.Register model
                         |> Tuple.mapSecond (Cmd.map RegisterMsg)
 
@@ -139,7 +140,7 @@ update msg model =
                     model & Cmd.none
 
         LoginMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Login subModel ->
                     subModel
                         |> Login.update subMsg
@@ -150,7 +151,7 @@ update msg model =
                     model & Cmd.none
 
         ForgotPasswordMsg subMsg ->
-            case model.page of
+            case page of
                 Page.ForgotPassword subModel ->
                     subModel
                         |> ForgotPassword.update subMsg
@@ -161,7 +162,7 @@ update msg model =
                     model & Cmd.none
 
         LogoutMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Logout subModel ->
                     subModel
                         |> Logout.update subMsg
@@ -172,7 +173,7 @@ update msg model =
                     model & Cmd.none
 
         VerifyMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Verify subModel ->
                     subModel
                         |> Verify.update subMsg
@@ -183,7 +184,7 @@ update msg model =
                     model & Cmd.none
 
         ErrorMsg subMsg ->
-            case model.page of
+            case page of
                 Page.Error _ ->
                     model & Error.update subMsg
 
@@ -191,7 +192,7 @@ update msg model =
                     model & Cmd.none
 
         SettingsMsg subMsg ->
-            case ( model.page, model.taco.user ) of
+            case ( page, taco.user ) of
                 ( Page.Settings subModel, User.LoggedIn user ) ->
                     subModel
                         |> Settings.update subMsg user
@@ -210,17 +211,49 @@ update msg model =
                 | taco =
                     drawings
                         |> Entities.loadDrawings
-                            model.taco.entities
-                        |> Taco.setEntities model.taco
+                            taco.entities
+                        |> Taco.setEntities taco
                 , page =
-                    case model.page of
+                    case page of
                         Page.Home subModel ->
                             subModel
                                 |> Home.drawingsLoaded
                                 |> Page.Home
 
                         _ ->
-                            model.page
+                            page
+            }
+                & Cmd.none
+
+        DrawingDeleted (Ok id) ->
+            { model
+                | taco =
+                    taco.entities
+                        |> Entities.deleteDrawing id
+                        |> Taco.setEntities taco
+                , page =
+                    case ( Id.get id taco.entities.drawings, page ) of
+                        ( Just { name }, Page.Home subModel ) ->
+                            subModel
+                                |> Home.drawingDeleted (Ok name)
+                                |> Page.Home
+
+                        _ ->
+                            page
+            }
+                & Cmd.none
+
+        DrawingDeleted (Err ( id, err )) ->
+            { model
+                | page =
+                    case page of
+                        Page.Home subModel ->
+                            subModel
+                                |> Home.drawingDeleted (Err id)
+                                |> Page.Home
+
+                        _ ->
+                            page
             }
                 & Cmd.none
 

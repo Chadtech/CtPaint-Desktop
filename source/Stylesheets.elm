@@ -2,6 +2,7 @@ port module Stylesheets exposing (..)
 
 import Css.File exposing (CssCompilerProgram, CssFileStructure)
 import Html.Custom
+import Html.InitDrawing
 import Html.Main
 import Nav
 import Page.About
@@ -9,7 +10,6 @@ import Page.Contact
 import Page.Error
 import Page.ForgotPassword
 import Page.Home
-import Page.InitDrawing
 import Page.Login
 import Page.Offline
 import Page.Pricing
@@ -40,7 +40,7 @@ main =
     , Page.About.css
     , Page.Pricing.css
     , Page.Contact.css
-    , Page.InitDrawing.css
+    , Html.InitDrawing.css
     , Page.RoadMap.css
     , Page.ForgotPassword.css
     , Tos.css
