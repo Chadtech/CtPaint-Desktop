@@ -23,6 +23,7 @@ import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Html.InitDrawing as InitDrawing
 import Html.Variables exposing (leftSideWidth)
 import Id exposing (Id)
 import Ports
@@ -43,6 +44,8 @@ type Msg
     = DrawingClicked Id
     | NewDrawingClicked
     | CloseDrawingClicked
+    | CloseNewDrawingClicked
+    | InitDrawingMsg InitDrawing.Msg
     | HeaderMouseDown
     | OpenDrawingInCtPaint Id
     | DeleteDrawingClicked Id
@@ -60,7 +63,7 @@ type Model
     | Deleting
     | Deleted String
     | DidntDelete Id
-    | NewDrawing
+    | NewDrawing InitDrawing.Model
 
 
 
@@ -84,14 +87,18 @@ update msg model =
                 |> Reply.nothing
 
         CloseDrawingClicked ->
-            DrawingsView
-                |> Reply.nothing
+            goToDrawingsView
+
+        CloseNewDrawingClicked ->
+            goToDrawingsView
 
         HeaderMouseDown ->
             model |> Reply.nothing
 
         NewDrawingClicked ->
-            NewDrawing |> Reply.nothing
+            InitDrawing.init
+                |> NewDrawing
+                |> Reply.nothing
 
         OpenDrawingInCtPaint id ->
             ( model
@@ -131,6 +138,26 @@ update msg model =
                 _ ->
                     model |> Reply.nothing
 
+        InitDrawingMsg subMsg ->
+            case model of
+                NewDrawing subModel ->
+                    handleInitMsg subMsg subModel
+
+                _ ->
+                    model |> Reply.nothing
+
+
+handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Model, Cmd Msg, Reply )
+handleInitMsg subMsg subModel =
+    let
+        ( newSubModel, cmd ) =
+            InitDrawing.update subMsg subModel
+    in
+    ( NewDrawing newSubModel
+    , Cmd.map InitDrawingMsg cmd
+    , NoReply
+    )
+
 
 delete : Id -> ( Model, Cmd Msg, Reply )
 delete id =
@@ -138,6 +165,11 @@ delete id =
     , Ports.send (Ports.DeleteDrawing id)
     , NoReply
     )
+
+
+goToDrawingsView : ( Model, Cmd Msg, Reply )
+goToDrawingsView =
+    DrawingsView |> Reply.nothing
 
 
 drawingsLoaded : Model -> Model
@@ -355,13 +387,24 @@ rightSide taco user model =
                 Nothing ->
                     [ errorView ]
 
-        NewDrawing ->
-            [ newDrawingView ]
+        NewDrawing subModel ->
+            [ newDrawingView subModel ]
 
 
-newDrawingView : Html Msg
-newDrawingView =
-    Html.text ""
+newDrawingView : InitDrawing.Model -> Html Msg
+newDrawingView subModel =
+    [ Html.Custom.header
+        { text = "new drawing"
+        , closability =
+            { headerMouseDown = always HeaderMouseDown
+            , xClick = CloseNewDrawingClicked
+            }
+                |> Html.Custom.Closable
+        }
+    , InitDrawing.view subModel
+        |> Html.map InitDrawingMsg
+    ]
+        |> Html.Custom.card [ class [ CenteredCard ] ]
 
 
 deleteFailedView : Drawing -> Html Msg
@@ -547,7 +590,7 @@ focusedDrawingView drawing =
 
 formatDate : Date -> String
 formatDate =
-    Date.Extra.toFormattedString "y/M/d H:m"
+    Date.Extra.toFormattedString "y/MM/dd HH:mm"
 
 
 errorView : Html Msg

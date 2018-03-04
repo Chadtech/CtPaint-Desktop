@@ -146,6 +146,7 @@ spinnerContainer =
 fieldStyle : Snippet
 fieldStyle =
     [ marginBottom (px 8)
+    , displayFlex
     , children
         [ p
             [ display inlineBlock

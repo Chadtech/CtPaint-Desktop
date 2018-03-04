@@ -79,6 +79,7 @@ toMsg taco type_ =
     case type_ of
         "login succeeded" ->
             userDecoder taco
+                |> payload
                 |> Decode.map LogInSucceeded
 
         "login failed" ->

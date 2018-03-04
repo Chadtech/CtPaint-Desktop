@@ -15,6 +15,7 @@ import Tuple.Infix exposing ((:=))
 type JsMsg
     = Logout
     | OpenPaintApp
+    | OpenPaintAppWithParams String
     | OpenUrlInPaintApp String
     | OpenDrawingInPaintApp Id
     | DeleteDrawing Id
@@ -74,6 +75,10 @@ send msg =
 
         OpenPaintApp ->
             noPayload "open paint app"
+
+        OpenPaintAppWithParams queryString ->
+            "open paint app with params"
+                |> withPayload (Encode.string queryString)
 
         OpenUrlInPaintApp url ->
             "open url in paint app"

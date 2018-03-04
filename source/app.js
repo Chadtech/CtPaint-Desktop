@@ -94,6 +94,10 @@ Desktop = function(manifest) {
                 window.location = "/app";
                 break;
 
+            case "open paint app with params":
+                window.location = "/app" + msg.payload;
+                break;
+
             case "open url in paint app":
                 window.location = "/app/?url=" + msg.payload;
                 break;

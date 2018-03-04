@@ -212,11 +212,13 @@ view model =
             [ field "email"
                 [ value_ model.email
                 , onInput_ Email
+                , Attr.spellcheck False
                 ]
             , errorView_ Email
             , field "password"
                 [ value_ model.password
                 , Attr.type_ "password"
+                , Attr.spellcheck False
                 , onInput_ Password
                 ]
             , responseErrorView model.responseError
