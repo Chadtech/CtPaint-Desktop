@@ -38,6 +38,7 @@ type alias Model =
     , heightField : String
     , url : String
     , backgroundColor : BackgroundColor
+    , submitted : Bool
     }
 
 
@@ -106,6 +107,7 @@ init =
     , heightField = ""
     , url = ""
     , backgroundColor = Black
+    , submitted = False
     }
 
 
@@ -174,7 +176,7 @@ openPaintApp model =
         |> toQueryString
         |> OpenPaintAppWithParams
         |> Ports.send
-        |& model
+        |& { model | submitted = True }
 
 
 fromUrl : Model -> ( Model, Cmd Msg )
@@ -182,7 +184,8 @@ fromUrl model =
     if String.isEmpty model.url then
         model & Cmd.none
     else
-        model & Ports.send (OpenUrlInPaintApp model.url)
+        { model | submitted = True }
+            & Ports.send (OpenUrlInPaintApp model.url)
 
 
 
@@ -202,6 +205,7 @@ type Class
     | ColorsContainer
     | Disabled
     | Left
+    | InitializingText
 
 
 css : Stylesheet
@@ -245,6 +249,8 @@ css =
         ]
     , Css.class Left
         [ marginRight (px 8) ]
+    , Css.class InitializingText
+        [ marginBottom (px 8) ]
     , Css.class ColorsContainer
         [ display inlineBlock ]
     ]
@@ -277,11 +283,27 @@ initDrawingNamespace =
 
 view : Model -> Html Msg
 view model =
-    [ newView model
-    , div [ class [ Divider ] ] []
-    , urlView model
+    Html.Custom.cardBody [] (bodyView model)
+
+
+bodyView : Model -> List (Html Msg)
+bodyView model =
+    if model.submitted then
+        loadingView
+    else
+        [ newView model
+        , div [ class [ Divider ] ] []
+        , urlView model
+        ]
+
+
+loadingView : List (Html Msg)
+loadingView =
+    [ p
+        [ class [ InitializingText ] ]
+        [ Html.text "initializing" ]
+    , Html.Custom.spinner
     ]
-        |> Html.Custom.cardBody []
 
 
 newView : Model -> Html Msg

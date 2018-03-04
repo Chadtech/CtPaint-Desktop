@@ -99,7 +99,11 @@ Desktop = function(manifest) {
                 break;
 
             case "open url in paint app":
-                window.location = "/app/?url=" + msg.payload;
+                window.location = "/app/url/" + msg.payload;
+                break;
+
+            case "open drawing in paint app":
+                window.location = "/app/id/" + msg.payload;
                 break;
 
             case "delete drawing":
