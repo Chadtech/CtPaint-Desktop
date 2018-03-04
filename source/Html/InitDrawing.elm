@@ -120,12 +120,7 @@ update msg model =
             fromUrl model
 
         UrlInitSubmitted ->
-            case model.url of
-                "" ->
-                    openPaintApp model
-
-                _ ->
-                    fromUrl model
+            fromUrl model
 
         FieldUpdated Name str ->
             { model | name = str } & Cmd.none
@@ -184,7 +179,10 @@ openPaintApp model =
 
 fromUrl : Model -> ( Model, Cmd Msg )
 fromUrl model =
-    model & Ports.send (OpenUrlInPaintApp model.url)
+    if String.isEmpty model.url then
+        model & Cmd.none
+    else
+        model & Ports.send (OpenUrlInPaintApp model.url)
 
 
 
@@ -381,6 +379,7 @@ urlView model =
             [ Button := True
             , Disabled := model.url == ""
             ]
+        , onClick FromUrlClicked
         ]
         [ Html.text "start from url" ]
     ]
