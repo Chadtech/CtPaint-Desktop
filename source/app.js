@@ -144,6 +144,10 @@ Desktop = function(manifest) {
     }
 
     function init(mixins) {
+        var inithtml = document.getElementById("inithtml");
+        if (inithtml !== null) {
+            document.body.removeChild(inithtml)
+        }
         app = Elm.Desktop.fullscreen(Flags.make(mixins));
         app.ports.toJs.subscribe(jsMsgHandler);
     }
