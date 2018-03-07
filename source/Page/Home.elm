@@ -59,11 +59,16 @@ type Model
     = SpecificDrawing Id
     | DeleteDrawing Id
     | DrawingsView
-    | Loading
+    | Loading Loadable
     | Deleting
     | Deleted String
     | DidntDelete Id
     | NewDrawing InitDrawing.Model
+
+
+type Loadable
+    = AllDrawings
+    | OneDrawing
 
 
 
@@ -72,7 +77,7 @@ type Model
 
 init : ( Model, Cmd Msg )
 init =
-    Loading & Ports.send GetDrawings
+    Loading AllDrawings & Ports.send GetDrawings
 
 
 
@@ -101,7 +106,7 @@ update msg model =
                 |> Reply.nothing
 
         OpenDrawingInCtPaint id ->
-            ( model
+            ( Loading OneDrawing
             , Ports.send (OpenDrawingInPaintApp id)
             , NoReply
             )
@@ -175,7 +180,7 @@ goToDrawingsView =
 drawingsLoaded : Model -> Model
 drawingsLoaded model =
     case model of
-        Loading ->
+        Loading AllDrawings ->
             DrawingsView
 
         _ ->
@@ -359,8 +364,11 @@ rightSide taco user model =
                 Nothing ->
                     [ errorView ]
 
-        Loading ->
-            [ loadingView ]
+        Loading AllDrawings ->
+            [ loadingView "loading drawings" ]
+
+        Loading OneDrawing ->
+            [ loadingView "loading" ]
 
         DrawingsView ->
             drawings (Id.items taco.entities.drawings)
@@ -515,10 +523,10 @@ deleteStr { name } =
         |> String.concat
 
 
-loadingView : Html Msg
-loadingView =
+loadingView : String -> Html Msg
+loadingView str =
     [ Html.Custom.header
-        { text = "loading drawings"
+        { text = str
         , closability = Html.Custom.NotClosable
         }
     , Html.Custom.cardBody []
