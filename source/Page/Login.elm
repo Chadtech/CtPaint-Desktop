@@ -29,7 +29,6 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..))
 import Route
 import Tuple.Infix exposing ((&))
-import Util
 import Validate exposing (ifBlank)
 
 
@@ -38,8 +37,13 @@ type alias Model =
     , password : String
     , errors : List ( Field, String )
     , responseError : Maybe String
-    , show : Bool
+    , state : State
     }
+
+
+type State
+    = Ready
+    | LoggingIn
 
 
 type Field
@@ -65,7 +69,7 @@ init =
     , password = ""
     , errors = []
     , responseError = Nothing
-    , show = True
+    , state = Ready
     }
 
 
@@ -92,7 +96,7 @@ update msg model =
             { model
                 | responseError =
                     Just (determineResponseError err)
-                , show = True
+                , state = Ready
             }
                 & Cmd.none
 
@@ -106,20 +110,29 @@ attemptLogin model =
         errors =
             validate model
 
-        cmd =
-            if List.isEmpty errors then
-                Login model.email model.password
-                    |> Ports.send
-            else
-                Cmd.none
+        noErrors =
+            List.isEmpty errors
     in
     { model
         | errors = errors
         , password = ""
-        , show = False
+        , state =
+            if noErrors then
+                LoggingIn
+            else
+                Ready
         , responseError = Nothing
     }
-        & cmd
+        & attemptLoginCmd model noErrors
+
+
+attemptLoginCmd : Model -> Bool -> Cmd Msg
+attemptLoginCmd model noErrors =
+    if noErrors then
+        Login model.email model.password
+            |> Ports.send
+    else
+        Cmd.none
 
 
 determineResponseError : String -> String
@@ -193,57 +206,74 @@ loginNamespace =
 
 view : Model -> Html Msg
 view model =
-    let
-        value_ : String -> Attribute Msg
-        value_ =
-            Attr.value << Util.showIf model.show
-
-        errorView_ : Field -> Html Msg
-        errorView_ =
-            fieldErrorView model.errors
-    in
     [ Html.Custom.header
         { text = "login"
         , closability = Html.Custom.NotClosable
         }
-    , Html.Custom.cardBody []
-        [ form
-            [ onSubmit Submitted ]
-            [ field "email"
-                [ value_ model.email
-                , onInput_ Email
-                , Attr.spellcheck False
-                ]
-            , errorView_ Email
-            , field "password"
-                [ value_ model.password
-                , Attr.type_ "password"
-                , Attr.spellcheck False
-                , onInput_ Password
-                ]
-            , responseErrorView model.responseError
-            , input
-                [ Attr.type_ "submit"
-                , Attr.hidden True
-                ]
-                []
-            , p
-                []
-                [ span
-                    [ class [ ForgotLink ]
-                    , onClick ForgotPasswordClicked
-                    ]
-                    [ Html.text "I forgot my password" ]
-                ]
-            , Html.Custom.menuButton
-                [ onClick LoginClicked ]
-                [ Html.text "log in" ]
-            ]
-        ]
+    , model
+        |> viewBody
+        |> Html.Custom.cardBody []
     ]
         |> Html.Custom.cardSolitary []
         |> List.singleton
         |> Html.Custom.background []
+
+
+viewBody : Model -> List (Html Msg)
+viewBody model =
+    case model.state of
+        Ready ->
+            readyView model
+
+        LoggingIn ->
+            loggingInView model
+
+
+loggingInView : Model -> List (Html Msg)
+loggingInView model =
+    [ Html.Custom.spinner ]
+
+
+readyView : Model -> List (Html Msg)
+readyView model =
+    let
+        errorView_ : Field -> Html Msg
+        errorView_ =
+            fieldErrorView model.errors
+    in
+    [ form
+        [ onSubmit Submitted ]
+        [ field "email"
+            [ Attr.value model.email
+            , onInput_ Email
+            , Attr.spellcheck False
+            ]
+        , errorView_ Email
+        , field "password"
+            [ Attr.value model.password
+            , Attr.type_ "password"
+            , Attr.spellcheck False
+            , onInput_ Password
+            ]
+        , responseErrorView model.responseError
+        , input
+            [ Attr.type_ "submit"
+            , Attr.hidden True
+            ]
+            []
+        , p
+            []
+            [ span
+                [ class [ ForgotLink ]
+                , onClick ForgotPasswordClicked
+                ]
+                [ Html.text "I forgot my password" ]
+            ]
+        , Html.Custom.menuButton
+            [ onClick LoginClicked ]
+            [ Html.text "log in" ]
+        ]
+    ]
 
 
 
@@ -260,18 +290,17 @@ field name attributes =
 
 fieldErrorView : List ( Field, String ) -> Field -> Html Msg
 fieldErrorView errors field =
-    let
-        thisFieldsErrors =
-            List.filter
-                (Tuple.first >> (==) field)
-                errors
-    in
-    case thisFieldsErrors of
+    case thisFieldsErrors errors field of
         [] ->
             Html.text ""
 
         error :: _ ->
             Html.Custom.error (Tuple.second error)
+
+
+thisFieldsErrors : List ( Field, String ) -> Field -> List ( Field, String )
+thisFieldsErrors errors field =
+    List.filter (Tuple.first >> (==) field) errors
 
 
 responseErrorView : Maybe String -> Html Msg

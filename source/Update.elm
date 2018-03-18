@@ -365,8 +365,13 @@ handleRoute destination model =
 
 logout : Model -> ( Model, Cmd Msg )
 logout model =
-    { model
-        | taco =
-            Taco.setUser User.LoggedOut model.taco
-    }
-        & Ports.send Ports.Logout
+    case model.taco.user of
+        User.LoggedIn user ->
+            { model
+                | taco =
+                    Taco.setUser User.LoggedOut model.taco
+            }
+                & Ports.send Ports.Logout
+
+        _ ->
+            ( model, Cmd.none )
