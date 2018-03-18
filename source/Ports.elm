@@ -71,25 +71,25 @@ send : JsMsg -> Cmd msg
 send msg =
     case msg of
         Logout ->
-            noPayload "log out"
+            noPayload "logOut"
 
         OpenPaintApp ->
-            noPayload "open paint app"
+            noPayload "openPaintApp"
 
         OpenPaintAppWithParams queryString ->
-            "open paint app with params"
+            "openPaintAppWithParams"
                 |> withPayload (Encode.string queryString)
 
         OpenUrlInPaintApp url ->
-            "open url in paint app"
+            "openUrlInPaintApp"
                 |> withPayload (Encode.string url)
 
         OpenDrawingInPaintApp id ->
-            "open drawing in paint app"
+            "openDrawingInPaintApp"
                 |> withPayload (Id.encode id)
 
         DeleteDrawing id ->
-            "delete drawing"
+            "deleteDrawing"
                 |> withPayload (Id.encode id)
 
         Register { email, name, password, browser } ->
@@ -104,22 +104,22 @@ send msg =
             [ "email" := Encode.string email
             , "password" := Encode.string password
             ]
-                |> fromKeyValues "log in"
+                |> fromKeyValues "logIn"
 
         VerifyEmail email code ->
             [ "email" := Encode.string email
             , "code" := Encode.string code
             ]
-                |> fromKeyValues "verify email"
+                |> fromKeyValues "verifyEmail"
 
         GetUserAttributes ->
-            noPayload "get user attributes"
+            noPayload "getUserAttributes"
 
         GetDrawings ->
-            noPayload "get drawings"
+            noPayload "getDrawings"
 
         ForgotPassword email ->
-            "forgot password"
+            "forgotPassword"
                 |> withPayload (Encode.string email)
 
         Track payload ->

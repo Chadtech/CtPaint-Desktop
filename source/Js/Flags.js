@@ -1,11 +1,11 @@
 module.exports = {
-    make: function(mixins) {
+    make: function(user, manifest) {
         var localWork = localStorage.getItem("local work");
 
         var buf = new Uint32Array(1);
         window.crypto.getRandomValues(buf);
         var milliseconds = new Date().getMilliseconds()
-        var seed = (buf[0] * 1000) + milliseconds;
+        var seed = buf[0] * 1000 + milliseconds;
 
         return {
             windowHeight: window.innerHeight,
@@ -13,9 +13,9 @@ module.exports = {
             seed: seed,
             isMac: window.navigator.userAgent.indexOf("Mac") !== -1,
             browser: getBrowser(),
-            user: mixins.user,
-            mountPath: mixins.manifest.mountPath,
-            buildNumber: mixins.manifest.buildNumber
+            user: user,
+            mountPath: manifest.mountPath,
+            buildNumber: manifest.buildNumber
         }; 
     }
 }
