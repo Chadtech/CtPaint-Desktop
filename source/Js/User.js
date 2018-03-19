@@ -84,11 +84,22 @@ function verify(Client, toElm, payload) {
 
 function register(Client, toElm, payload) {
     Client.register(payload, {
-        onFailure: function(err) { 
-            toElm("registration failed", err)
+        onFailure: function(err) {
+            toElm("registration failed", err);
         },
         onSuccess: function(result) {
             toElm("registration succeeded", result.user.username);
+        }
+    });
+}
+
+function forgotPassword(Client, toElm, payload) {
+    Client.forgotPassword(payload, {
+        onSuccess: function(data) {
+            toElm("forgot password sent", null);
+        },
+        onFailure: function(err) {
+            toElm("forgot password failed", String(err));
         }
     });
 }
@@ -110,6 +121,9 @@ module.exports = function(Client, toElm) {
         },
         register: function(payload) {
             register(Client, toElm, payload);
+        },
+        forgotPassword: function(payload) {
+            forgotPassword(Client, toElm, payload);
         }
     };
 };

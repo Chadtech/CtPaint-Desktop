@@ -2,7 +2,7 @@
   "name": "CtPaint-Desktop",
   "version": "1.0.0",
   "description": "",
-  "main": "gulpFile.coffee",
+  "main": "gulpFile.js",
   "dependencies": {
     "amazon-cognito-identity-js": "^1.21.0",
     "body-parser": "^1.15.0",

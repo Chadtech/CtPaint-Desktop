@@ -144,7 +144,7 @@ subscriptions taco =
         , buttonMsg = Just DrawNowClicked
         , features =
             [ "CtPaint"
-            , "4 days a month"
+            , "4 days of access per month"
             ]
         }
     , subscription
@@ -162,7 +162,7 @@ subscriptions taco =
             [ "CtPaint"
             , "unlimited access"
             , "limited cloud storage"
-            , "local storage"
+            , "public image upload"
             ]
         }
     , subscription
@@ -174,7 +174,7 @@ subscriptions taco =
             [ "CtPaint"
             , "unlimited access"
             , "unlimited cloud storage"
-            , "local storage"
+            , "public image upload"
             , "private storage"
             ]
         }

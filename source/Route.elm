@@ -15,6 +15,7 @@ type Route
     | Settings
     | Login
     | ForgotPassword
+    | ResetPassword String String
     | Logout
     | Register
     | Verify String String
@@ -36,6 +37,7 @@ route =
     , Url.map RoadMap (s "roadmap")
     , Url.map Login (s "login")
     , Url.map ForgotPassword (s "forgotpassword")
+    , Url.map ResetPassword (s "resetpassword" </> Url.string </> Url.string)
     , Url.map Logout (s "logout")
     , Url.map Register (s "register")
     , Url.map Settings (s "settings")
@@ -84,6 +86,9 @@ toPieces route =
 
         ForgotPassword ->
             [ "forgotpassword" ]
+
+        ResetPassword email code ->
+            [ "resetpassword", email, code ]
 
         Logout ->
             [ "logout" ]

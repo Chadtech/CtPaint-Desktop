@@ -14,6 +14,7 @@ import Page.Login
 import Page.Offline
 import Page.Pricing
 import Page.Register
+import Page.ResetPassword
 import Page.RoadMap
 import Page.Settings
 import Page.Splash
@@ -43,6 +44,7 @@ main =
     , Html.InitDrawing.css
     , Page.RoadMap.css
     , Page.ForgotPassword.css
+    , Page.ResetPassword.css
     , Tos.css
     ]
         |> Css.File.compile

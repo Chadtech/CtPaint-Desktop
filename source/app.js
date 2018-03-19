@@ -19,7 +19,7 @@ Desktop = function(manifest) {
             type: type,
             payload: payload
         });
-    };
+    }
 
     var User = require("./Js/User")(Client, toElm);
     var Drawing = require("./Js/Drawing")(Client, toElm);
@@ -36,7 +36,7 @@ Desktop = function(manifest) {
         openUrlInPaintApp: PaintApp.openUrl,
         openDrawingInPaintApp: PaintApp.openDrawing,
         deleteDrawing: Drawing.delete,
-        forgotPassword: function() { console.log("Forgot password!") },
+        forgotPassword: User.forgotPassword,
         track: track
     };
 
@@ -52,7 +52,7 @@ Desktop = function(manifest) {
     User.get(function(user) {
         var inithtml = document.getElementById("inithtml");
         if (inithtml !== null) {
-            document.body.removeChild(inithtml)
+            document.body.removeChild(inithtml);
         }
         app.elm = Elm.Desktop.fullscreen(Flags.make(user, manifest));
         app.elm.ports.toJs.subscribe(jsMsgHandler);

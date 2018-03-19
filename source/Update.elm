@@ -25,6 +25,7 @@ import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Pricing as Pricing
 import Page.Register as Register
+import Page.ResetPassword as ResetPassword
 import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
@@ -161,6 +162,17 @@ update msg ({ taco, page } as model) =
                 _ ->
                     model & Cmd.none
 
+        ResetPasswordMsg subMsg ->
+            case page of
+                Page.ResetPassword subModel ->
+                    subModel
+                        |> ResetPassword.update subMsg
+                        |> return2 Page.ResetPassword model
+                        |> Tuple.mapSecond (Cmd.map ResetPasswordMsg)
+
+                _ ->
+                    model & Cmd.none
+
         LogoutMsg subMsg ->
             case page of
                 Page.Logout subModel ->
@@ -273,6 +285,17 @@ handleRoute destination model =
                     Page.ForgotPassword ForgotPassword.init
             }
                 |> logout
+
+        Route.ResetPassword email code ->
+            let
+                ( subModel, cmd ) =
+                    ResetPassword.init email code
+            in
+            { model
+                | page = Page.ResetPassword subModel
+            }
+                |> logout
+                |> Util.addCmd (Cmd.map ResetPasswordMsg cmd)
 
         Route.Logout ->
             { model | page = Page.Logout Logout.init }

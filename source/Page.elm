@@ -7,6 +7,7 @@ import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Register as Register
+import Page.ResetPassword as ResetPassword
 import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Verify as Verify
@@ -24,6 +25,7 @@ type Page
     | Register Register.Model
     | Login Login.Model
     | ForgotPassword ForgotPassword.Model
+    | ResetPassword ResetPassword.Model
     | Logout Logout.Model
     | Verify Verify.Model
     | Splash

@@ -25,6 +25,7 @@ type JsMsg
     | GetUserAttributes
     | GetDrawings
     | ForgotPassword String
+    | ResetPassword String String
     | Track Tracking.Payload
 
 
@@ -121,6 +122,12 @@ send msg =
         ForgotPassword email ->
             "forgotPassword"
                 |> withPayload (Encode.string email)
+
+        ResetPassword email code ->
+            [ "email" := Encode.string email
+            , "code" := Encode.string code
+            ]
+                |> fromKeyValues "resetPassword"
 
         Track payload ->
             "track"

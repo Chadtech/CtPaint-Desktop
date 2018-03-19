@@ -24,6 +24,7 @@ import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Pricing as Pricing
 import Page.Register as Register
+import Page.ResetPassword as ResetPassword
 import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
@@ -198,6 +199,10 @@ viewModel model =
         Page.ForgotPassword subModel ->
             [ ForgotPassword.view subModel ]
                 |> viewWithNav model ForgotPasswordMsg
+
+        Page.ResetPassword subModel ->
+            [ ResetPassword.view subModel ]
+                |> viewWithNav model ResetPasswordMsg
 
         Page.Logout subModel ->
             Html.map LogoutMsg (Logout.view subModel)

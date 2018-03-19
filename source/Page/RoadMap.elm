@@ -73,7 +73,7 @@ wants =
     , "color gradient calculator"
     , "delete color from palette"
     , "animation"
-    , "folders and project"
+    , "folders and projects"
     , "collaboration and sharing"
     , "spray can"
     , "transparency"
@@ -91,6 +91,10 @@ wants =
     , "search all ctpaint images"
     , "svg software"
     , "imgur upload"
+    , "local storage"
+    , "import drawing"
+    , "animated gifs"
+    , "high resolution rotating"
     ]
 
 

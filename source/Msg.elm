@@ -26,6 +26,7 @@ import Page.Logout as Logout
 import Page.Offline as Offline
 import Page.Pricing as Pricing
 import Page.Register as Register
+import Page.ResetPassword as ResetPassword
 import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
@@ -45,6 +46,7 @@ type Msg
     | RegisterMsg Register.Msg
     | LoginMsg Login.Msg
     | ForgotPasswordMsg ForgotPassword.Msg
+    | ResetPasswordMsg ResetPassword.Msg
     | LogoutMsg Logout.Msg
     | VerifyMsg Verify.Msg
     | ErrorMsg Error.Msg
@@ -71,7 +73,7 @@ decode taco json =
 decoder : Taco -> Decoder Msg
 decoder taco =
     Decode.field "type" Decode.string
-        |> Decode.andThen (toMsg taco)
+        |> Decode.andThen (payload << toMsg taco)
 
 
 toMsg : Taco -> String -> Decoder Msg
@@ -79,18 +81,17 @@ toMsg taco type_ =
     case type_ of
         "login succeeded" ->
             userDecoder taco
-                |> payload
                 |> Decode.map LogInSucceeded
 
         "login failed" ->
-            payload Decode.string
+            Decode.string
                 |> Decode.map (LoginMsg << Login.LoginFailed)
 
         "logout succeeded" ->
             Decode.succeed LogOutSucceeded
 
         "logout failed" ->
-            payload Decode.string
+            Decode.string
                 |> Decode.map LogOutFailed
 
         "verification succeeded" ->
@@ -98,32 +99,41 @@ toMsg taco type_ =
                 |> Decode.succeed
 
         "verification failed" ->
-            payload Decode.string
+            Decode.string
                 |> Decode.map (Verify.Failed >> VerifyMsg)
 
         "registration succeeded" ->
-            payload Decode.string
+            Decode.string
                 |> Decode.map (Register.Succeeded >> RegisterMsg)
 
         "registration failed" ->
-            payload Decode.string
+            Decode.string
                 |> Decode.map
                     (Register.Other >> Register.Failed >> RegisterMsg)
 
         "drawings loaded" ->
-            payload (Decode.list Drawing.decoder)
+            Decode.list Drawing.decoder
                 |> Decode.map DrawingsLoaded
 
         "delete succeeded" ->
-            payload Id.decoder
+            Id.decoder
                 |> Decode.map (Ok >> DrawingDeleted)
 
         "delete failed" ->
             Pipeline.decode (,)
                 |> required "id" Id.decoder
                 |> required "error" Decode.string
-                |> payload
                 |> Decode.map (Err >> DrawingDeleted)
+
+        "forgot password sent" ->
+            ForgotPassword.succeeded
+                |> ForgotPasswordMsg
+                |> Decode.succeed
+
+        "forgot password failed" ->
+            Decode.string
+                |> Decode.map
+                    (ForgotPassword.failed >> ForgotPasswordMsg)
 
         _ ->
             Decode.fail ("Unrecognized Js Msg : " ++ type_)

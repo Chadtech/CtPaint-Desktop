@@ -3,7 +3,9 @@ module Page.ForgotPassword
         ( Model
         , Msg
         , css
+        , failed
         , init
+        , succeeded
         , update
         , view
         )
@@ -25,8 +27,9 @@ import Util
 
 type Model
     = Ready ReadyModel
-    | Sending
-    | Success
+    | Sending String
+    | Success String
+    | Fail String
 
 
 type alias ReadyModel =
@@ -44,6 +47,18 @@ type Msg
     = EmailUpdated String
     | Submitted
     | SubmitClicked
+    | Succeeded
+    | Failed String
+
+
+succeeded : Msg
+succeeded =
+    Succeeded
+
+
+failed : String -> Msg
+failed =
+    Failed
 
 
 
@@ -73,6 +88,22 @@ update msg model =
 
         SubmitClicked ->
             attemptSubmit model
+
+        Succeeded ->
+            case model of
+                Sending email ->
+                    Success email & Cmd.none
+
+                _ ->
+                    model & Cmd.none
+
+        Failed err ->
+            case model of
+                Sending _ ->
+                    Fail err & Cmd.none
+
+                _ ->
+                    model & Cmd.none
 
 
 ifReady : (ReadyModel -> ( ReadyModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
@@ -113,7 +144,9 @@ submitIfNoProblem readyModel =
             Ready readyModel & Cmd.none
 
         Nothing ->
-            Sending & submit readyModel.email
+            ( Sending readyModel.email
+            , submit readyModel.email
+            )
 
 
 submit : String -> Cmd Msg
@@ -202,11 +235,28 @@ body model =
         Ready readyModel ->
             readyBody readyModel
 
-        Sending ->
+        Sending _ ->
             sendingBody
 
-        _ ->
-            Html.text ""
+        Success email ->
+            successBody email
+
+        Fail err ->
+            failView err
+
+
+failView : String -> Html Msg
+failView err =
+    p
+        []
+        [ Html.text ("ERROR! " ++ err) ]
+
+
+successBody : String -> Html Msg
+successBody email =
+    p
+        []
+        [ Html.text ("Email!!!" ++ email) ]
 
 
 readyBody : ReadyModel -> Html Msg
@@ -220,6 +270,7 @@ readyBody { email, problem } =
             , input
                 [ class [ Long ]
                 , Attr.value email
+                , Attr.spellcheck False
                 , onInput EmailUpdated
                 ]
                 []
