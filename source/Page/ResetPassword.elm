@@ -22,20 +22,34 @@ import Tuple.Infix exposing ((&))
 
 
 type Model
-    = Working
+    = Ready ReadyModel
+    | Sending
     | Success
     | Fail
+
+
+type alias ReadyModel =
+    { email : String
+    , code : String
+    , password : String
+    , passwordConfirm : String
+    , errors : List String
+    }
 
 
 type Msg
     = GoHomeClicked
 
 
-init : String -> String -> ( Model, Cmd Msg )
+init : String -> String -> Model
 init email code =
-    ( Working
-    , Ports.send (ResetPassword email code)
-    )
+    { email = email
+    , code = code
+    , password = ""
+    , passwordConfirm = ""
+    , errors = []
+    }
+        |> Ready
 
 
 
@@ -79,4 +93,18 @@ resetNamespace =
 
 view : Model -> Html Msg
 view model =
-    Html.text "yeah"
+    [ Html.Custom.header
+        { text = "reset password"
+        , closability = Html.Custom.NotClosable
+        }
+    , Html.Custom.cardBody []
+        [ body model ]
+    ]
+        |> Html.Custom.cardSolitary []
+        |> List.singleton
+        |> Html.Custom.background []
+
+
+body : Model -> Html Msg
+body model =
+    Html.text "yeeeee"

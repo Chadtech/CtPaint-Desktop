@@ -287,15 +287,12 @@ handleRoute destination model =
                 |> logout
 
         Route.ResetPassword email code ->
-            let
-                ( subModel, cmd ) =
-                    ResetPassword.init email code
-            in
             { model
-                | page = Page.ResetPassword subModel
+                | page =
+                    ResetPassword.init email code
+                        |> Page.ResetPassword
             }
                 |> logout
-                |> Util.addCmd (Cmd.map ResetPasswordMsg cmd)
 
         Route.Logout ->
             { model | page = Page.Logout Logout.init }
