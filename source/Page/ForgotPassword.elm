@@ -295,7 +295,7 @@ sendingBody =
 
 errorView : Problem -> Html Msg
 errorView =
-    errorMsg >> Html.Custom.error
+    errorMsg >> Html.Custom.error []
 
 
 errorMsg : Problem -> String

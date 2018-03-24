@@ -14,6 +14,7 @@ import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
+import Helpers.Password
 import Html
     exposing
         ( Attribute
@@ -329,7 +330,7 @@ fieldsView fields =
         , emailCheck fields.isOkayWithEmails
         , Util.viewMaybe
             fields.generalError
-            Html.Custom.error
+            (Html.Custom.error [])
 
         -- This input is here, because without it
         -- the enter key does not cause submission
@@ -411,18 +412,14 @@ field name attributes =
 
 errorView : List ( Field, String ) -> Field -> Html Msg
 errorView errors field =
-    let
-        thisFieldsErrors =
-            List.filter
-                (Tuple.first >> (==) field)
-                errors
-    in
-    case thisFieldsErrors of
+    case List.filter (Tuple.first >> (==) field) errors of
         [] ->
             Html.text ""
 
         error :: _ ->
-            Html.Custom.error (Tuple.second error)
+            error
+                |> Tuple.second
+                |> Html.Custom.error []
 
 
 
@@ -592,13 +589,8 @@ handleFail fail fields =
 validate : Fields -> List ( Field, String )
 validate =
     [ .email >> ifBlank ( Email, "email field is required" )
-    , .password >> ifBlank ( Password, "password field is required" )
     , .name >> ifBlank ( Name, "name field is required" )
-    , passwordsMatch
-    , passwordLongEnough
-    , emailsMatch
-    , atLeastOneUpperCaseInPassword
-    , atLeastOneLowerCaseInPassword
+    , validPassword
     , validEmail
     ]
         |> Validate.all
@@ -612,36 +604,14 @@ validEmail { email } =
         [ ( Email, "Please enter a valid email address" ) ]
 
 
-atLeastOneLowerCaseInPassword : Fields -> List ( Field, String )
-atLeastOneLowerCaseInPassword { password } =
-    if password == String.toUpper password then
-        [ ( Password, "Password must contain at least one lower case letter" ) ]
-    else
-        []
+validPassword : Fields -> List ( Field, String )
+validPassword { password, passwordConfirm } =
+    case Helpers.Password.validate password passwordConfirm of
+        Nothing ->
+            []
 
-
-atLeastOneUpperCaseInPassword : Fields -> List ( Field, String )
-atLeastOneUpperCaseInPassword { password } =
-    if password == String.toLower password then
-        [ ( Password, "Password must contain at least one upper case letter" ) ]
-    else
-        []
-
-
-passwordLongEnough : Fields -> List ( Field, String )
-passwordLongEnough { password } =
-    if String.length password < 8 then
-        [ ( Password, "Password must be at least 8 characters" ) ]
-    else
-        []
-
-
-passwordsMatch : Fields -> List ( Field, String )
-passwordsMatch { password, passwordConfirm } =
-    if password == passwordConfirm then
-        []
-    else
-        [ ( PasswordConfirm, "Passwords do not match" ) ]
+        Just error ->
+            [ ( Password, error ) ]
 
 
 emailsMatch : Fields -> List ( Field, String )

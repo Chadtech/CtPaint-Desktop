@@ -295,7 +295,9 @@ fieldErrorView errors field =
             Html.text ""
 
         error :: _ ->
-            Html.Custom.error (Tuple.second error)
+            error
+                |> Tuple.second
+                |> Html.Custom.error []
 
 
 thisFieldsErrors : List ( Field, String ) -> Field -> List ( Field, String )
@@ -307,7 +309,7 @@ responseErrorView : Maybe String -> Html Msg
 responseErrorView maybeError =
     case maybeError of
         Just error ->
-            Html.Custom.error error
+            Html.Custom.error [] error
 
         Nothing ->
             Html.text ""

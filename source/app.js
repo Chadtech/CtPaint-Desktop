@@ -37,6 +37,7 @@ Desktop = function(manifest) {
         openDrawingInPaintApp: PaintApp.openDrawing,
         deleteDrawing: Drawing.delete,
         forgotPassword: User.forgotPassword,
+        resetPassword: User.resetPassword,
         track: track
     };
 

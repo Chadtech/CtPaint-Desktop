@@ -409,10 +409,10 @@ spinner =
         ]
 
 
-error : String -> Html msg
-error errMsg =
+error : List (Attribute msg) -> String -> Html msg
+error attrs errMsg =
     Html.div
-        [ class [ Error ] ]
+        (class [ Error ] :: attrs)
         [ Html.p
             []
             [ Html.text errMsg ]

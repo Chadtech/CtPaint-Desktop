@@ -3,7 +3,9 @@ module Page.ResetPassword
         ( Model
         , Msg
         , css
+        , failed
         , init
+        , succeeded
         , update
         , view
         )
@@ -11,33 +13,44 @@ module Page.ResetPassword
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
-import Html exposing (Attribute, Html, form, input, p)
+import Helpers.Password
+import Html exposing (Attribute, Html, a, form, input, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(ResetPassword))
 import Route
-import Tuple.Infix exposing ((&))
+import Tuple.Infix exposing ((&), (|&))
 import Util
 
 
 -- TYPES --
 
 
-type Model
+type alias Model =
+    { email : String
+    , code : String
+    , state : State
+    }
+
+
+type State
     = Ready ReadyModel
     | Sending
     | Success
-    | Fail
+    | Fail Problem
+
+
+type Problem
+    = InvalidCode
+    | Other String
 
 
 type alias ReadyModel =
-    { email : String
-    , code : String
-    , password : String
+    { password : String
     , passwordConfirm : String
-    , errors : List String
+    , error : Maybe String
     , show : Bool
     }
 
@@ -51,18 +64,33 @@ type Msg
     = GoHomeClicked
     | FieldUpdated Field String
     | Submitted
+    | SubmitClicked
+    | Succeeded
+    | Failed String
+
+
+succeeded : Msg
+succeeded =
+    Succeeded
+
+
+failed : String -> Msg
+failed =
+    Failed
 
 
 init : String -> String -> Model
 init email code =
     { email = email
     , code = code
-    , password = ""
-    , passwordConfirm = ""
-    , errors = []
-    , show = True
+    , state =
+        { password = ""
+        , passwordConfirm = ""
+        , error = Nothing
+        , show = True
+        }
+            |> Ready
     }
-        |> Ready
 
 
 
@@ -76,37 +104,97 @@ update msg model =
             model & Route.goTo Route.Landing
 
         FieldUpdated Password str ->
-            case model of
-                Ready readyModel ->
-                    { readyModel | password = str }
-                        |> Ready
-                        & Cmd.none
-
-                _ ->
-                    model & Cmd.none
+            ifReady model (updatePassword str)
 
         FieldUpdated PasswordConfirm str ->
-            case model of
+            ifReady model (updatePasswordConfirm str)
+
+        Submitted ->
+            case model.state of
                 Ready readyModel ->
-                    { readyModel | passwordConfirm = str }
-                        |> Ready
+                    resetPassword model readyModel
+
+                _ ->
+                    model & Cmd.none
+
+        SubmitClicked ->
+            case model.state of
+                Ready readyModel ->
+                    resetPassword model readyModel
+
+                _ ->
+                    model & Cmd.none
+
+        Succeeded ->
+            case model.state of
+                Ready _ ->
+                    { model | state = Success }
                         & Cmd.none
 
                 _ ->
                     model & Cmd.none
 
-        Submitted ->
-            case model of
-                Ready readyModel ->
-                    resetPassword readyModel
+        Failed "Error: Invalid code provided, please request a code again." ->
+            setFail model InvalidCode & Cmd.none
 
-                _ ->
-                    model & Cmd.none
+        Failed other ->
+            setFail model (Other other) & Cmd.none
 
 
-resetPassword : ReadyModel -> ( Model, Cmd Msg )
-resetPassword model =
-    Ready model & Cmd.none
+ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )
+ifReady model f =
+    case model.state of
+        Ready readyModel ->
+            f readyModel
+                |> Tuple.mapFirst (setReady model)
+
+        _ ->
+            model & Cmd.none
+
+
+setFail : Model -> Problem -> Model
+setFail model problem =
+    { model | state = Fail problem }
+
+
+setReady : Model -> ReadyModel -> Model
+setReady model readyModel =
+    { model | state = Ready readyModel }
+
+
+updatePassword : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
+updatePassword str model =
+    { model | password = str } & Cmd.none
+
+
+updatePasswordConfirm : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
+updatePasswordConfirm str model =
+    { model | passwordConfirm = str } & Cmd.none
+
+
+resetPassword : Model -> ReadyModel -> ( Model, Cmd Msg )
+resetPassword model readyModel =
+    case validatePassword readyModel of
+        Nothing ->
+            ResetPassword
+                model.email
+                model.code
+                readyModel.password
+                |> Ports.send
+                |& { model | state = Sending }
+
+        Just error ->
+            { model
+                | state =
+                    { readyModel | error = Just error }
+                        |> Ready
+            }
+                & Cmd.none
+
+
+validatePassword : ReadyModel -> Maybe String
+validatePassword { password, passwordConfirm } =
+    Helpers.Password.validate password passwordConfirm
 
 
 
@@ -116,6 +204,8 @@ resetPassword model =
 type Class
     = Long
     | Main
+    | Submit
+    | Error
 
 
 fieldTextWidth : Float
@@ -125,7 +215,7 @@ fieldTextWidth =
 
 cardWidth : Float
 cardWidth =
-    530
+    410
 
 
 css : Stylesheet
@@ -140,6 +230,12 @@ css =
         ]
     , Css.class Main
         [ width (px cardWidth) ]
+    , Css.class Submit
+        [ margin auto
+        , display table
+        ]
+    , Css.class Error
+        [ marginBottom (px 8) ]
     ]
         |> namespace resetNamespace
         |> stylesheet
@@ -173,7 +269,7 @@ view model =
 
 body : Model -> List (Html Msg)
 body model =
-    case model of
+    case model.state of
         Ready readyModel ->
             readyBody readyModel
 
@@ -183,8 +279,8 @@ body model =
         Success ->
             successBody
 
-        Fail ->
-            failBody
+        Fail problem ->
+            failBody problem
 
 
 readyBody : ReadyModel -> List (Html Msg)
@@ -210,6 +306,17 @@ readyBody model =
             , Attrs.type_ "password"
             , onInput_ PasswordConfirm
             ]
+        , input
+            [ Attrs.type_ "submit"
+            , Attrs.hidden True
+            ]
+            []
+        , errorView model.error
+        , a
+            [ class [ Submit ]
+            , onClick SubmitClicked
+            ]
+            [ Html.text "reset" ]
         ]
     ]
 
@@ -224,9 +331,22 @@ successBody =
     []
 
 
-failBody : List (Html Msg)
-failBody =
-    []
+failBody : Problem -> List (Html Msg)
+failBody problem =
+    [ p
+        []
+        [ Html.text (failMsg problem) ]
+    ]
+
+
+failMsg : Problem -> String
+failMsg problem =
+    case problem of
+        InvalidCode ->
+            "The reset code was invalid. Sorry. Please try again."
+
+        Other _ ->
+            "Something went wrong, I dont know what. Sorry. Please try again."
 
 
 field : String -> List (Attribute Msg) -> Html Msg
@@ -240,6 +360,18 @@ field name attributes =
             (class [ Long ] :: attributes)
             []
         ]
+
+
+errorView : Maybe String -> Html Msg
+errorView maybeError =
+    case maybeError of
+        Just error ->
+            Html.Custom.error
+                [ class [ Error ] ]
+                error
+
+        Nothing ->
+            Html.text ""
 
 
 onInput_ : Field -> Attribute Msg
