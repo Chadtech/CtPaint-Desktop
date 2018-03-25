@@ -67,6 +67,8 @@ type Msg
     | SubmitClicked
     | Succeeded
     | Failed String
+    | TryAgainClicked
+    | LoginClicked
 
 
 succeeded : Msg
@@ -126,19 +128,20 @@ update msg model =
                     model & Cmd.none
 
         Succeeded ->
-            case model.state of
-                Ready _ ->
-                    { model | state = Success }
-                        & Cmd.none
+            { model | state = Success }
+                & Cmd.none
 
-                _ ->
-                    model & Cmd.none
-
-        Failed "Error: Invalid code provided, please request a code again." ->
+        Failed "ExpiredCodeException: Invalid code provided, please request a code again." ->
             setFail model InvalidCode & Cmd.none
 
         Failed other ->
             setFail model (Other other) & Cmd.none
+
+        TryAgainClicked ->
+            model & Route.goTo Route.ForgotPassword
+
+        LoginClicked ->
+            model & Route.goTo Route.Login
 
 
 ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )
@@ -204,8 +207,9 @@ validatePassword { password, passwordConfirm } =
 type Class
     = Long
     | Main
-    | Submit
     | Error
+    | Button
+    | MarginTop
 
 
 fieldTextWidth : Float
@@ -230,9 +234,11 @@ css =
         ]
     , Css.class Main
         [ width (px cardWidth) ]
-    , Css.class Submit
+    , Css.class Button
         [ margin auto
         , display table
+        , withClass MarginTop
+            [ marginTop (px 8) ]
         ]
     , Css.class Error
         [ marginBottom (px 8) ]
@@ -313,7 +319,7 @@ readyBody model =
             []
         , errorView model.error
         , a
-            [ class [ Submit ]
+            [ class [ Button ]
             , onClick SubmitClicked
             ]
             [ Html.text "reset" ]
@@ -328,7 +334,24 @@ sendingBody =
 
 successBody : List (Html Msg)
 successBody =
-    []
+    [ p
+        []
+        [ Html.text successText ]
+    , a
+        [ class [ Button, MarginTop ]
+        , onClick LoginClicked
+        ]
+        [ Html.text "go to login" ]
+    ]
+
+
+successText : String
+successText =
+    """
+    Great. It worked. Your password has been reset.
+    Now go back to the login in page and use your
+    new password.
+    """
 
 
 failBody : Problem -> List (Html Msg)
@@ -336,7 +359,22 @@ failBody problem =
     [ p
         []
         [ Html.text (failMsg problem) ]
+    , failButton problem
     ]
+
+
+failButton : Problem -> Html Msg
+failButton problem =
+    case problem of
+        InvalidCode ->
+            a
+                [ class [ Button, MarginTop ]
+                , onClick TryAgainClicked
+                ]
+                [ Html.text "try again" ]
+
+        Other _ ->
+            Html.text ""
 
 
 failMsg : Problem -> String

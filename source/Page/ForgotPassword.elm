@@ -236,27 +236,45 @@ body model =
             readyBody readyModel
 
         Sending _ ->
-            sendingBody
+            Html.Custom.spinner
 
         Success email ->
             successBody email
 
-        Fail err ->
-            failView err
+        Fail _ ->
+            failView
 
 
-failView : String -> Html Msg
-failView err =
+failView : Html Msg
+failView =
     p
         []
-        [ Html.text ("ERROR! " ++ err) ]
+        [ Html.text failText ]
+
+
+failText : String
+failText =
+    """
+    Oh no, something went wrong. Im sorry about that.
+    Try again, and if it still doesnt work, please report
+    this error to ctpaint@programhouse.us.
+    """
 
 
 successBody : String -> Html Msg
 successBody email =
     p
         []
-        [ Html.text ("Email!!!" ++ email) ]
+        [ Html.text (successText email) ]
+
+
+successText : String -> String
+successText email =
+    [ "Okay, I have sent an email to"
+    , email
+    , "containing a password reset link."
+    ]
+        |> String.join " "
 
 
 readyBody : ReadyModel -> Html Msg
@@ -279,17 +297,6 @@ readyBody { email, problem } =
         , Html.Custom.menuButton
             [ onClick SubmitClicked ]
             [ Html.text "reset password" ]
-        ]
-
-
-sendingBody : Html Msg
-sendingBody =
-    div
-        []
-        [ p
-            [ class [ SendingText ] ]
-            [ Html.text "working.." ]
-        , Html.Custom.spinner
         ]
 
 
