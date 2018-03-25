@@ -107,11 +107,9 @@ function forgotPassword(Client, toElm, payload) {
 function resetPassword(Client, toElm, payload) {
     Client.resetPassword(payload, {
         onSuccess: function(data) {
-            console.log("Data", data);
             toElm("reset password succeeded", null);
         },
         onFailure: function(err) {
-            console.log("Error", err);
             toElm("reset password failed", String(err));
         }
     });
