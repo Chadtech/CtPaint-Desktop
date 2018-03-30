@@ -18,6 +18,7 @@ type JsMsg
     | OpenPaintAppWithParams String
     | OpenUrlInPaintApp String
     | OpenDrawingInPaintApp Id
+    | OpenInNewWindow String
     | DeleteDrawing Id
     | Register RegistrationPayload
     | Login String String
@@ -88,6 +89,10 @@ send msg =
         OpenDrawingInPaintApp id ->
             "openDrawingInPaintApp"
                 |> withPayload (Id.encode id)
+
+        OpenInNewWindow url ->
+            "openInNewWindow"
+                |> withPayload (Encode.string url)
 
         DeleteDrawing id ->
             "deleteDrawing"

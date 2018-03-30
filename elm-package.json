@@ -10,7 +10,7 @@
     "dependencies": {
         "Chadtech/ct-colors": "2.0.0 <= v < 3.0.0",
         "Chadtech/ctpaint-keys": "5.0.0 <= v < 6.0.0",
-        "Chadtech/id": "3.1.0 <= v < 4.0.0",
+        "Chadtech/id": "3.2.0 <= v < 4.0.0",
         "Chadtech/keyboard-extra-browser": "1.0.2 <= v < 2.0.0",
         "Chadtech/random-pcg-pipeline": "1.0.0 <= v < 2.0.0",
         "Chadtech/tuple-infix": "1.0.2 <= v < 2.0.0",

@@ -35,6 +35,7 @@ Desktop = function(manifest) {
         openPaintAppWithParams: PaintApp.openWithParams,
         openUrlInPaintApp: PaintApp.openUrl,
         openDrawingInPaintApp: PaintApp.openDrawing,
+        openInNewWindow: window.open,
         deleteDrawing: Drawing.delete,
         forgotPassword: User.forgotPassword,
         resetPassword: User.resetPassword,

@@ -12,13 +12,14 @@ module Page.Home
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
+import Css.Elements
 import Css.Namespace exposing (namespace)
-import Data.Drawing exposing (Drawing)
+import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
 import Date exposing (Date)
 import Date.Extra
-import Html exposing (Html, a, div, img, p, text)
+import Html exposing (Html, a, div, img, input, p, text)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
@@ -31,6 +32,7 @@ import Ports
         ( JsMsg
             ( GetDrawings
             , OpenDrawingInPaintApp
+            , OpenInNewWindow
             )
         )
 import Reply exposing (Reply(NoReply))
@@ -48,6 +50,7 @@ type Msg
     | InitDrawingMsg InitDrawing.Msg
     | HeaderMouseDown
     | OpenDrawingInCtPaint Id
+    | OpenDrawingLink Id
     | DeleteDrawingClicked Id
     | DeleteYesClicked
     | DeleteNoClicked
@@ -110,6 +113,12 @@ update msg model =
         OpenDrawingInCtPaint id ->
             ( Loading OneDrawing
             , Ports.send (OpenDrawingInPaintApp id)
+            , NoReply
+            )
+
+        OpenDrawingLink id ->
+            ( model
+            , Ports.send (OpenInNewWindow (Drawing.toUrl id))
             , NoReply
             )
 
@@ -228,6 +237,8 @@ type Class
     | NewDrawingText
     | Drawing
     | CenteredCard
+    | DrawingLinkContainer
+    | DrawingLink
     | Text
     | Button
     | ButtonsContainer
@@ -286,7 +297,10 @@ css =
         , paddingBottom (px 32)
         ]
     , (Css.class FocusedDrawing << List.append Html.Custom.indent)
-        [ marginBottom (px 8) ]
+        [ display block
+        , margin auto
+        , marginBottom (px 8)
+        ]
     , Css.class Drawing
         [ width (px 220)
         , marginLeft (px -10)
@@ -302,6 +316,17 @@ css =
         , left (pct 50)
         , margin (px 8)
         ]
+    , Css.class DrawingLinkContainer
+        [ children
+            [ Css.Elements.p
+                [ marginRight (px 8)
+                , display inlineBlock
+                ]
+            ]
+        , marginBottom (px 8)
+        ]
+    , Css.class DrawingLink
+        [ width (px 300) ]
     , Css.class Text
         [ marginBottom (px 8) ]
     , Css.class ButtonsContainer
@@ -591,10 +616,27 @@ focusedDrawingView drawing =
             [ class [ FocusedDrawingText ] ]
             [ Html.text ("updated at : " ++ formatDate drawing.updatedAt) ]
         , div
+            [ class [ DrawingLinkContainer ] ]
+            [ p
+                []
+                [ Html.text "image link" ]
+            , input
+                [ class [ DrawingLink ]
+                , Attrs.disabled True
+                , Attrs.value (Drawing.toUrl drawing.id)
+                , Attrs.autofocus True
+                , Attrs.attribute "onfocus" "this.select()"
+                ]
+                []
+            ]
+        , div
             [ class [ ButtonsContainer ] ]
             [ a
+                [ onClick (OpenDrawingLink drawing.publicId) ]
+                [ Html.text "open image link" ]
+            , a
                 [ class [ Button ]
-                , onClick (OpenDrawingInCtPaint drawing.id)
+                , onClick (OpenDrawingInCtPaint drawing.publicId)
                 ]
                 [ Html.text "open in ctpaint" ]
             , a
