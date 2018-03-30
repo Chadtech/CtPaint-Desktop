@@ -12,6 +12,7 @@ import Json.Decode.Pipeline exposing (decode, required)
 
 type alias Drawing =
     { id : Id
+    , publicId : String
     , data : String
     , name : String
     , createdAt : Date
@@ -23,6 +24,7 @@ decoder : Decoder Drawing
 decoder =
     decode Drawing
         |> required "drawingId" Id.decoder
+        |> required "publicId" Decode.string
         |> required "canvas" Decode.string
         |> required "name" Decode.string
         |> required "createdAt" dateDecoder

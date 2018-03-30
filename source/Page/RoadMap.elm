@@ -95,6 +95,9 @@ wants =
     , "import drawing"
     , "animated gifs"
     , "high resolution rotating"
+    , "google chrome extension"
+
+    -- ???
     ]
 
 

@@ -51,6 +51,8 @@ type Msg
     | DeleteDrawingClicked Id
     | DeleteYesClicked
     | DeleteNoClicked
+    | MakeADrawingClicked
+    | RefreshClicked
     | BackToDrawingsClicked
     | TryAgainClicked Id
 
@@ -131,6 +133,17 @@ update msg model =
 
                 _ ->
                     model |> Reply.nothing
+
+        MakeADrawingClicked ->
+            InitDrawing.init
+                |> NewDrawing
+                |> Reply.nothing
+
+        RefreshClicked ->
+            ( Loading AllDrawings
+            , Ports.send GetDrawings
+            , NoReply
+            )
 
         BackToDrawingsClicked ->
             DrawingsView |> Reply.nothing
@@ -668,7 +681,21 @@ noDrawingsView =
         , closability = Html.Custom.NotClosable
         }
     , Html.Custom.cardBody []
-        [ p [] [ Html.text "You have no drawings" ] ]
+        [ p
+            [ class [ Text ] ]
+            [ Html.text "you dont have any drawings" ]
+        , div
+            [ class [ ButtonsContainer ] ]
+            [ a
+                [ onClick RefreshClicked ]
+                [ Html.text "refresh drawings" ]
+            , a
+                [ class [ Button ]
+                , onClick MakeADrawingClicked
+                ]
+                [ Html.text "make a drawing" ]
+            ]
+        ]
     ]
         |> Html.Custom.cardSolitary []
 
