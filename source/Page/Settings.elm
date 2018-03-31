@@ -8,6 +8,7 @@ module Page.Settings
         , view
         )
 
+import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.User exposing (User)
@@ -27,6 +28,7 @@ type alias Model =
     { page : Page
     , name : String
     , profilePicUrl : String
+    , changed : Bool
     }
 
 
@@ -55,6 +57,7 @@ init user =
     { page = UserData
     , name = user.name
     , profilePicUrl = user.profilePic
+    , changed = False
     }
 
 
@@ -71,15 +74,36 @@ update msg user model =
 
         FieldUpdated Name str ->
             { model | name = str }
+                |> validate user
                 |> Reply.nothing
 
         FieldUpdated ProfilePicUrl str ->
             { model | name = str }
+                |> validate user
                 |> Reply.nothing
 
         Submitted ->
             model
                 |> Reply.nothing
+
+
+validate : User -> Model -> Model
+validate srcUser model =
+    { model | changed = hasChanges model srcUser }
+
+
+toUser : Model -> User -> User
+toUser model srcUser =
+    { email = srcUser.email
+    , name = model.name
+    , profilePic = model.profilePicUrl
+    , keyConfig = srcUser.keyConfig
+    }
+
+
+hasChanges : Model -> User -> Bool
+hasChanges model srcUser =
+    toUser model srcUser /= srcUser
 
 
 
@@ -97,6 +121,8 @@ type Class
     | NavBar
     | NavBarButton
     | Selected
+    | Save
+    | Disabled
 
 
 css : Stylesheet
@@ -130,6 +156,14 @@ css =
         ]
     , Css.class Main
         [ display inlineBlock ]
+    , Css.class Save
+        [ display table
+        , margin auto
+        , withClass Disabled
+            [ backgroundColor Ct.ignorable1
+            , active Html.Custom.outdent
+            ]
+        ]
     ]
         |> namespace settingsNamespace
         |> stylesheet
@@ -211,9 +245,21 @@ userDataView model =
         [ Attrs.value model.profilePicUrl
         , onInput_ ProfilePicUrl
         ]
+    , saveButton model
     ]
         |> form [ onSubmit Submitted ]
         |> List.singleton
+
+
+saveButton : Model -> Html Msg
+saveButton model =
+    a
+        [ classList
+            [ Save := True
+            , Disabled := not model.changed
+            ]
+        ]
+        [ Html.text "save" ]
 
 
 keyConfig : Model -> List (Html Msg)
@@ -241,9 +287,17 @@ field name attributes =
             [ class [ Label ] ]
             [ Html.text name ]
         , input
-            (class [ Input ] :: attributes)
+            (inputAttrs attributes)
             []
         ]
+
+
+inputAttrs : List (Attribute Msg) -> List (Attribute Msg)
+inputAttrs =
+    [ class [ Input ]
+    , Attrs.spellcheck False
+    ]
+        |> List.append
 
 
 
