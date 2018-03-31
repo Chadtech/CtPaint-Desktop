@@ -369,7 +369,8 @@ handleRoute destination model =
         Route.Settings ->
             case model.taco.user of
                 User.LoggedIn user ->
-                    Settings.init
+                    user
+                        |> Settings.init
                         |> return Page.Settings model
                         & Cmd.none
 

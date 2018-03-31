@@ -63,8 +63,7 @@ fromWants wants =
 
 wants : List String
 wants =
-    [ "upload url"
-    , "upload to facebook"
+    [ "upload to facebook"
     , "upload to twitter"
     , "layers"
     , "indexed palette"
@@ -92,9 +91,8 @@ wants =
     , "svg software"
     , "imgur upload"
     , "local storage"
-    , "import drawing"
     , "animated gifs"
-    , "high resolution rotating"
+    , "percise rotating"
     , "google chrome extension"
 
     -- ???

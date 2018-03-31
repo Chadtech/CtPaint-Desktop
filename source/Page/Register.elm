@@ -522,29 +522,17 @@ attemptRegistration taco fields =
     if not fields.agreesToTermsOfService then
         { fields
             | generalError =
-                Just "You have to agree to the terms of service to use this site"
+                Just "you have to agree to the terms of service to use this site"
         }
             & Cmd.none
     else if List.isEmpty errors then
-        let
-            cmd =
-                { email = fields.email
-                , profilePicUrl = fields.profilePicUrl
-                , name = fields.name
-                , password = fields.password
-                , browser = taco.config.browser
-                , emailable = fields.isOkayWithEmails
-                }
-                    |> Register
-                    |> Ports.send
-        in
         { fields
             | errors = errors
             , password = ""
             , passwordConfirm = ""
             , show = False
         }
-            & cmd
+            & registerCmd taco fields
     else
         { fields
             | errors = errors
@@ -552,6 +540,19 @@ attemptRegistration taco fields =
             , passwordConfirm = ""
         }
             & Cmd.none
+
+
+registerCmd : Taco -> Fields -> Cmd Msg
+registerCmd taco fields =
+    { email = fields.email
+    , profilePicUrl = fields.profilePicUrl
+    , name = fields.name
+    , password = fields.password
+    , browser = taco.config.browser
+    , emailable = fields.isOkayWithEmails
+    }
+        |> Register
+        |> Ports.send
 
 
 updateField : Field -> String -> Fields -> Fields
