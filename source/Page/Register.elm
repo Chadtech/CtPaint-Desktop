@@ -49,6 +49,7 @@ type Model
 
 type alias Fields =
     { name : String
+    , profilePicUrl : String
     , email : String
     , emailConfirm : String
     , password : String
@@ -64,6 +65,7 @@ type alias Fields =
 
 type Field
     = Name
+    | ProfilePicUrl
     | Email
     | EmailConfirm
     | Password
@@ -95,6 +97,7 @@ type Msg
 init : Model
 init =
     { name = ""
+    , profilePicUrl = ""
     , email = ""
     , emailConfirm = ""
     , password = ""
@@ -300,6 +303,11 @@ fieldsView fields =
             , onInput_ Name
             ]
         , errorView_ Name
+        , field
+            "profile pic url"
+            [ value_ fields.profilePicUrl
+            , onInput_ ProfilePicUrl
+            ]
         , field
             "email"
             [ value_ fields.email
@@ -521,6 +529,7 @@ attemptRegistration taco fields =
         let
             cmd =
                 { email = fields.email
+                , profilePicUrl = fields.profilePicUrl
                 , name = fields.name
                 , password = fields.password
                 , browser = taco.config.browser
@@ -550,6 +559,9 @@ updateField field str fields =
     case field of
         Name ->
             { fields | name = str }
+
+        ProfilePicUrl ->
+            { fields | profilePicUrl = str }
 
         Email ->
             { fields | email = str }

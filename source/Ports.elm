@@ -32,6 +32,7 @@ type JsMsg
 
 type alias RegistrationPayload =
     { email : String
+    , profilePicUrl : String
     , name : String
     , password : String
     , browser : Browser
@@ -98,9 +99,10 @@ send msg =
             "deleteDrawing"
                 |> withPayload (Id.encode id)
 
-        Register { email, name, password, browser } ->
+        Register { email, name, profilePicUrl, password, browser } ->
             [ "email" := Encode.string email
             , "name" := Encode.string name
+            , "profilePicUrl" := Encode.string profilePicUrl
             , "password" := Encode.string password
             , "keyConfig" := encodeConfig browser Keys.defaultConfig
             ]

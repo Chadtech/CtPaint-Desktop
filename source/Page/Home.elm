@@ -118,7 +118,10 @@ update msg model =
 
         OpenDrawingLink id ->
             ( model
-            , Ports.send (OpenInNewWindow (Drawing.toUrl id))
+            , id
+                |> Drawing.toUrl
+                |> OpenInNewWindow
+                |> Ports.send
             , NoReply
             )
 
