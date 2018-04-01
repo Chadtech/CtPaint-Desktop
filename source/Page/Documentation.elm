@@ -8,6 +8,7 @@ import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
+import Data.Feature as Feature exposing (Feature)
 import Data.Taco exposing (Taco)
 import Html exposing (Html, br, div, img, p)
 import Html.Attributes as Attrs
@@ -26,6 +27,7 @@ type Class
     | Feature
     | FeatureImageContainer
     | FeatureImage
+    | Body
 
 
 imageSize : Float
@@ -79,14 +81,20 @@ css =
         ]
     , Css.class FeatureImage
         [ width (px (imageSize - 4)) ]
+    , Css.class Body
+        [ width (px 800)
+        , display block
+        , margin auto
+        , overflow scroll
+        ]
     ]
-        |> namespace aboutNamespace
+        |> namespace documentationNamespace
         |> stylesheet
 
 
-aboutNamespace : String
-aboutNamespace =
-    Html.Custom.makeNamespace "About"
+documentationNamespace : String
+documentationNamespace =
+    Html.Custom.makeNamespace "Documentation"
 
 
 
@@ -94,16 +102,11 @@ aboutNamespace =
 
 
 { class } =
-    Html.CssHelpers.withNamespace aboutNamespace
+    Html.CssHelpers.withNamespace documentationNamespace
 
 
 view : Taco -> List (Html msg)
 view taco =
-    topPart taco ++ features taco
-
-
-topPart : Taco -> List (Html msg)
-topPart { config } =
     [ div
         [ class [ TextContainer ] ]
         [ p
@@ -114,41 +117,33 @@ topPart { config } =
         [ class [ Divider ] ]
         []
     , div
-        [ class [ TextContainer ] ]
-        [ p
-            []
-            [ Html.text "feature list" ]
-        ]
+        [ class [ Body ] ]
+        (features taco)
     ]
 
 
 features : Taco -> List (Html msg)
 features taco =
-    [ feature
-        "Open stuff"
-        "Opening stuff is great"
-        ""
-    , feature
-        "Save stuff too"
-        "I love saving stuff"
-        ""
-    ]
+    Feature.all
+        |> List.map (feature taco)
 
 
-feature : String -> String -> String -> Html msg
-feature title words url =
+feature : Taco -> Feature -> Html msg
+feature { config } feature =
     div
         [ class [ Feature ] ]
         [ div
             [ class [ FeatureImageContainer ] ]
             [ img
                 [ class [ FeatureImage ]
-                , Attrs.src url
+                , feature
+                    |> Feature.imgUrl config
+                    |> Attrs.src
                 ]
                 []
             ]
-        , p_ title
-        , p_ words
+        , p_ feature.name
+        , p_ feature.description
         ]
 
 

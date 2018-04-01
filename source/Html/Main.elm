@@ -32,7 +32,7 @@ bodyHeight =
             Html.Variables.navHeight + 2 + 8
     in
     calc (pct 100) minus (px nonBodyHeight)
-        |> height
+        |> minHeight
 
 
 css : Stylesheet

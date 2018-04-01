@@ -7,6 +7,7 @@ import Html.Main
 import Nav
 import Page.About
 import Page.Contact
+import Page.Documentation
 import Page.Error
 import Page.ForgotPassword
 import Page.Home
@@ -36,6 +37,7 @@ main =
     , Page.Splash.css
     , Nav.css
     , Html.Custom.css
+    , Page.Documentation.css
     , Page.Home.css
     , Page.Offline.css
     , Page.About.css

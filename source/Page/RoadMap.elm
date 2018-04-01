@@ -94,6 +94,8 @@ wants =
     , "animated gifs"
     , "percise rotating"
     , "google chrome extension"
+    , "draw on selection"
+    , "more undo history"
 
     -- ???
     ]
