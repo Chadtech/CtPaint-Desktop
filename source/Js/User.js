@@ -96,11 +96,9 @@ function register(Client, toElm, payload) {
 function update(Client, toElm, payload) {
     Client.updateUser(payload, {
         onFailure: function(err) {
-            console.log("Error", String(err));
             toElm("user update failed", String(err));
         },
         onSuccess: function(result) {
-            console.log("Success!!!", result);
             toElm("user update succeeded", null);
         }
     });

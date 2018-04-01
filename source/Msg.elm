@@ -145,6 +145,16 @@ toMsg taco type_ =
                 |> Decode.map
                     (ResetPassword.failed >> ResetPasswordMsg)
 
+        "user update succeeded" ->
+            Settings.succeeded
+                |> SettingsMsg
+                |> Decode.succeed
+
+        "user update failed" ->
+            Decode.string
+                |> Decode.map
+                    (Settings.failed >> SettingsMsg)
+
         _ ->
             Decode.fail ("Unrecognized Js Msg : " ++ type_)
 

@@ -3,7 +3,9 @@ module Page.Settings
         ( Model
         , Msg
         , css
+        , failed
         , init
+        , succeeded
         , update
         , view
         )
@@ -42,7 +44,6 @@ type State
     = Ready
     | Sending
     | Fail
-    | Success
 
 
 type Field
@@ -60,6 +61,18 @@ type Msg
     | FieldUpdated Field String
     | Submitted
     | SaveClicked
+    | SaveSucceeded
+    | SaveFailed String
+
+
+succeeded : Msg
+succeeded =
+    SaveSucceeded
+
+
+failed : String -> Msg
+failed =
+    SaveFailed
 
 
 
@@ -113,6 +126,14 @@ update msg user model =
             else
                 model
                     |> Reply.nothing
+
+        SaveSucceeded ->
+            { model | state = Ready }
+                |> Reply.nothing
+
+        SaveFailed _ ->
+            { model | state = Fail }
+                |> Reply.nothing
 
 
 toUpdatePayload : User -> Model -> UpdatePayload
@@ -258,6 +279,37 @@ navButton currentPage thisPage label =
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
+    case model.state of
+        Ready ->
+            readyView model
+
+        Sending ->
+            sendingView
+
+        Fail ->
+            failView
+
+
+sendingView : List (Html Msg)
+sendingView =
+    [ Html.Custom.spinner ]
+
+
+failView : List (Html Msg)
+failView =
+    """
+    Sorry, I wasnt able to update your user settings. Something
+    went wrong. If this problem persists please report this as
+    a bug.
+    """
+        |> Html.text
+        |> List.singleton
+        |> p []
+        |> List.singleton
+
+
+readyView : Model -> List (Html Msg)
+readyView model =
     case model.page of
         KeyConfig ->
             keyConfig model
