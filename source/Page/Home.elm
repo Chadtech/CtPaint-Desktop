@@ -14,6 +14,7 @@ import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
+import Data.Config as Config exposing (Config)
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
@@ -36,7 +37,8 @@ import Ports
             )
         )
 import Reply exposing (Reply(NoReply))
-import Tuple.Infix exposing ((&))
+import Tuple.Infix exposing ((&), (:=))
+import Tuple3
 
 
 -- TYPES --
@@ -60,7 +62,15 @@ type Msg
     | TryAgainClicked Id
 
 
-type Model
+type alias Model =
+    -- Right now this record is not necessary
+    -- but I expect the model to grow
+    -- in which case it will inevitably
+    -- need to be a record
+    { main : Main }
+
+
+type Main
     = SpecificDrawing Id
     | DeleteDrawing Id
     | DrawingsView
@@ -82,7 +92,8 @@ type Loadable
 
 init : ( Model, Cmd Msg )
 init =
-    Loading AllDrawings & Ports.send GetDrawings
+    { main = Loading AllDrawings }
+        & Ports.send GetDrawings
 
 
 
@@ -94,24 +105,29 @@ update msg model =
     case msg of
         DrawingClicked id ->
             SpecificDrawing id
+                |> setMain model
                 |> Reply.nothing
 
         CloseDrawingClicked ->
             goToDrawingsView
+                |> Tuple3.mapFirst (setMain model)
 
         CloseNewDrawingClicked ->
             goToDrawingsView
+                |> Tuple3.mapFirst (setMain model)
 
         HeaderMouseDown ->
-            model |> Reply.nothing
+            model
+                |> Reply.nothing
 
         NewDrawingClicked ->
             InitDrawing.init
                 |> NewDrawing
+                |> setMain model
                 |> Reply.nothing
 
         OpenDrawingInCtPaint id ->
-            ( Loading OneDrawing
+            ( setMain model (Loading OneDrawing)
             , Ports.send (OpenDrawingInPaintApp id)
             , NoReply
             )
@@ -127,57 +143,74 @@ update msg model =
 
         DeleteDrawingClicked id ->
             DeleteDrawing id
+                |> setMain model
                 |> Reply.nothing
 
         DeleteYesClicked ->
-            case model of
+            case model.main of
                 DeleteDrawing id ->
                     delete id
+                        |> Tuple3.mapFirst (setMain model)
 
                 _ ->
-                    model |> Reply.nothing
+                    model
+                        |> Reply.nothing
 
         DeleteNoClicked ->
-            case model of
+            case model.main of
                 DeleteDrawing id ->
                     SpecificDrawing id
+                        |> setMain model
                         |> Reply.nothing
 
                 _ ->
-                    model |> Reply.nothing
+                    model
+                        |> Reply.nothing
 
         MakeADrawingClicked ->
             InitDrawing.init
                 |> NewDrawing
+                |> setMain model
                 |> Reply.nothing
 
         RefreshClicked ->
-            ( Loading AllDrawings
+            ( setMain model (Loading AllDrawings)
             , Ports.send GetDrawings
             , NoReply
             )
 
         BackToDrawingsClicked ->
-            DrawingsView |> Reply.nothing
+            DrawingsView
+                |> setMain model
+                |> Reply.nothing
 
         TryAgainClicked id ->
-            case model of
+            case model.main of
                 DidntDelete id ->
                     delete id
+                        |> Tuple3.mapFirst (setMain model)
 
                 _ ->
-                    model |> Reply.nothing
+                    model
+                        |> Reply.nothing
 
         InitDrawingMsg subMsg ->
-            case model of
+            case model.main of
                 NewDrawing subModel ->
                     handleInitMsg subMsg subModel
+                        |> Tuple3.mapFirst (setMain model)
 
                 _ ->
-                    model |> Reply.nothing
+                    model
+                        |> Reply.nothing
 
 
-handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Model, Cmd Msg, Reply )
+setMain : Model -> Main -> Model
+setMain model main =
+    { model | main = main }
+
+
+handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg, Reply )
 handleInitMsg subMsg subModel =
     let
         ( newSubModel, cmd ) =
@@ -189,7 +222,7 @@ handleInitMsg subMsg subModel =
     )
 
 
-delete : Id -> ( Model, Cmd Msg, Reply )
+delete : Id -> ( Main, Cmd Msg, Reply )
 delete id =
     ( Deleting
     , Ports.send (Ports.DeleteDrawing id)
@@ -197,16 +230,17 @@ delete id =
     )
 
 
-goToDrawingsView : ( Model, Cmd Msg, Reply )
+goToDrawingsView : ( Main, Cmd Msg, Reply )
 goToDrawingsView =
     DrawingsView |> Reply.nothing
 
 
 drawingsLoaded : Model -> Model
 drawingsLoaded model =
-    case model of
+    case model.main of
         Loading AllDrawings ->
             DrawingsView
+                |> setMain model
 
         _ ->
             model
@@ -214,12 +248,14 @@ drawingsLoaded model =
 
 drawingDeleted : Result Id String -> Model -> Model
 drawingDeleted result model =
-    case ( result, model ) of
+    case ( result, model.main ) of
         ( Ok name, Deleting ) ->
             Deleted name
+                |> setMain model
 
         ( Err id, Deleting ) ->
             DidntDelete id
+                |> setMain model
 
         _ ->
             model
@@ -345,7 +381,17 @@ css =
         , overflow hidden
         ]
     , Css.class ProfilePicture
-        [ width (px (leftSideWidth - 4)) ]
+        [ width (px (leftSideWidth - 4))
+        , before
+            [ property "content" "\" \""
+            , display block
+            , position absolute
+            , width (px (leftSideWidth - 4))
+            , height (px (leftSideWidth - 4))
+            , backgroundImage (url "https://i.imgur.com/ukKI571.png")
+            , property "background-size" "150px 150px"
+            ]
+        ]
     , Css.class Profile
         []
     , Css.class BioContainer
@@ -387,7 +433,7 @@ type NotLoggedIn
 
 view : Taco -> User -> Model -> List (Html Msg)
 view taco user model =
-    [ leftSide user
+    [ leftSide taco.config user
     , div
         [ class [ DrawingsContainer ] ]
         (rightSide taco user model)
@@ -396,7 +442,7 @@ view taco user model =
 
 rightSide : Taco -> User -> Model -> List (Html Msg)
 rightSide taco user model =
-    case model of
+    case model.main of
         SpecificDrawing id ->
             case Id.get id taco.entities.drawings of
                 Just drawing ->
@@ -664,23 +710,23 @@ errorView =
     Html.text ""
 
 
-leftSide : User -> Html Msg
-leftSide user =
+leftSide : Config -> User -> Html Msg
+leftSide config user =
     div
         [ class [ LeftSide ] ]
-        [ profile user ]
+        [ profile config user ]
 
 
-profile : User -> Html Msg
-profile user =
+profile : Config -> User -> Html Msg
+profile config user =
     user
-        |> profileChildren
+        |> profileChildren config
         |> Html.Custom.container []
 
 
-profileChildren : User -> List (Html Msg)
-profileChildren user =
-    [ profilePicture user.profilePic
+profileChildren : Config -> User -> List (Html Msg)
+profileChildren config user =
+    [ profilePicture config user.profilePic
     , bio user
     ]
 
@@ -695,8 +741,8 @@ bio user =
         ]
 
 
-profilePicture : String -> Html Msg
-profilePicture url =
+profilePicture : Config -> String -> Html Msg
+profilePicture config url =
     div
         [ class [ ProfilePictureContainer ] ]
         [ img

@@ -413,9 +413,17 @@ field name attributes =
     Html.Custom.field [ class [ Long ] ]
         [ p [ class [ Long ] ] [ Html.text name ]
         , input
-            (class [ Long ] :: attributes)
+            (inputAttrs attributes)
             []
         ]
+
+
+inputAttrs : List (Attribute Msg) -> List (Attribute Msg)
+inputAttrs attrs =
+    [ class [ Long ]
+    , Attr.spellcheck False
+    ]
+        ++ attrs
 
 
 errorView : List ( Field, String ) -> Field -> Html Msg
