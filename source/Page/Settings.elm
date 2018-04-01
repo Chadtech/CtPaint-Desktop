@@ -17,6 +17,11 @@ import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Ports
+    exposing
+        ( JsMsg(UpdateUser)
+        , UpdatePayload
+        )
 import Reply exposing (Reply(NoReply, SetUser))
 import Tuple.Infix exposing ((:=))
 
@@ -29,7 +34,15 @@ type alias Model =
     , name : String
     , profilePicUrl : String
     , changed : Bool
+    , state : State
     }
+
+
+type State
+    = Ready
+    | Sending
+    | Fail
+    | Success
 
 
 type Field
@@ -46,6 +59,7 @@ type Msg
     = NavClickedOn Page
     | FieldUpdated Field String
     | Submitted
+    | SaveClicked
 
 
 
@@ -58,6 +72,7 @@ init user =
     , name = user.name
     , profilePicUrl = user.profilePic
     , changed = False
+    , state = Ready
     }
 
 
@@ -85,6 +100,27 @@ update msg user model =
         Submitted ->
             model
                 |> Reply.nothing
+
+        SaveClicked ->
+            if model.changed && model.state == Ready then
+                ( { model | state = Sending }
+                , model
+                    |> toUpdatePayload user
+                    |> UpdateUser
+                    |> Ports.send
+                , NoReply
+                )
+            else
+                model
+                    |> Reply.nothing
+
+
+toUpdatePayload : User -> Model -> UpdatePayload
+toUpdatePayload srcUser model =
+    { email = srcUser.email
+    , name = model.name
+    , profilePicUrl = model.profilePicUrl
+    }
 
 
 validate : User -> Model -> Model
@@ -258,6 +294,7 @@ saveButton model =
             [ Save := True
             , Disabled := not model.changed
             ]
+        , onClick SaveClicked
         ]
         [ Html.text "save" ]
 

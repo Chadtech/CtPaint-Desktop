@@ -21,6 +21,7 @@ type JsMsg
     | OpenInNewWindow String
     | DeleteDrawing Id
     | Register RegistrationPayload
+    | UpdateUser UpdatePayload
     | Login String String
     | VerifyEmail String String
     | GetUserAttributes
@@ -37,6 +38,13 @@ type alias RegistrationPayload =
     , password : String
     , browser : Browser
     , emailable : Bool
+    }
+
+
+type alias UpdatePayload =
+    { email : String
+    , name : String
+    , profilePicUrl : String
     }
 
 
@@ -107,6 +115,13 @@ send msg =
             , "keyConfig" := encodeConfig browser Keys.defaultConfig
             ]
                 |> fromKeyValues "register"
+
+        UpdateUser { email, name, profilePicUrl } ->
+            [ "email" := Encode.string email
+            , "name" := Encode.string name
+            , "profilePicUrl" := Encode.string profilePicUrl
+            ]
+                |> fromKeyValues "updateUser"
 
         Login email password ->
             [ "email" := Encode.string email

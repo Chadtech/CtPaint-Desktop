@@ -29,6 +29,7 @@ Desktop = function(manifest) {
         logIn: User.login,
         verifyEmail: User.verify,
         register: User.register,
+        updateUser: User.update,
         logOut: User.logout,
         getDrawings: Drawing.getAll,
         openPaintApp: PaintApp.open,
