@@ -197,6 +197,7 @@ headerStyle =
             , cursor default
             , margin (px 0)
             , display inlineBlock
+            , lineHeight (px 25)
             ]
         , a
             [ height (px 21)
@@ -250,8 +251,10 @@ aStyle =
     , textDecoration none
     , backgroundColor Ct.ignorable2
     , display inlineBlock
+    , lineHeight (px 19)
     , padding4 (px 4) (px 8) (px 4) (px 8)
     , cursor pointer
+    , property "-moz-osx-font-smoothing" "grayscale"
     , hover [ color Ct.point1 ]
     , withClass Selected indent
     , withClass Null
@@ -296,6 +299,8 @@ basicFont : List Style
 basicFont =
     [ fontFamilies [ "hfnss" ]
     , color Ct.point0
+    , lineHeight (px 19)
+    , property "-moz-osx-font-smoothing" "grayscale"
     , property "-webkit-font-smoothing" "none"
     , fontSize (px basicFontSize)
     ]
