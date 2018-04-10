@@ -172,7 +172,10 @@ input =
     , outline none
     , fontSize (em 2)
     , fontFamilies [ "hfnss" ]
+    , height (px 25)
+    , lineHeight (px 19)
     , color Ct.point0
+    , property "-moz-osx-font-smoothing" "grayscale"
     , property "-webkit-font-smoothing" "none"
     , margin (px 0)
     , padding (px 0)
