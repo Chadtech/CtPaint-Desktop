@@ -34,6 +34,18 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..), RegistrationPayload)
 import Return2 as R2
 import Tos
+import Tracking
+    exposing
+        ( Event
+            ( PageRegisterEmailAgreeClick
+            , PageRegisterGoBackFromTosClick
+            , PageRegisterReadTosClick
+            , PageRegisterResponse
+            , PageRegisterSubmitClick
+            , PageRegisterSubmitEnterPress
+            , PageRegisterTosAgreeClick
+            )
+        )
 import Util exposing (def)
 import Validate exposing (ifBlank)
 
@@ -456,9 +468,13 @@ update taco msg model =
     case msg of
         Submitted ->
             ifFields (attemptRegistration taco) model
+                |> R2.addCmd
+                    (Ports.track taco PageRegisterSubmitEnterPress)
 
         SubmitClicked ->
             ifFields (attemptRegistration taco) model
+                |> R2.addCmd
+                    (Ports.track taco PageRegisterSubmitClick)
 
         FieldUpdated field str ->
             ifFields
@@ -466,12 +482,17 @@ update taco msg model =
                 model
 
         Succeeded email ->
-            Success email
-                |> R2.withNoCmd
+            PageRegisterResponse Nothing
+                |> Ports.track taco
+                |> R2.withModel (Success email)
 
         Failed problem ->
-            Fail problem
-                |> R2.withNoCmd
+            problem
+                |> toString
+                |> Just
+                |> PageRegisterResponse
+                |> Ports.track taco
+                |> R2.withModel (Fail problem)
 
         TosAgreeClicked ->
             ifFields toggleTos model

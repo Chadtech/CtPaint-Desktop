@@ -35,10 +35,9 @@ import Route exposing (Route(..))
 
 
 type Msg
-    = RouteChanged (Maybe Route)
+    = RouteChanged (Result String Route)
     | LogInSucceeded User
     | LogOutSucceeded
-    | LogOutFailed String
     | HomeMsg Home.Msg
     | PricingMsg Pricing.Msg
     | RoadMapMsg RoadMap.Msg
@@ -92,7 +91,7 @@ toMsg taco type_ =
 
         "logout failed" ->
             Decode.string
-                |> Decode.map LogOutFailed
+                |> Decode.map (LogoutMsg << Logout.LogoutFailed)
 
         "verification succeeded" ->
             VerifyMsg Verify.Succeeded

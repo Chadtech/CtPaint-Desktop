@@ -13,6 +13,7 @@ module Page.ResetPassword
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Helpers.Password
 import Html exposing (Attribute, Html, a, form, input, p)
 import Html.Attributes as Attrs
@@ -22,6 +23,17 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(ResetPassword))
 import Return2 as R2
 import Route
+import Tracking
+    exposing
+        ( Event
+            ( PageResetPasswordGoHomeClick
+            , PageResetPasswordLoginClick
+            , PageResetPasswordResponse
+            , PageResetPasswordSubmitClick
+            , PageResetPasswordSubmitEnterPress
+            , PageResetPasswordTryAgainClick
+            )
+        )
 import Util
 
 
@@ -99,11 +111,15 @@ init email code =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         GoHomeClicked ->
-            Route.goTo Route.Landing
+            [ Route.goTo Route.Landing
+            , PageResetPasswordGoHomeClick
+                |> Ports.track taco
+            ]
+                |> Cmd.batch
                 |> R2.withModel model
 
         FieldUpdated Password str ->
@@ -116,6 +132,8 @@ update msg model =
             case model.state of
                 Ready readyModel ->
                     resetPassword model readyModel
+                        |> R2.addCmd
+                            (Ports.track taco PageResetPasswordSubmitEnterPress)
 
                 _ ->
                     model
@@ -125,30 +143,60 @@ update msg model =
             case model.state of
                 Ready readyModel ->
                     resetPassword model readyModel
+                        |> R2.addCmd
+                            (Ports.track taco PageResetPasswordSubmitClick)
 
                 _ ->
                     model
                         |> R2.withNoCmd
 
         Succeeded ->
-            { model | state = Success }
-                |> R2.withNoCmd
+            PageResetPasswordResponse Nothing
+                |> Ports.track taco
+                |> R2.withModel
+                    { model | state = Success }
 
-        Failed "ExpiredCodeException: Invalid code provided, please request a code again." ->
-            setFail model InvalidCode
-                |> R2.withNoCmd
-
-        Failed other ->
-            setFail model (Other other)
-                |> R2.withNoCmd
+        Failed err ->
+            handleError taco model err
 
         TryAgainClicked ->
-            Route.goTo Route.ForgotPassword
+            [ Route.goTo Route.ForgotPassword
+            , PageResetPasswordTryAgainClick
+                |> Ports.track taco
+            ]
+                |> Cmd.batch
                 |> R2.withModel model
 
         LoginClicked ->
-            Route.goTo Route.Login
+            [ Route.goTo Route.Login
+            , PageResetPasswordLoginClick
+                |> Ports.track taco
+            ]
+                |> Cmd.batch
                 |> R2.withModel model
+
+
+handleError : Taco -> Model -> String -> ( Model, Cmd Msg )
+handleError taco model err =
+    case err of
+        "ExpiredCodeException: Invalid code provided, please request a code again." ->
+            InvalidCode
+                |> setFail model
+                |> R2.withCmd (trackFail taco err)
+
+        _ ->
+            err
+                |> Other
+                |> setFail model
+                |> R2.withCmd (trackFail taco err)
+
+
+trackFail : Taco -> String -> Cmd Msg
+trackFail taco err =
+    err
+        |> Just
+        |> PageResetPasswordResponse
+        |> Ports.track taco
 
 
 ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )

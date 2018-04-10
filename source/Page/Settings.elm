@@ -14,6 +14,7 @@ module Page.Settings
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Data.User exposing (User)
 import Html exposing (Attribute, Html, a, div, form, input, p)
 import Html.Attributes as Attrs
@@ -27,6 +28,15 @@ import Ports
         )
 import Return2 as R2
 import Return3 as R3 exposing (Return)
+import Tracking
+    exposing
+        ( Event
+            ( PageSettingsNavClick
+            , PageSettingsSaveClick
+            , PageSettingsSaveResponse
+            , PageSettingsSubmitEnterPress
+            )
+        )
 import Util exposing (def)
 
 
@@ -99,12 +109,14 @@ init user =
 -- UPDATE --
 
 
-update : Msg -> User -> Model -> Return Model Msg Reply
-update msg user model =
+update : Taco -> Msg -> User -> Model -> Return Model Msg Reply
+update taco msg user model =
     case msg of
         NavClickedOn page ->
-            { model | page = page }
-                |> R3.withNothing
+            PageSettingsNavClick (toString page)
+                |> Ports.track taco
+                |> R2.withModel { model | page = page }
+                |> R3.withNoReply
 
         FieldUpdated Name str ->
             { model | name = str }
@@ -117,28 +129,40 @@ update msg user model =
                 |> R3.withNothing
 
         Submitted ->
-            model
-                |> R3.withNothing
+            PageSettingsSubmitEnterPress
+                |> Ports.track taco
+                |> R2.withModel model
+                |> R3.withNoReply
 
         SaveClicked ->
             if model.changed && model.state == Ready then
-                model
+                [ model
                     |> toUpdatePayload user
                     |> UpdateUser
                     |> Ports.send
+                , PageSettingsSaveClick False
+                    |> Ports.track taco
+                ]
+                    |> Cmd.batch
                     |> R2.withModel { model | state = Sending }
                     |> R3.withNoReply
             else
-                model
-                    |> R3.withNothing
+                PageSettingsSaveClick True
+                    |> Ports.track taco
+                    |> R2.withModel model
+                    |> R3.withNoReply
 
         SaveSucceeded ->
-            { model | state = Ready }
-                |> R3.withNothing
+            PageSettingsSaveResponse Nothing
+                |> Ports.track taco
+                |> R2.withModel { model | state = Ready }
+                |> R3.withNoReply
 
-        SaveFailed _ ->
-            { model | state = Fail }
-                |> R3.withNothing
+        SaveFailed err ->
+            PageSettingsSaveResponse (Just err)
+                |> Ports.track taco
+                |> R2.withModel { model | state = Fail }
+                |> R3.withNoReply
 
 
 toUpdatePayload : User -> Model -> UpdatePayload

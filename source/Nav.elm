@@ -23,7 +23,9 @@ import Html.Events exposing (onClick)
 import Html.Variables
 import Model exposing (Model)
 import Page exposing (Page)
+import Ports
 import Route exposing (Route)
+import Tracking exposing (Event(NavClick))
 
 
 -- TYPES --
@@ -37,11 +39,17 @@ type Msg
 -- UPDATE --
 
 
-update : Msg -> Cmd Msg
-update msg =
+update : Taco -> Msg -> Cmd Msg
+update taco msg =
     case msg of
         RouteClicked route ->
-            Route.goTo route
+            [ Route.goTo route
+            , route
+                |> toString
+                |> NavClick
+                |> Ports.track taco
+            ]
+                |> Cmd.batch
 
 
 

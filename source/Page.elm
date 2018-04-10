@@ -1,4 +1,10 @@
-module Page exposing (..)
+module Page
+    exposing
+        ( HoldUp(..)
+        , Page(..)
+        , Problem(..)
+        , toString
+        )
 
 import Html.InitDrawing as InitDrawing
 import Page.Contact as Contact
@@ -32,6 +38,7 @@ type Page
     | Offline
     | Loading HoldUp
     | Error Problem
+    | Blank
 
 
 type HoldUp
@@ -40,4 +47,68 @@ type HoldUp
 
 type Problem
     = InvalidUrl
-    | NoPageLoaded
+
+
+
+-- HELPERS --
+
+
+toString : Page -> String
+toString page =
+    case page of
+        Home _ ->
+            "home"
+
+        InitDrawing _ ->
+            "init-drawing"
+
+        About ->
+            "about"
+
+        Documentation ->
+            "documentation"
+
+        Contact _ ->
+            "contact"
+
+        Pricing ->
+            "pricing"
+
+        RoadMap _ ->
+            "road-map"
+
+        Settings _ ->
+            "settings"
+
+        Register _ ->
+            "register"
+
+        Login _ ->
+            "login"
+
+        ForgotPassword _ ->
+            "forgot-password"
+
+        ResetPassword _ ->
+            "reset-password"
+
+        Logout _ ->
+            "logout"
+
+        Verify _ ->
+            "verify"
+
+        Splash ->
+            "splash"
+
+        Offline ->
+            "offline"
+
+        Loading holdUp ->
+            "loading : " ++ Basics.toString holdUp
+
+        Blank ->
+            "blank"
+
+        Error problem ->
+            "error : " ++ Basics.toString problem

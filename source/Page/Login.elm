@@ -11,6 +11,7 @@ module Page.Login
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html
     exposing
         ( Attribute
@@ -29,6 +30,15 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..))
 import Return2 as R2
 import Route
+import Tracking
+    exposing
+        ( Event
+            ( PageLoginClick
+            , PageLoginEnterPress
+            , PageLoginFail
+            , PageLoginForgotPasswordClick
+            )
+        )
 import Validate exposing (ifBlank)
 
 
@@ -77,8 +87,8 @@ init =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         FieldUpdated Email str ->
             { model | email = str }
@@ -90,20 +100,29 @@ update msg model =
 
         Submitted ->
             attemptLogin model
+                |> R2.addCmd
+                    (Ports.track taco PageLoginEnterPress)
 
         LoginClicked ->
             attemptLogin model
+                |> R2.addCmd
+                    (Ports.track taco PageLoginClick)
 
         LoginFailed err ->
-            { model
-                | responseError =
-                    Just (determineResponseError err)
-                , state = Ready
-            }
-                |> R2.withNoCmd
+            PageLoginFail err
+                |> Ports.track taco
+                |> R2.withModel
+                    { model
+                        | responseError =
+                            Just (responseError err)
+                        , state = Ready
+                    }
 
         ForgotPasswordClicked ->
-            Route.goTo Route.ForgotPassword
+            [ Route.goTo Route.ForgotPassword
+            , Ports.track taco PageLoginForgotPasswordClick
+            ]
+                |> Cmd.batch
                 |> R2.withModel model
 
 
@@ -138,8 +157,8 @@ attemptLoginCmd model noErrors =
         Cmd.none
 
 
-determineResponseError : String -> String
-determineResponseError err =
+responseError : String -> String
+responseError err =
     case err of
         "UserNotFoundException: User does not exist." ->
             "Either the user does not exist or the password entered was incorrect"

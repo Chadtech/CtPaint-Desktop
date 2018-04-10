@@ -2,13 +2,13 @@ module Page.Logout exposing (..)
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
-import Process
+import Ports
 import Return2 as R2
-import Route exposing (Route(Landing))
-import Task exposing (Task)
+import Tracking exposing (Event(PageLogoutFail))
 
 
 -- TYPES --
@@ -21,45 +21,24 @@ init =
 
 type Model
     = Waiting
-    | Success
     | Fail String
 
 
 type Msg
-    = LogoutSuccessful
-    | LogoutFailed String
-    | DoneWaiting
+    = LogoutFailed String
 
 
 
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
-        LogoutSuccessful ->
-            Success
-                |> R2.withCmd wait
-
         LogoutFailed err ->
-            Fail err
-                |> R2.withNoCmd
-
-        DoneWaiting ->
-            Route.goTo Landing
-                |> R2.withModel model
-
-
-wait : Cmd Msg
-wait =
-    Process.sleep 5000
-        |> Task.perform finishWaiting
-
-
-finishWaiting : a -> Msg
-finishWaiting =
-    always DoneWaiting
+            PageLogoutFail err
+                |> Ports.track taco
+                |> R2.withModel (Fail err)
 
 
 
@@ -107,10 +86,6 @@ viewContent model =
         Waiting ->
             [ p [] [ Html.text "logging out.." ]
             , Html.Custom.spinner
-            ]
-
-        Success ->
-            [ p [] [ Html.text "You have successfully logged out. You will be redirected momentarily." ]
             ]
 
         Fail err ->

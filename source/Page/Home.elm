@@ -37,6 +37,24 @@ import Ports
             )
         )
 import Return2 as R2
+import Tracking
+    exposing
+        ( Event
+            ( PageHomeBackToDrawingsClick
+            , PageHomeCloseDrawingClick
+            , PageHomeCloseNewDrawingClick
+            , PageHomeDeleteDrawingClick
+            , PageHomeDeleteDrawingNoClick
+            , PageHomeDeleteDrawingYesClick
+            , PageHomeDrawingClick
+            , PageHomeMakeADrawingClick
+            , PageHomeNewDrawingClick
+            , PageHomeOpenDrawingInCtPaintClick
+            , PageHomeOpenDrawingLinkClick
+            , PageHomeRefreshClick
+            , PageHomeTryAgainClick
+            )
+        )
 
 
 -- TYPES --
@@ -98,20 +116,25 @@ init =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         DrawingClicked id ->
             SpecificDrawing id
                 |> setMain model
-                |> R2.withNoCmd
+                |> R2.withCmd
+                    (Ports.track taco PageHomeDrawingClick)
 
         CloseDrawingClicked ->
             goToDrawingsView
+                |> R2.addCmd
+                    (Ports.track taco PageHomeCloseDrawingClick)
                 |> R2.mapModel (setMain model)
 
         CloseNewDrawingClicked ->
             goToDrawingsView
+                |> R2.addCmd
+                    (Ports.track taco PageHomeNewDrawingClick)
                 |> R2.mapModel (setMain model)
 
         HeaderMouseDown ->
@@ -122,31 +145,41 @@ update msg model =
             InitDrawing.init
                 |> NewDrawing
                 |> setMain model
-                |> R2.withNoCmd
+                |> R2.withCmd
+                    (Ports.track taco PageHomeNewDrawingClick)
 
         OpenDrawingInCtPaint id ->
-            Loading OneDrawing
-                |> setMain model
-                |> R2.withCmd
-                    (Ports.send (OpenDrawingInPaintApp id))
+            [ Ports.send (OpenDrawingInPaintApp id)
+            , Ports.track taco PageHomeOpenDrawingInCtPaintClick
+            ]
+                |> Cmd.batch
+                |> R2.withModel (Loading OneDrawing)
+                |> R2.mapModel (setMain model)
 
         OpenDrawingLink id ->
-            id
+            [ id
                 |> Drawing.toUrl
                 |> OpenInNewWindow
                 |> Ports.send
+            , PageHomeOpenDrawingLinkClick
+                |> Ports.track taco
+            ]
+                |> Cmd.batch
                 |> R2.withModel model
 
         DeleteDrawingClicked id ->
             DeleteDrawing id
                 |> setMain model
-                |> R2.withNoCmd
+                |> R2.withCmd
+                    (Ports.track taco PageHomeDeleteDrawingClick)
 
         DeleteYesClicked ->
             case model.main of
                 DeleteDrawing id ->
                     delete id
                         |> R2.mapModel (setMain model)
+                        |> R2.addCmd
+                            (Ports.track taco PageHomeDeleteDrawingYesClick)
 
                 _ ->
                     model
@@ -157,7 +190,8 @@ update msg model =
                 DeleteDrawing id ->
                     SpecificDrawing id
                         |> setMain model
-                        |> R2.withNoCmd
+                        |> R2.withCmd
+                            (Ports.track taco PageHomeDeleteDrawingNoClick)
 
                 _ ->
                     model
@@ -167,23 +201,31 @@ update msg model =
             InitDrawing.init
                 |> NewDrawing
                 |> setMain model
-                |> R2.withNoCmd
+                |> R2.withCmd
+                    (Ports.track taco PageHomeMakeADrawingClick)
 
         RefreshClicked ->
-            Loading AllDrawings
-                |> setMain model
-                |> R2.withCmd (Ports.send GetDrawings)
+            [ Ports.send GetDrawings
+            , PageHomeRefreshClick
+                |> Ports.track taco
+            ]
+                |> Cmd.batch
+                |> R2.withModel (Loading AllDrawings)
+                |> R2.mapModel (setMain model)
 
         BackToDrawingsClicked ->
             DrawingsView
                 |> setMain model
-                |> R2.withNoCmd
+                |> R2.withCmd
+                    (Ports.track taco PageHomeBackToDrawingsClick)
 
         TryAgainClicked id ->
             case model.main of
                 DidntDelete id ->
                     delete id
                         |> R2.mapModel (setMain model)
+                        |> R2.addCmd
+                            (Ports.track taco PageHomeTryAgainClick)
 
                 _ ->
                     model

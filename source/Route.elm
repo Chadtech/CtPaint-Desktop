@@ -21,9 +21,15 @@ type Route
     | Verify String String
 
 
-fromLocation : Location -> Maybe Route
-fromLocation =
-    Url.parsePath route
+fromLocation : Location -> Result String Route
+fromLocation location =
+    case Url.parsePath route location of
+        Just route ->
+            Ok route
+
+        Nothing ->
+            (location.origin ++ location.pathname)
+                |> Err
 
 
 route : Parser (Route -> a) a

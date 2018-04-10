@@ -11,12 +11,21 @@ module Page.Verify
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Ports
 import Return2 as R2
 import Route
+import Tracking
+    exposing
+        ( Event
+            ( PageVerifyLoginClick
+            , PageVerifyResponse
+            )
+        )
 
 
 -- INIT --
@@ -60,30 +69,52 @@ type Problem
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         Succeeded ->
-            { model
-                | status = Success
-            }
-                |> R2.withNoCmd
+            PageVerifyResponse Nothing
+                |> Ports.track taco
+                |> R2.withModel
+                    { model
+                        | status = Success
+                    }
 
         LoginClicked ->
             if model.status == Success then
-                Route.goTo Route.Login
+                [ Route.goTo Route.Login
+                , PageVerifyLoginClick False
+                    |> Ports.track taco
+                ]
+                    |> Cmd.batch
                     |> R2.withModel model
             else
-                model
-                    |> R2.withNoCmd
-
-        Failed "NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED." ->
-            { model | status = Fail AlreadyVerified }
-                |> R2.withNoCmd
+                PageVerifyLoginClick True
+                    |> Ports.track taco
+                    |> R2.withModel model
 
         Failed err ->
-            { model | status = Fail (Other err) }
-                |> R2.withNoCmd
+            handleFail taco model err
+
+
+handleFail : Taco -> Model -> String -> ( Model, Cmd Msg )
+handleFail taco model err =
+    err
+        |> Just
+        |> PageVerifyResponse
+        |> Ports.track taco
+        |> R2.withModel
+            { model | status = Fail (toProblem err) }
+
+
+toProblem : String -> Problem
+toProblem err =
+    case err of
+        "NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED." ->
+            AlreadyVerified
+
+        _ ->
+            Other err
 
 
 

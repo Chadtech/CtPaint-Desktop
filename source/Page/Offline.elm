@@ -8,9 +8,12 @@ module Page.Offline
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html exposing (Html)
 import Html.CssHelpers
 import Html.Custom
+import Ports
+import Tracking exposing (Event(PageOfflineRefreshClick))
 
 
 -- TYPES --
@@ -24,11 +27,12 @@ type Msg
 -- UPDATE --
 
 
-update : Msg -> Cmd Msg
-update msg =
+update : Taco -> Msg -> Cmd Msg
+update taco msg =
     case msg of
         RefreshClicked ->
-            Cmd.none
+            PageOfflineRefreshClick
+                |> Ports.track taco
 
 
 

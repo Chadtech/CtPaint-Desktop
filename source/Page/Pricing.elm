@@ -18,6 +18,13 @@ import Html.Custom
 import Html.Events exposing (onClick)
 import Ports exposing (JsMsg(OpenPaintApp))
 import Route exposing (Route(Register))
+import Tracking
+    exposing
+        ( Event
+            ( PagePricingDrawNowClick
+            , PagePricingRegisterClick
+            )
+        )
 
 
 -- TYPES --
@@ -32,14 +39,20 @@ type Msg
 -- UPDATE --
 
 
-update : Msg -> Cmd Msg
-update msg =
+update : Taco -> Msg -> Cmd Msg
+update taco msg =
     case msg of
         DrawNowClicked ->
-            Ports.send OpenPaintApp
+            [ Ports.send OpenPaintApp
+            , Ports.track taco PagePricingDrawNowClick
+            ]
+                |> Cmd.batch
 
         RegisterClicked ->
-            Route.goTo Register
+            [ Route.goTo Register
+            , Ports.track taco PagePricingRegisterClick
+            ]
+                |> Cmd.batch
 
 
 

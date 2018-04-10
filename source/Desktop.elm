@@ -1,12 +1,13 @@
 module Desktop exposing (..)
 
-import Data.Flags as Flags
-import Data.Taco as Taco
+import Data.Flags as Flags exposing (Flags)
+import Data.Taco as Taco exposing (Taco)
 import Data.User as User
 import Html exposing (Html)
 import Html.Custom
 import Html.InitDrawing
 import Html.Main
+import Id
 import Json.Decode as Decode exposing (Value)
 import Model exposing (Model)
 import Msg exposing (Msg(..))
@@ -32,6 +33,7 @@ import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Return2 as R2
 import Route
+import Tracking exposing (Event(AppInit, AppInitFail))
 import Update
 
 
@@ -74,20 +76,40 @@ init : Value -> Location -> ( Result String Model, Cmd Msg )
 init json location =
     case Decode.decodeValue Flags.decoder json of
         Ok flags ->
-            { page = Error NoPageLoaded
-            , taco = Taco.fromFlags flags
+            let
+                taco =
+                    Taco.fromFlags flags
+            in
+            { page = Blank
+            , taco = taco
             }
                 |> initPage location
+                |> R2.addCmd (trackInit taco flags)
 
         Err err ->
-            Err err
-                |> R2.withNoCmd
+            { sessionId = Id.fromString "ERROR"
+            , email = Nothing
+            , event = AppInitFail err
+            }
+                |> Ports.Track
+                |> Ports.send
+                |> R2.withModel (Err err)
 
 
 initPage : Location -> Model -> ( Result String Model, Cmd Msg )
 initPage location model =
     Update.update (onNavigation location) model
         |> Tuple.mapFirst Ok
+
+
+trackInit : Taco -> Flags -> Cmd Msg
+trackInit taco flags =
+    { isMac = flags.isMac
+    , browser = flags.browser
+    , buildNumber = flags.buildNumber
+    }
+        |> AppInit
+        |> Ports.track taco
 
 
 
@@ -218,5 +240,5 @@ viewModel model =
         Error InvalidUrl ->
             errorView "Sorry, something is wrong with your url"
 
-        Error NoPageLoaded ->
+        Blank ->
             errorView "Somehow no page was loaded"
