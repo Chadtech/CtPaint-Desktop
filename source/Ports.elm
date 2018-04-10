@@ -6,7 +6,7 @@ import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Keyboard.Extra.Browser exposing (Browser)
 import Tracking
-import Tuple.Infix exposing ((:=))
+import Util exposing (def)
 
 
 -- TYPES --
@@ -66,8 +66,8 @@ noPayload =
 
 withPayload : Value -> String -> Cmd msg
 withPayload payload type_ =
-    [ "type" := Encode.string type_
-    , "payload" := payload
+    [ def "type" <| Encode.string type_
+    , def "payload" <| payload
     ]
         |> Encode.object
         |> toJs
@@ -108,30 +108,30 @@ send msg =
                 |> withPayload (Id.encode id)
 
         Register { email, name, profilePicUrl, password, browser } ->
-            [ "email" := Encode.string email
-            , "name" := Encode.string name
-            , "profilePicUrl" := Encode.string profilePicUrl
-            , "password" := Encode.string password
-            , "keyConfig" := encodeConfig browser Keys.defaultConfig
+            [ def "email" <| Encode.string email
+            , def "name" <| Encode.string name
+            , def "profilePicUrl" <| Encode.string profilePicUrl
+            , def "password" <| Encode.string password
+            , def "keyConfig" <| encodeConfig browser Keys.defaultConfig
             ]
                 |> fromKeyValues "register"
 
         UpdateUser { email, name, profilePicUrl } ->
-            [ "email" := Encode.string email
-            , "name" := Encode.string name
-            , "profilePicUrl" := Encode.string profilePicUrl
+            [ def "email" <| Encode.string email
+            , def "name" <| Encode.string name
+            , def "profilePicUrl" <| Encode.string profilePicUrl
             ]
                 |> fromKeyValues "updateUser"
 
         Login email password ->
-            [ "email" := Encode.string email
-            , "password" := Encode.string password
+            [ def "email" <| Encode.string email
+            , def "password" <| Encode.string password
             ]
                 |> fromKeyValues "logIn"
 
         VerifyEmail email code ->
-            [ "email" := Encode.string email
-            , "code" := Encode.string code
+            [ def "email" <| Encode.string email
+            , def "code" <| Encode.string code
             ]
                 |> fromKeyValues "verifyEmail"
 
@@ -146,9 +146,9 @@ send msg =
                 |> withPayload (Encode.string email)
 
         ResetPassword email code password ->
-            [ "email" := Encode.string email
-            , "code" := Encode.string code
-            , "password" := Encode.string password
+            [ def "email" <| Encode.string email
+            , def "code" <| Encode.string code
+            , def "password" <| Encode.string password
             ]
                 |> fromKeyValues "resetPassword"
 

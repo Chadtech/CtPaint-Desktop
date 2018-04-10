@@ -34,7 +34,7 @@ import Html.Variables
         ( leftSideWidth
         )
 import MouseEvents exposing (MouseEvent, Position)
-import Tuple.Infix exposing ((:=))
+import Util exposing (def)
 
 
 -- STYLES --
@@ -266,10 +266,10 @@ aStyle =
 
 cannotSelect : List Style
 cannotSelect =
-    [ "-webkit-user-select" := "none"
-    , "-moz-user-select" := "none"
-    , "-ms-user-select" := "none"
-    , "user-select" := "none"
+    [ def "-webkit-user-select" "none"
+    , def "-moz-user-select" "none"
+    , def "-ms-user-select" "none"
+    , def "user-select" "none"
     ]
         |> List.map (uncurry property)
 
@@ -336,8 +336,8 @@ toolButton state =
     let
         attrs =
             [ classList
-                [ ToolButton := True
-                , Selected := state.selected
+                [ def ToolButton True
+                , def Selected state.selected
                 ]
             ]
                 ++ state.attrs

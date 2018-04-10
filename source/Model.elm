@@ -2,9 +2,6 @@ module Model
     exposing
         ( Model
         , mixinSeed
-        , return
-        , return2
-        , return3
         , setSeed
         , setUser
         )
@@ -40,21 +37,6 @@ setSeed seed model =
         | taco =
             Taco.setSeed seed model.taco
     }
-
-
-return : (a -> Page) -> Model -> a -> Model
-return pageCtor model pageModel =
-    { model | page = pageCtor pageModel }
-
-
-return2 : (a -> Page) -> Model -> ( a, b ) -> ( Model, b )
-return2 pageCtor model =
-    Tuple.mapFirst (return pageCtor model)
-
-
-return3 : (a -> Page) -> Model -> ( a, b, c ) -> ( Model, b, c )
-return3 pageCtor model =
-    Tuple3.mapFirst (return pageCtor model)
 
 
 mixinSeed : ( Model, Seed ) -> Model

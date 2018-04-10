@@ -20,9 +20,9 @@ import Html.Custom
 import Html.Events exposing (onClick, onInput)
 import Ports
 import Random.Pcg as Random exposing (Generator, Seed)
+import Return2 as R2
 import Set exposing (Set)
-import Tracking
-import Tuple.Infix exposing ((&))
+import Tracking exposing (Event(PageRoadMapWantClick))
 import Util
 
 
@@ -152,7 +152,8 @@ update taco msg model =
     case msg of
         WantClicked want ->
             if Set.member want model.clickedWants then
-                model & Cmd.none
+                model
+                    |> R2.withNoCmd
             else
                 { model
                     | clickedWants =
@@ -160,29 +161,35 @@ update taco msg model =
                             want
                             model.clickedWants
                 }
-                    & trackCmd taco want
+                    |> R2.withCmd (trackCmd taco want)
 
         OtherWantUpdated str ->
             if model.otherWantClicked then
-                model & Cmd.none
+                model
+                    |> R2.withNoCmd
             else
                 { model
                     | otherWant = str
                 }
-                    & Cmd.none
+                    |> R2.withNoCmd
 
         OtherWantClicked ->
             { model
                 | otherWantClicked = True
             }
-                & Util.cmdIf
-                    (model.otherWant /= "")
-                    (trackCmd taco ("Other want : " ++ model.otherWant))
+                |> R2.withCmd (trackOtherWant taco model)
+
+
+trackOtherWant : Taco -> Model -> Cmd Msg
+trackOtherWant taco model =
+    Util.cmdIf
+        (model.otherWant /= "")
+        (trackCmd taco ("Other want : " ++ model.otherWant))
 
 
 trackCmd : Taco -> String -> Cmd Msg
 trackCmd taco =
-    Ports.track taco << Tracking.WantClicked
+    Ports.track taco << PageRoadMapWantClick
 
 
 

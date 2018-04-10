@@ -32,9 +32,9 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..), RegistrationPayload)
+import Return2 as R2
 import Tos
-import Tuple.Infix exposing ((&), (:=))
-import Util
+import Util exposing (def)
 import Validate exposing (ifBlank)
 
 
@@ -462,14 +462,16 @@ update taco msg model =
 
         FieldUpdated field str ->
             ifFields
-                (updateField field str >> Util.noCmd)
+                (updateField field str >> R2.withNoCmd)
                 model
 
         Succeeded email ->
-            Success email & Cmd.none
+            Success email
+                |> R2.withNoCmd
 
         Failed problem ->
-            Fail problem & Cmd.none
+            Fail problem
+                |> R2.withNoCmd
 
         TosAgreeClicked ->
             ifFields toggleTos model
@@ -490,7 +492,7 @@ toggleEmail fields =
         | isOkayWithEmails =
             not fields.isOkayWithEmails
     }
-        & Cmd.none
+        |> R2.withNoCmd
 
 
 toggleTos : Fields -> ( Fields, Cmd Msg )
@@ -499,7 +501,7 @@ toggleTos fields =
         | agreesToTermsOfService =
             not fields.agreesToTermsOfService
     }
-        & Cmd.none
+        |> R2.withNoCmd
 
 
 setTermsOfServiceView : Bool -> Fields -> ( Fields, Cmd Msg )
@@ -507,7 +509,7 @@ setTermsOfServiceView bool fields =
     { fields
         | termsOfServiceView = bool
     }
-        & Cmd.none
+        |> R2.withNoCmd
 
 
 ifFields : (Fields -> ( Fields, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
@@ -518,7 +520,7 @@ ifFields fieldsChanger model =
                 |> Tuple.mapFirst Ready
 
         _ ->
-            model & Cmd.none
+            model |> R2.withNoCmd
 
 
 attemptRegistration : Taco -> Fields -> ( Fields, Cmd Msg )
@@ -532,7 +534,7 @@ attemptRegistration taco fields =
             | generalError =
                 Just "you have to agree to the terms of service to use this site"
         }
-            & Cmd.none
+            |> R2.withNoCmd
     else if List.isEmpty errors then
         { fields
             | errors = errors
@@ -540,14 +542,14 @@ attemptRegistration taco fields =
             , passwordConfirm = ""
             , show = False
         }
-            & registerCmd taco fields
+            |> R2.withCmd (registerCmd taco fields)
     else
         { fields
             | errors = errors
             , password = ""
             , passwordConfirm = ""
         }
-            & Cmd.none
+            |> R2.withNoCmd
 
 
 registerCmd : Taco -> Fields -> Cmd Msg
@@ -591,15 +593,15 @@ handleFail fail fields =
         "UsernameExistsException: User already exists" ->
             { fields
                 | errors =
-                    Email
-                        & "Email is already registered to an account"
+                    "Email is already registered to an account"
+                        |> def Email
                         |> List.singleton
             }
 
         other ->
             { fields
                 | errors =
-                    [ Email & other ]
+                    [ def Email other ]
             }
 
 

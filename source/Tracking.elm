@@ -11,7 +11,11 @@ import Data.User as User
 import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Json.Encode.Extra as Encode
-import Tuple.Infix exposing ((:=))
+import Keyboard.Extra.Browser exposing (Browser)
+import Util exposing (def)
+
+
+-- TYPES --
 
 
 type alias Payload =
@@ -35,18 +39,25 @@ fromTaco taco event =
     }
 
 
+type alias InitValues =
+    { isMac : Bool
+    , browser : Browser
+    , buildNumber : Int
+    }
+
+
 type Event
-    = AppInitialized
-    | AppFailedToInitialize String
-    | WantClicked String
-    | CommentSubmitted String
+    = AppInit InitValues
+    | AppInitFail String
+    | PageRoadMapWantClick String
+    | PageContactSubmitClick String
 
 
 encode : Payload -> Value
 encode { event, sessionId, email } =
-    [ "event" := encodeEvent event
-    , "sessionId" := Id.encode sessionId
-    , "email" := Encode.maybe Encode.string email
+    [ def "event" <| encodeEvent event
+    , def "sessionId" <| Id.encode sessionId
+    , def "email" <| Encode.maybe Encode.string email
     ]
         |> Encode.object
 
@@ -54,24 +65,22 @@ encode { event, sessionId, email } =
 encodeEvent : Event -> Value
 encodeEvent event =
     case event of
-        AppInitialized ->
-            [ "name" := Encode.string "app initialized" ]
+        AppInit initValues ->
+            [ def "name" <| Encode.string "app initialized" ]
                 |> Encode.object
 
-        AppFailedToInitialize problem ->
-            [ "name" := Encode.string "app failed to initialized"
-            , "problem" := Encode.string problem
+        AppInitFail problem ->
+            [ def "name" <| Encode.string "app failed to initialized"
+            , def "problem" <| Encode.string problem
             ]
                 |> Encode.object
 
-        WantClicked want ->
-            [ "name" := Encode.string "want clicked"
-            , "want" := Encode.string want
+        PageRoadMapWantClick want ->
+            [ def "name" <| Encode.string "want clicked"
+            , def "want" <| Encode.string want
             ]
                 |> Encode.object
 
-        CommentSubmitted comment ->
-            [ "name" := Encode.string "comment clicked"
-            , "comment" := Encode.string comment
-            ]
+        PageContactSubmitClick comment ->
+            [ def "comment" <| Encode.string comment ]
                 |> Encode.object

@@ -6,9 +6,9 @@ import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Process
+import Return2 as R2
 import Route exposing (Route(Landing))
 import Task exposing (Task)
-import Tuple.Infix exposing ((&))
 
 
 -- TYPES --
@@ -39,13 +39,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LogoutSuccessful ->
-            Success & wait
+            Success
+                |> R2.withCmd wait
 
         LogoutFailed err ->
-            Fail err & Cmd.none
+            Fail err
+                |> R2.withNoCmd
 
         DoneWaiting ->
-            model & Route.goTo Landing
+            Route.goTo Landing
+                |> R2.withModel model
 
 
 wait : Cmd Msg

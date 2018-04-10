@@ -24,7 +24,8 @@ import Ports
             , OpenUrlInPaintApp
             )
         )
-import Tuple.Infix exposing ((&), (:=), (|&))
+import Return2 as R2
+import Util exposing (def)
 
 
 -- TYPES --
@@ -125,23 +126,26 @@ update msg model =
             fromUrl model
 
         FieldUpdated Name str ->
-            { model | name = str } & Cmd.none
+            { model | name = str }
+                |> R2.withNoCmd
 
         FieldUpdated Width str ->
             { model | widthField = str }
                 |> validateWidth
-                & Cmd.none
+                |> R2.withNoCmd
 
         FieldUpdated Height str ->
             { model | heightField = str }
                 |> validateHeight
-                & Cmd.none
+                |> R2.withNoCmd
 
         FieldUpdated Url str ->
-            { model | url = str } & Cmd.none
+            { model | url = str }
+                |> R2.withNoCmd
 
         ColorClicked color ->
-            { model | backgroundColor = color } & Cmd.none
+            { model | backgroundColor = color }
+                |> R2.withNoCmd
 
         NewInitSubmitted ->
             openPaintApp model
@@ -176,16 +180,20 @@ openPaintApp model =
         |> toQueryString
         |> OpenPaintAppWithParams
         |> Ports.send
-        |& { model | submitted = True }
+        |> R2.withModel
+            { model | submitted = True }
 
 
 fromUrl : Model -> ( Model, Cmd Msg )
 fromUrl model =
     if String.isEmpty model.url then
-        model & Cmd.none
+        model
+            |> R2.withNoCmd
     else
-        { model | submitted = True }
-            & Ports.send (OpenUrlInPaintApp model.url)
+        OpenUrlInPaintApp model.url
+            |> Ports.send
+            |> R2.withModel
+                { model | submitted = True }
 
 
 
@@ -365,10 +373,10 @@ colorBox : BackgroundColor -> BackgroundColor -> Html Msg
 colorBox thisColor selectedColor =
     div
         [ classList
-            [ ColorBox := True
-            , colorToStyle thisColor := True
-            , Selected := (selectedColor == thisColor)
-            , Left := thisColor == Black
+            [ def ColorBox True
+            , def (colorToStyle thisColor) True
+            , def Selected (selectedColor == thisColor)
+            , def Left (thisColor == Black)
             ]
         , onClick (ColorClicked thisColor)
         ]
@@ -398,8 +406,8 @@ urlView model =
         ]
     , a
         [ classList
-            [ Button := True
-            , Disabled := model.url == ""
+            [ def Button True
+            , def Disabled (model.url == "")
             ]
         , onClick FromUrlClicked
         ]

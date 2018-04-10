@@ -1,18 +1,11 @@
 module Update exposing (update)
 
-import Comply
 import Data.Entities as Entities
 import Data.Taco as Taco
 import Data.User as User
 import Html.InitDrawing as InitDrawing
 import Id
-import Model
-    exposing
-        ( Model
-        , return
-        , return2
-        , return3
-        )
+import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Nav
 import Page exposing (Page(..), Problem(..))
@@ -31,10 +24,9 @@ import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
+import Return2 as R2
+import Return3 as R3
 import Route exposing (Route(..))
-import Tuple.Infix exposing ((&))
-import Tuple3
-import Util
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -47,176 +39,190 @@ update msg ({ taco, page } as model) =
             { model
                 | page = Error InvalidUrl
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
         LogInSucceeded user ->
             model
                 |> Model.setUser (User.LoggedIn user)
-                & Route.goTo Route.Landing
+                |> R2.withCmd (Route.goTo Route.Landing)
 
         LogOutSucceeded ->
             model
                 |> Model.setUser User.LoggedOut
-                & Route.goTo Route.Login
+                |> R2.withCmd (Route.goTo Route.Login)
 
         LogOutFailed err ->
-            model & Cmd.none
+            model
+                |> R2.withNoCmd
 
         MsgDecodeFailed err ->
-            model & Cmd.none
+            model
+                |> R2.withNoCmd
 
         HomeMsg subMsg ->
             case ( page, taco.user ) of
                 ( Page.Home subModel, User.LoggedIn user ) ->
                     subModel
                         |> Home.update subMsg
-                        |> return3 Page.Home model
-                        |> Tuple3.mapSecond (Cmd.map HomeMsg)
-                        |> Comply.fromTriple
+                        |> R2.mapCmd HomeMsg
+                        |> R2.mapModel (setPage Page.Home model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         InitDrawingMsg subMsg ->
             case page of
                 Page.InitDrawing subModel ->
                     subModel
                         |> InitDrawing.update subMsg
-                        |> return2 Page.InitDrawing model
-                        |> Tuple.mapSecond (Cmd.map InitDrawingMsg)
+                        |> R2.mapCmd InitDrawingMsg
+                        |> R2.mapModel (setPage Page.InitDrawing model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         PricingMsg subMsg ->
             case page of
                 Page.Pricing ->
-                    model & Cmd.map PricingMsg (Pricing.update subMsg)
+                    Pricing.update subMsg
+                        |> Cmd.map PricingMsg
+                        |> R2.withModel model
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         RoadMapMsg subMsg ->
             case page of
                 Page.RoadMap subModel ->
                     subModel
                         |> RoadMap.update taco subMsg
-                        |> return2 Page.RoadMap model
-                        |> Tuple.mapSecond (Cmd.map RoadMapMsg)
+                        |> R2.mapCmd RoadMapMsg
+                        |> R2.mapModel (setPage Page.RoadMap model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         ContactMsg subMsg ->
             case page of
                 Page.Contact subModel ->
                     subModel
                         |> Contact.update taco subMsg
-                        |> return2 Page.Contact model
-                        |> Tuple.mapSecond (Cmd.map ContactMsg)
+                        |> R2.mapCmd ContactMsg
+                        |> R2.mapModel (setPage Page.Contact model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         SplashMsg subMsg ->
-            model & Cmd.map SplashMsg (Splash.update subMsg)
+            subMsg
+                |> Splash.update
+                |> Cmd.map SplashMsg
+                |> R2.withModel model
 
         OfflineMsg subMsg ->
             case ( page, taco.user ) of
                 ( Page.Offline, User.Offline ) ->
-                    model & Cmd.map OfflineMsg (Offline.update subMsg)
+                    subMsg
+                        |> Offline.update
+                        |> Cmd.map OfflineMsg
+                        |> R2.withModel model
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         RegisterMsg subMsg ->
             case page of
                 Page.Register subModel ->
                     subModel
                         |> Register.update taco subMsg
-                        |> return2 Page.Register model
-                        |> Tuple.mapSecond (Cmd.map RegisterMsg)
+                        |> R2.mapCmd RegisterMsg
+                        |> R2.mapModel (setPage Page.Register model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         LoginMsg subMsg ->
             case page of
                 Page.Login subModel ->
                     subModel
                         |> Login.update subMsg
-                        |> return2 Page.Login model
-                        |> Tuple.mapSecond (Cmd.map LoginMsg)
+                        |> R2.mapCmd LoginMsg
+                        |> R2.mapModel (setPage Page.Login model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         ForgotPasswordMsg subMsg ->
             case page of
                 Page.ForgotPassword subModel ->
                     subModel
                         |> ForgotPassword.update subMsg
-                        |> return2 Page.ForgotPassword model
-                        |> Tuple.mapSecond (Cmd.map ForgotPasswordMsg)
+                        |> R2.mapCmd ForgotPasswordMsg
+                        |> R2.mapModel (setPage Page.ForgotPassword model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         ResetPasswordMsg subMsg ->
             case page of
                 Page.ResetPassword subModel ->
                     subModel
                         |> ResetPassword.update subMsg
-                        |> return2 Page.ResetPassword model
-                        |> Tuple.mapSecond (Cmd.map ResetPasswordMsg)
+                        |> R2.mapCmd ResetPasswordMsg
+                        |> R2.mapModel (setPage Page.ResetPassword model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         LogoutMsg subMsg ->
             case page of
                 Page.Logout subModel ->
                     subModel
                         |> Logout.update subMsg
-                        |> return2 Page.Logout model
-                        |> Tuple.mapSecond (Cmd.map LogoutMsg)
+                        |> R2.mapCmd LogoutMsg
+                        |> R2.mapModel (setPage Page.Logout model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         VerifyMsg subMsg ->
             case page of
                 Page.Verify subModel ->
                     subModel
                         |> Verify.update subMsg
-                        |> return2 Page.Verify model
-                        |> Tuple.mapSecond (Cmd.map VerifyMsg)
+                        |> R2.mapCmd VerifyMsg
+                        |> R2.mapModel (setPage Page.Verify model)
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         ErrorMsg subMsg ->
             case page of
                 Page.Error _ ->
-                    model & Error.update subMsg
+                    subMsg
+                        |> Error.update
+                        |> R2.withModel model
 
                 _ ->
-                    model & Cmd.none
+                    model |> R2.withNoCmd
 
         SettingsMsg subMsg ->
             case ( page, taco.user ) of
                 ( Page.Settings subModel, User.LoggedIn user ) ->
                     subModel
                         |> Settings.update subMsg user
-                        |> return3 Page.Settings model
-                        |> Tuple3.mapSecond (Cmd.map SettingsMsg)
-                        |> Comply.fromTriple
+                        |> R3.mapCmd SettingsMsg
+                        |> R3.incorp incorpSettings model
 
                 _ ->
-                    model & Route.goTo Route.Login
+                    model
+                        |> R2.withCmd (Route.goTo Route.Login)
 
         NavMsg subMsg ->
-            model & Cmd.map NavMsg (Nav.update subMsg)
+            subMsg
+                |> Nav.update
+                |> Cmd.map NavMsg
+                |> R2.withModel model
 
         DrawingsLoaded drawings ->
             { model
@@ -235,7 +241,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
         DrawingDeleted (Ok id) ->
             { model
@@ -253,7 +259,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
         DrawingDeleted (Err ( id, err )) ->
             { model
@@ -267,7 +273,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
@@ -301,7 +307,8 @@ handleRoute destination model =
         Route.Register ->
             case model.page of
                 Page.Register _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
                 _ ->
                     { model
@@ -314,74 +321,78 @@ handleRoute destination model =
             case model.taco.user of
                 User.LoggedIn _ ->
                     Home.init
-                        |> Tuple.mapFirst (return Page.Home model)
-                        |> Tuple.mapSecond (Cmd.map HomeMsg)
+                        |> R2.mapCmd HomeMsg
+                        |> R2.mapModel (setPage Page.Home model)
 
                 User.Offline ->
                     { model | page = Page.Offline }
-                        & Cmd.none
+                        |> R2.withNoCmd
 
                 _ ->
                     { model
                         | page = Page.Splash
                     }
-                        & Cmd.none
+                        |> R2.withNoCmd
 
         Route.InitDrawing ->
             { model
                 | page =
                     Page.InitDrawing InitDrawing.init
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
         Route.About ->
             { model | page = Page.About }
-                & Cmd.none
+                |> R2.withNoCmd
 
         Route.Documentation ->
             { model | page = Page.Documentation }
-                & Cmd.none
+                |> R2.withNoCmd
 
         Route.Contact ->
             case model.page of
                 Page.Contact _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
                 _ ->
                     { model | page = Page.Contact Contact.init }
-                        & Cmd.none
+                        |> R2.withNoCmd
 
         Route.Pricing ->
             { model | page = Page.Pricing }
-                & Cmd.none
+                |> R2.withNoCmd
 
         Route.RoadMap ->
             case model.page of
                 Page.RoadMap _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
                 _ ->
                     RoadMap.init model.taco.seed
-                        |> return2 Page.RoadMap model
+                        |> Tuple.mapFirst
+                            (setPage Page.RoadMap model)
                         |> Model.mixinSeed
-                        & Cmd.none
+                        |> R2.withNoCmd
 
         Route.Settings ->
             case model.taco.user of
                 User.LoggedIn user ->
                     user
                         |> Settings.init
-                        |> return Page.Settings model
-                        & Cmd.none
+                        |> setPage Page.Settings model
+                        |> R2.withNoCmd
 
                 _ ->
-                    model & Route.goTo Route.Login
+                    Route.goTo Route.Login
+                        |> R2.withModel model
 
         Route.Verify email code ->
             Verify.init email
-                |> return Page.Verify model
+                |> setPage Page.Verify model
                 |> logout
-                |> Util.addCmd (Ports.send (VerifyEmail email code))
+                |> R2.addCmd (Ports.send (VerifyEmail email code))
 
 
 logout : Model -> ( Model, Cmd Msg )
@@ -392,7 +403,30 @@ logout model =
                 | taco =
                     Taco.setUser User.LoggedOut model.taco
             }
-                & Ports.send Ports.Logout
+                |> R2.withCmd (Ports.send Ports.Logout)
 
         _ ->
-            ( model, Cmd.none )
+            model
+                |> R2.withNoCmd
+
+
+
+-- HELPERS --
+
+
+setPage : (subModel -> Page) -> Model -> subModel -> Model
+setPage pageCtor model subModel =
+    { model | page = pageCtor subModel }
+
+
+incorpSettings : Settings.Model -> Maybe Settings.Reply -> Model -> ( Model, Cmd Msg )
+incorpSettings subModel maybeReply model =
+    case maybeReply of
+        Nothing ->
+            { model | page = Page.Settings subModel }
+                |> R2.withNoCmd
+
+        Just (Settings.SetUser user) ->
+            model
+                |> Model.setUser (User.LoggedIn user)
+                |> R2.withNoCmd

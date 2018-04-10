@@ -27,8 +27,8 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(..))
+import Return2 as R2
 import Route
-import Tuple.Infix exposing ((&))
 import Validate exposing (ifBlank)
 
 
@@ -81,10 +81,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FieldUpdated Email str ->
-            { model | email = str } & Cmd.none
+            { model | email = str }
+                |> R2.withNoCmd
 
         FieldUpdated Password str ->
-            { model | password = str } & Cmd.none
+            { model | password = str }
+                |> R2.withNoCmd
 
         Submitted ->
             attemptLogin model
@@ -98,10 +100,11 @@ update msg model =
                     Just (determineResponseError err)
                 , state = Ready
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
         ForgotPasswordClicked ->
-            model & Route.goTo Route.ForgotPassword
+            Route.goTo Route.ForgotPassword
+                |> R2.withModel model
 
 
 attemptLogin : Model -> ( Model, Cmd Msg )
@@ -123,7 +126,7 @@ attemptLogin model =
                 Ready
         , responseError = Nothing
     }
-        & attemptLoginCmd model noErrors
+        |> R2.withCmd (attemptLoginCmd model noErrors)
 
 
 attemptLoginCmd : Model -> Bool -> Cmd Msg

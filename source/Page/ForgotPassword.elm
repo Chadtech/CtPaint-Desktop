@@ -18,8 +18,8 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(ForgotPassword))
-import Tuple.Infix exposing ((&))
-import Util
+import Return2 as R2
+import Util exposing (def)
 
 
 -- TYPES --
@@ -92,18 +92,22 @@ update msg model =
         Succeeded ->
             case model of
                 Sending email ->
-                    Success email & Cmd.none
+                    Success email
+                        |> R2.withNoCmd
 
                 _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
         Failed err ->
             case model of
                 Sending _ ->
-                    Fail err & Cmd.none
+                    Fail err
+                        |> R2.withNoCmd
 
                 _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
 
 ifReady : (ReadyModel -> ( ReadyModel, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
@@ -114,7 +118,8 @@ ifReady readyFunc model =
                 |> Tuple.mapFirst Ready
 
         _ ->
-            model & Cmd.none
+            model
+                |> R2.withNoCmd
 
 
 updateEmail : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
@@ -122,7 +127,7 @@ updateEmail str readyModel =
     { readyModel
         | email = str
     }
-        & Cmd.none
+        |> R2.withNoCmd
 
 
 attemptSubmit : Model -> ( Model, Cmd Msg )
@@ -134,19 +139,21 @@ attemptSubmit model =
                 |> submitIfNoProblem
 
         _ ->
-            model & Cmd.none
+            model
+                |> R2.withNoCmd
 
 
 submitIfNoProblem : ReadyModel -> ( Model, Cmd Msg )
 submitIfNoProblem readyModel =
     case readyModel.problem of
         Just _ ->
-            Ready readyModel & Cmd.none
+            Ready readyModel
+                |> R2.withNoCmd
 
         Nothing ->
-            ( Sending readyModel.email
-            , submit readyModel.email
-            )
+            Sending readyModel.email
+                |> R2.withCmd
+                    (submit readyModel.email)
 
 
 submit : String -> Cmd Msg

@@ -36,9 +36,9 @@ import Ports
             , OpenInNewWindow
             )
         )
-import Reply exposing (Reply(NoReply))
-import Tuple.Infix exposing ((&), (:=))
+import Return2 as R2
 import Tuple3
+import Util exposing (def)
 
 
 -- TYPES --
@@ -93,116 +93,113 @@ type Loadable
 init : ( Model, Cmd Msg )
 init =
     { main = Loading AllDrawings }
-        & Ports.send GetDrawings
+        |> R2.withCmd (Ports.send GetDrawings)
 
 
 
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Reply )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DrawingClicked id ->
             SpecificDrawing id
                 |> setMain model
-                |> Reply.nothing
+                |> R2.withNoCmd
 
         CloseDrawingClicked ->
             goToDrawingsView
-                |> Tuple3.mapFirst (setMain model)
+                |> R2.mapModel (setMain model)
 
         CloseNewDrawingClicked ->
             goToDrawingsView
-                |> Tuple3.mapFirst (setMain model)
+                |> R2.mapModel (setMain model)
 
         HeaderMouseDown ->
             model
-                |> Reply.nothing
+                |> R2.withNoCmd
 
         NewDrawingClicked ->
             InitDrawing.init
                 |> NewDrawing
                 |> setMain model
-                |> Reply.nothing
+                |> R2.withNoCmd
 
         OpenDrawingInCtPaint id ->
-            ( setMain model (Loading OneDrawing)
-            , Ports.send (OpenDrawingInPaintApp id)
-            , NoReply
-            )
+            Loading OneDrawing
+                |> setMain model
+                |> R2.withCmd
+                    (Ports.send (OpenDrawingInPaintApp id))
 
         OpenDrawingLink id ->
-            ( model
-            , id
+            id
                 |> Drawing.toUrl
                 |> OpenInNewWindow
                 |> Ports.send
-            , NoReply
-            )
+                |> R2.withModel model
 
         DeleteDrawingClicked id ->
             DeleteDrawing id
                 |> setMain model
-                |> Reply.nothing
+                |> R2.withNoCmd
 
         DeleteYesClicked ->
             case model.main of
                 DeleteDrawing id ->
                     delete id
-                        |> Tuple3.mapFirst (setMain model)
+                        |> R2.mapModel (setMain model)
 
                 _ ->
                     model
-                        |> Reply.nothing
+                        |> R2.withNoCmd
 
         DeleteNoClicked ->
             case model.main of
                 DeleteDrawing id ->
                     SpecificDrawing id
                         |> setMain model
-                        |> Reply.nothing
+                        |> R2.withNoCmd
 
                 _ ->
                     model
-                        |> Reply.nothing
+                        |> R2.withNoCmd
 
         MakeADrawingClicked ->
             InitDrawing.init
                 |> NewDrawing
                 |> setMain model
-                |> Reply.nothing
+                |> R2.withNoCmd
 
         RefreshClicked ->
-            ( setMain model (Loading AllDrawings)
-            , Ports.send GetDrawings
-            , NoReply
-            )
+            Loading AllDrawings
+                |> setMain model
+                |> R2.withCmd (Ports.send GetDrawings)
 
         BackToDrawingsClicked ->
             DrawingsView
                 |> setMain model
-                |> Reply.nothing
+                |> R2.withNoCmd
 
         TryAgainClicked id ->
             case model.main of
                 DidntDelete id ->
                     delete id
-                        |> Tuple3.mapFirst (setMain model)
+                        |> R2.mapModel (setMain model)
 
                 _ ->
                     model
-                        |> Reply.nothing
+                        |> R2.withNoCmd
 
         InitDrawingMsg subMsg ->
             case model.main of
                 NewDrawing subModel ->
                     handleInitMsg subMsg subModel
-                        |> Tuple3.mapFirst (setMain model)
+                        |> R2.mapModel (setMain model)
 
                 _ ->
                     model
-                        |> Reply.nothing
+                        |> R2.withNoCmd
 
 
 setMain : Model -> Main -> Model
@@ -210,29 +207,25 @@ setMain model main =
     { model | main = main }
 
 
-handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg, Reply )
+handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg )
 handleInitMsg subMsg subModel =
-    let
-        ( newSubModel, cmd ) =
-            InitDrawing.update subMsg subModel
-    in
-    ( NewDrawing newSubModel
-    , Cmd.map InitDrawingMsg cmd
-    , NoReply
-    )
+    subModel
+        |> InitDrawing.update subMsg
+        |> R2.mapModel NewDrawing
+        |> R2.mapCmd InitDrawingMsg
 
 
-delete : Id -> ( Main, Cmd Msg, Reply )
+delete : Id -> ( Main, Cmd Msg )
 delete id =
-    ( Deleting
-    , Ports.send (Ports.DeleteDrawing id)
-    , NoReply
-    )
+    Ports.DeleteDrawing id
+        |> Ports.send
+        |> R2.withModel Deleting
 
 
-goToDrawingsView : ( Main, Cmd Msg, Reply )
+goToDrawingsView : ( Main, Cmd Msg )
 goToDrawingsView =
-    DrawingsView |> Reply.nothing
+    DrawingsView
+        |> R2.withNoCmd
 
 
 drawingsLoaded : Model -> Model

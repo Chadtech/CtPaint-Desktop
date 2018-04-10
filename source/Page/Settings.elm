@@ -2,6 +2,7 @@ module Page.Settings
     exposing
         ( Model
         , Msg
+        , Reply(..)
         , css
         , failed
         , init
@@ -24,8 +25,9 @@ import Ports
         ( JsMsg(UpdateUser)
         , UpdatePayload
         )
-import Reply exposing (Reply(NoReply, SetUser))
-import Tuple.Infix exposing ((:=))
+import Return2 as R2
+import Return3 as R3 exposing (Return)
+import Util exposing (def)
 
 
 -- TYPES --
@@ -65,6 +67,10 @@ type Msg
     | SaveFailed String
 
 
+type Reply
+    = SetUser User
+
+
 succeeded : Msg
 succeeded =
     SaveSucceeded
@@ -93,47 +99,46 @@ init user =
 -- UPDATE --
 
 
-update : Msg -> User -> Model -> ( Model, Cmd Msg, Reply )
+update : Msg -> User -> Model -> Return Model Msg Reply
 update msg user model =
     case msg of
         NavClickedOn page ->
             { model | page = page }
-                |> Reply.nothing
+                |> R3.withNothing
 
         FieldUpdated Name str ->
             { model | name = str }
                 |> validate user
-                |> Reply.nothing
+                |> R3.withNothing
 
         FieldUpdated ProfilePicUrl str ->
             { model | name = str }
                 |> validate user
-                |> Reply.nothing
+                |> R3.withNothing
 
         Submitted ->
             model
-                |> Reply.nothing
+                |> R3.withNothing
 
         SaveClicked ->
             if model.changed && model.state == Ready then
-                ( { model | state = Sending }
-                , model
+                model
                     |> toUpdatePayload user
                     |> UpdateUser
                     |> Ports.send
-                , NoReply
-                )
+                    |> R2.withModel { model | state = Sending }
+                    |> R3.withNoReply
             else
                 model
-                    |> Reply.nothing
+                    |> R3.withNothing
 
         SaveSucceeded ->
             { model | state = Ready }
-                |> Reply.nothing
+                |> R3.withNothing
 
         SaveFailed _ ->
             { model | state = Fail }
-                |> Reply.nothing
+                |> R3.withNothing
 
 
 toUpdatePayload : User -> Model -> UpdatePayload
@@ -269,8 +274,8 @@ navButton : Page -> Page -> String -> Html Msg
 navButton currentPage thisPage label =
     a
         [ classList
-            [ NavBarButton := True
-            , Selected := (currentPage == thisPage)
+            [ def NavBarButton True
+            , def Selected (currentPage == thisPage)
             ]
         , onClick (NavClickedOn thisPage)
         ]
@@ -343,8 +348,8 @@ saveButton : Model -> Html Msg
 saveButton model =
     a
         [ classList
-            [ Save := True
-            , Disabled := not model.changed
+            [ def Save True
+            , def Disabled (not model.changed)
             ]
         , onClick SaveClicked
         ]

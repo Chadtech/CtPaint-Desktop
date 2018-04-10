@@ -15,8 +15,8 @@ import Html exposing (Html, a, br, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Return2 as R2
 import Route
-import Tuple.Infix exposing ((&))
 
 
 -- INIT --
@@ -67,21 +67,23 @@ update msg model =
             { model
                 | status = Success
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
         LoginClicked ->
             if model.status == Success then
-                model & Route.goTo Route.Login
+                Route.goTo Route.Login
+                    |> R2.withModel model
             else
-                model & Cmd.none
+                model
+                    |> R2.withNoCmd
 
         Failed "NotAuthorizedException: User cannot confirm because user status is not UNCONFIRMED." ->
             { model | status = Fail AlreadyVerified }
-                & Cmd.none
+                |> R2.withNoCmd
 
         Failed err ->
             { model | status = Fail (Other err) }
-                & Cmd.none
+                |> R2.withNoCmd
 
 
 

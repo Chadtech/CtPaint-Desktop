@@ -18,8 +18,8 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput)
 import Ports
-import Tracking
-import Tuple.Infix exposing ((&))
+import Return2 as R2
+import Tracking exposing (Event(PageContactSubmitClick))
 
 
 -- TYPES --
@@ -56,22 +56,24 @@ update taco msg model =
     case msg of
         FieldUpdated field ->
             if model.sendClicked then
-                model & Cmd.none
+                model
+                    |> R2.withNoCmd
             else
                 { model | field = field }
-                    & Cmd.none
+                    |> R2.withNoCmd
 
         SendClicked ->
-            { model
-                | sendClicked = True
-            }
-                & trackingCmd taco model
+            trackingCmd taco model
+                |> R2.withModel
+                    { model
+                        | sendClicked = True
+                    }
 
 
 trackingCmd : Taco -> Model -> Cmd Msg
 trackingCmd taco model =
     if model.field /= "" then
-        Ports.track taco (Tracking.CommentSubmitted model.field)
+        Ports.track taco (PageContactSubmitClick model.field)
     else
         Cmd.none
 

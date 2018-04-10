@@ -30,8 +30,8 @@ import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
+import Return2 as R2
 import Route
-import Tuple.Infix exposing ((&))
 import Update
 
 
@@ -62,7 +62,8 @@ update msg result =
                 |> Tuple.mapFirst Ok
 
         Err err ->
-            Err err & Cmd.none
+            Err err
+                |> R2.withNoCmd
 
 
 
@@ -79,7 +80,8 @@ init json location =
                 |> initPage location
 
         Err err ->
-            Err err & Cmd.none
+            Err err
+                |> R2.withNoCmd
 
 
 initPage : Location -> Model -> ( Result String Model, Cmd Msg )

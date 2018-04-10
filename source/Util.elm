@@ -3,15 +3,15 @@ module Util exposing (..)
 import Html exposing (Attribute, Html)
 import Html.Events exposing (keyCode, on)
 import Json.Decode as Decode exposing (Decoder)
-import Tuple.Infix exposing ((&))
+
+
+def : a -> b -> ( a, b )
+def =
+    (,)
+
 
 
 -- CMD --
-
-
-addCmd : Cmd msg -> ( model, Cmd msg ) -> ( model, Cmd msg )
-addCmd newCmd ( model, cmd ) =
-    model & Cmd.batch [ newCmd, cmd ]
 
 
 cmdIf : Bool -> Cmd msg -> Cmd msg
@@ -20,11 +20,6 @@ cmdIf condition cmd =
         cmd
     else
         Cmd.none
-
-
-noCmd : a -> ( a, Cmd msg )
-noCmd model =
-    ( model, Cmd.none )
 
 
 

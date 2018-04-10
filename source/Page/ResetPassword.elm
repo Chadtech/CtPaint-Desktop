@@ -20,8 +20,8 @@ import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(ResetPassword))
+import Return2 as R2
 import Route
-import Tuple.Infix exposing ((&), (|&))
 import Util
 
 
@@ -103,7 +103,8 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GoHomeClicked ->
-            model & Route.goTo Route.Landing
+            Route.goTo Route.Landing
+                |> R2.withModel model
 
         FieldUpdated Password str ->
             ifReady model (updatePassword str)
@@ -117,7 +118,8 @@ update msg model =
                     resetPassword model readyModel
 
                 _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
         SubmitClicked ->
             case model.state of
@@ -125,23 +127,28 @@ update msg model =
                     resetPassword model readyModel
 
                 _ ->
-                    model & Cmd.none
+                    model
+                        |> R2.withNoCmd
 
         Succeeded ->
             { model | state = Success }
-                & Cmd.none
+                |> R2.withNoCmd
 
         Failed "ExpiredCodeException: Invalid code provided, please request a code again." ->
-            setFail model InvalidCode & Cmd.none
+            setFail model InvalidCode
+                |> R2.withNoCmd
 
         Failed other ->
-            setFail model (Other other) & Cmd.none
+            setFail model (Other other)
+                |> R2.withNoCmd
 
         TryAgainClicked ->
-            model & Route.goTo Route.ForgotPassword
+            Route.goTo Route.ForgotPassword
+                |> R2.withModel model
 
         LoginClicked ->
-            model & Route.goTo Route.Login
+            Route.goTo Route.Login
+                |> R2.withModel model
 
 
 ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )
@@ -152,7 +159,8 @@ ifReady model f =
                 |> Tuple.mapFirst (setReady model)
 
         _ ->
-            model & Cmd.none
+            model
+                |> R2.withNoCmd
 
 
 setFail : Model -> Problem -> Model
@@ -167,12 +175,14 @@ setReady model readyModel =
 
 updatePassword : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
 updatePassword str model =
-    { model | password = str } & Cmd.none
+    { model | password = str }
+        |> R2.withNoCmd
 
 
 updatePasswordConfirm : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
 updatePasswordConfirm str model =
-    { model | passwordConfirm = str } & Cmd.none
+    { model | passwordConfirm = str }
+        |> R2.withNoCmd
 
 
 resetPassword : Model -> ReadyModel -> ( Model, Cmd Msg )
@@ -184,7 +194,8 @@ resetPassword model readyModel =
                 model.code
                 readyModel.password
                 |> Ports.send
-                |& { model | state = Sending }
+                |> R2.withModel
+                    { model | state = Sending }
 
         Just error ->
             { model
@@ -192,7 +203,7 @@ resetPassword model readyModel =
                     { readyModel | error = Just error }
                         |> Ready
             }
-                & Cmd.none
+                |> R2.withNoCmd
 
 
 validatePassword : ReadyModel -> Maybe String
