@@ -2,6 +2,7 @@ port module Ports exposing (..)
 
 import Data.Keys as Keys
 import Data.Taco exposing (Taco)
+import Data.User as User
 import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Keyboard.Extra.Browser exposing (Browser)
@@ -49,8 +50,13 @@ type alias UpdatePayload =
 
 
 track : Taco -> Tracking.Event -> Cmd msg
-track taco =
-    Tracking.fromTaco taco >> Track >> send
+track { config, user } event =
+    { sessionId = config.sessionId
+    , email = User.getEmail user
+    , event = event
+    }
+        |> Track
+        |> send
 
 
 fromKeyValues : String -> List ( String, Value ) -> Cmd msg

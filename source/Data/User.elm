@@ -3,6 +3,7 @@ module Data.User
         ( Model(..)
         , User
         , decoder
+        , getEmail
         , isLoggedIn
         , userDecoder
         )
@@ -112,6 +113,16 @@ ifNotEnded str =
 
 
 -- Helpers --
+
+
+getEmail : Model -> Maybe String
+getEmail model =
+    case model of
+        LoggedIn user ->
+            Just user.email
+
+        _ ->
+            Nothing
 
 
 isLoggedIn : Model -> Bool

@@ -3,11 +3,8 @@ module Tracking
         ( Event(..)
         , Payload
         , encode
-        , fromTaco
         )
 
-import Data.Taco exposing (Taco)
-import Data.User as User
 import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Json.Encode.Extra as Encode
@@ -25,20 +22,6 @@ type alias Payload =
     }
 
 
-fromTaco : Taco -> Event -> Payload
-fromTaco taco event =
-    { event = event
-    , sessionId = taco.config.sessionId
-    , email =
-        case taco.user of
-            User.LoggedIn { email } ->
-                Just email
-
-            _ ->
-                Nothing
-    }
-
-
 type alias InitValues =
     { isMac : Bool
     , browser : Browser
@@ -53,34 +36,50 @@ type Event
     | PageContactSubmitClick String
 
 
+
+-- PUBLIC --
+
+
 encode : Payload -> Value
-encode { event, sessionId, email } =
-    [ def "event" <| encodeEvent event
-    , def "sessionId" <| Id.encode sessionId
-    , def "email" <| Encode.maybe Encode.string email
+encode payload =
+    let
+        ( name, eventProperties ) =
+            encodeEvent payload.event
+    in
+    [ name
+        |> String.split " "
+        |> String.join "_"
+        |> Encode.string
+        |> def "name"
+    , def "properties" <| encodeProperties payload eventProperties
     ]
         |> Encode.object
 
 
-encodeEvent : Event -> Value
+encodeProperties : Payload -> List ( String, Value ) -> Value
+encodeProperties payload eventProperties =
+    [ def "sessionId" <| Id.encode payload.sessionId
+    , def "email" <| Encode.maybe Encode.string payload.email
+    ]
+        ++ eventProperties
+        |> Encode.object
+
+
+encodeEvent : Event -> ( String, List ( String, Value ) )
 encodeEvent event =
     case event of
         AppInit initValues ->
-            [ def "name" <| Encode.string "app initialized" ]
-                |> Encode.object
+            []
+                |> def "app init"
 
         AppInitFail problem ->
-            [ def "name" <| Encode.string "app failed to initialized"
-            , def "problem" <| Encode.string problem
-            ]
-                |> Encode.object
+            [ def "problem" <| Encode.string problem ]
+                |> def "app fail init"
 
         PageRoadMapWantClick want ->
-            [ def "name" <| Encode.string "want clicked"
-            , def "want" <| Encode.string want
-            ]
-                |> Encode.object
+            [ def "want" <| Encode.string want ]
+                |> def "page roadmap want click"
 
         PageContactSubmitClick comment ->
             [ def "comment" <| Encode.string comment ]
-                |> Encode.object
+                |> def "page contact submit click"

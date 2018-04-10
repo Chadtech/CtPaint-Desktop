@@ -37,8 +37,6 @@ import Ports
             )
         )
 import Return2 as R2
-import Tuple3
-import Util exposing (def)
 
 
 -- TYPES --

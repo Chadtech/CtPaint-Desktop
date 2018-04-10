@@ -10,7 +10,6 @@ import Data.Taco as Taco exposing (Taco)
 import Data.User as User exposing (User)
 import Page exposing (Page(..))
 import Random.Pcg exposing (Seed)
-import Tuple3
 
 
 type alias Model =
