@@ -97,6 +97,11 @@ type Event
     | DrawingDelete (Maybe Error)
     | NavClick String
     | DrawingsLoad Int
+    | HtmlInitDrawingFromUrlClick
+    | HtmlInitDrawingFromUrlEnterPress
+    | HtmlInitDrawingColorClick String
+    | HtmlInitDrawingSubmitEnterPress Int Int
+    | HtmlInitDrawingSubmitClick Int Int
 
 
 type alias Error =
@@ -336,6 +341,28 @@ encodeEvent event =
         DrawingsLoad n ->
             [ def "number-loaded" <| Encode.int n ]
                 |> def "drawings load"
+
+        HtmlInitDrawingFromUrlClick ->
+            def "init-drawing from-url click" []
+
+        HtmlInitDrawingFromUrlEnterPress ->
+            def "init-drawing from-url enter press" []
+
+        HtmlInitDrawingColorClick color ->
+            [ def "color" <| Encode.string color ]
+                |> def "init-drawing color click"
+
+        HtmlInitDrawingSubmitEnterPress width height ->
+            [ def "width" <| Encode.int width
+            , def "height" <| Encode.int height
+            ]
+                |> def "init-drawing submit enter press"
+
+        HtmlInitDrawingSubmitClick width height ->
+            [ def "width" <| Encode.int width
+            , def "height" <| Encode.int height
+            ]
+                |> def "init-drawing submit click"
 
 
 disabledField : Bool -> ( String, Value )

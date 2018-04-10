@@ -11,6 +11,7 @@ module Html.InitDrawing
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html exposing (Attribute, Html, a, div, form, input, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
@@ -25,6 +26,16 @@ import Ports
             )
         )
 import Return2 as R2
+import Tracking
+    exposing
+        ( Event
+            ( HtmlInitDrawingColorClick
+            , HtmlInitDrawingFromUrlClick
+            , HtmlInitDrawingFromUrlEnterPress
+            , HtmlInitDrawingSubmitClick
+            , HtmlInitDrawingSubmitEnterPress
+            )
+        )
 import Util exposing (def)
 
 
@@ -116,14 +127,18 @@ init =
 -- UPDATE --
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
+update taco msg model =
     case msg of
         FromUrlClicked ->
             fromUrl model
+                |> R2.addCmd
+                    (Ports.track taco HtmlInitDrawingFromUrlClick)
 
         UrlInitSubmitted ->
             fromUrl model
+                |> R2.addCmd
+                    (Ports.track taco HtmlInitDrawingFromUrlEnterPress)
 
         FieldUpdated Name str ->
             { model | name = str }
@@ -145,13 +160,39 @@ update msg model =
 
         ColorClicked color ->
             { model | backgroundColor = color }
-                |> R2.withNoCmd
+                |> R2.withCmd (trackColorClick taco color)
 
         NewInitSubmitted ->
             openPaintApp model
+                |> R2.addCmd
+                    (trackNewDrawingEnter taco model)
 
         StartNewDrawingClicked ->
             openPaintApp model
+                |> R2.addCmd
+                    (trackNewDrawingClick taco model)
+
+
+trackColorClick : Taco -> BackgroundColor -> Cmd Msg
+trackColorClick taco bgColor =
+    HtmlInitDrawingColorClick (toString bgColor)
+        |> Ports.track taco
+
+
+trackNewDrawingClick : Taco -> Model -> Cmd Msg
+trackNewDrawingClick taco model =
+    HtmlInitDrawingSubmitClick
+        model.width
+        model.height
+        |> Ports.track taco
+
+
+trackNewDrawingEnter : Taco -> Model -> Cmd Msg
+trackNewDrawingEnter taco model =
+    HtmlInitDrawingSubmitEnterPress
+        model.width
+        model.height
+        |> Ports.track taco
 
 
 validateWidth : Model -> Model

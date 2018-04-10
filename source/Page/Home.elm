@@ -234,7 +234,7 @@ update taco msg model =
         InitDrawingMsg subMsg ->
             case model.main of
                 NewDrawing subModel ->
-                    handleInitMsg subMsg subModel
+                    handleInitMsg taco subMsg subModel
                         |> R2.mapModel (setMain model)
 
                 _ ->
@@ -247,10 +247,10 @@ setMain model main =
     { model | main = main }
 
 
-handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg )
-handleInitMsg subMsg subModel =
+handleInitMsg : Taco -> InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg )
+handleInitMsg taco subMsg subModel =
     subModel
-        |> InitDrawing.update subMsg
+        |> InitDrawing.update taco subMsg
         |> R2.mapModel NewDrawing
         |> R2.mapCmd InitDrawingMsg
 

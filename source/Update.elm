@@ -55,7 +55,8 @@ update msg ({ taco, page } as model) =
             { model
                 | page = Error InvalidUrl
             }
-                |> R2.withNoCmd
+                |> R2.withCmd
+                    (Ports.track taco (RouteChangeFail url))
 
         LogInSucceeded user ->
             [ Route.goTo Route.Landing
@@ -95,7 +96,7 @@ update msg ({ taco, page } as model) =
             case page of
                 Page.InitDrawing subModel ->
                     subModel
-                        |> InitDrawing.update subMsg
+                        |> InitDrawing.update taco subMsg
                         |> R2.mapCmd InitDrawingMsg
                         |> R2.mapModel (setPage Page.InitDrawing model)
 
@@ -274,7 +275,7 @@ update msg ({ taco, page } as model) =
             case page of
                 Page.Error _ ->
                     subMsg
-                        |> Error.update
+                        |> Error.update taco
                         |> R2.withModel model
 
                 _ ->

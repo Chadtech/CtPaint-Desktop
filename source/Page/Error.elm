@@ -8,11 +8,14 @@ module Page.Error
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
+import Data.Taco exposing (Taco)
 import Html exposing (Html, a, div, p, text)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
+import Ports
 import Route
+import Tracking exposing (Event(PageErrorGoHomeClick))
 
 
 -- TYPES --
@@ -26,9 +29,12 @@ type Msg
 -- UPDATE --
 
 
-update : Msg -> Cmd msg
-update GoHomeClicked =
-    Route.goTo Route.Landing
+update : Taco -> Msg -> Cmd msg
+update taco GoHomeClicked =
+    [ Route.goTo Route.Landing
+    , Ports.track taco PageErrorGoHomeClick
+    ]
+        |> Cmd.batch
 
 
 
