@@ -4,6 +4,7 @@ module Page.Verify
         , Msg(Failed, Succeeded)
         , css
         , init
+        , track
         , update
         , view
         )
@@ -11,21 +12,15 @@ module Page.Verify
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
-import Html exposing (Html, a, br, div, p)
+import Data.Tracking as Tracking
+import Html exposing (Html, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
-import Ports
+import Json.Encode as Encode
 import Return2 as R2
 import Route
-import Tracking
-    exposing
-        ( Event
-            ( PageVerifyLoginClick
-            , PageVerifyResponse
-            )
-        )
+import Util exposing (def)
 
 
 -- INIT --
@@ -69,42 +64,36 @@ type Problem
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         Succeeded ->
-            PageVerifyResponse Nothing
-                |> Ports.track taco
-                |> R2.withModel
-                    { model
-                        | status = Success
-                    }
+            { model
+                | status = Success
+            }
+                |> R2.withNoCmd
 
         LoginClicked ->
-            if model.status == Success then
-                [ Route.goTo Route.Login
-                , PageVerifyLoginClick False
-                    |> Ports.track taco
-                ]
-                    |> Cmd.batch
+            if canClickLogin model then
+                Route.goTo Route.Login
                     |> R2.withModel model
             else
-                PageVerifyLoginClick True
-                    |> Ports.track taco
-                    |> R2.withModel model
+                model
+                    |> R2.withNoCmd
 
         Failed err ->
-            handleFail taco model err
+            handleFail model err
 
 
-handleFail : Taco -> Model -> String -> ( Model, Cmd Msg )
-handleFail taco model err =
-    err
-        |> Just
-        |> PageVerifyResponse
-        |> Ports.track taco
-        |> R2.withModel
-            { model | status = Fail (toProblem err) }
+canClickLogin : Model -> Bool
+canClickLogin model =
+    model.status == Success
+
+
+handleFail : Model -> String -> ( Model, Cmd Msg )
+handleFail model err =
+    { model | status = Fail (toProblem err) }
+        |> R2.withNoCmd
 
 
 toProblem : String -> Problem
@@ -115,6 +104,30 @@ toProblem err =
 
         _ ->
             Other err
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Model -> Maybe Tracking.Event
+track msg model =
+    case msg of
+        Succeeded ->
+            Tracking.response Nothing
+
+        LoginClicked ->
+            [ model
+                |> canClickLogin
+                |> not
+                |> Encode.bool
+                |> def "disabled"
+            ]
+                |> def "login click"
+                |> Just
+
+        Failed err ->
+            Tracking.response (Just err)
 
 
 

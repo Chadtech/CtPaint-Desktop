@@ -7,10 +7,7 @@ module Data.Config
 
 import Data.Flags exposing (Flags)
 import Id exposing (Id)
-import Keyboard.Extra.Browser
-    exposing
-        ( Browser(FireFox)
-        )
+import Keyboard.Extra.Browser exposing (Browser)
 import Random.Pcg as Random exposing (Seed)
 
 
@@ -33,19 +30,19 @@ type alias Config =
 
 fromFlags : Flags -> ( Config, Seed )
 fromFlags flags =
-    let
-        ( sessionId, seed ) =
-            Random.step Id.generator flags.seed
-    in
-    (,)
-        { sessionId = sessionId
-        , browser = flags.browser
-        , mountPath = flags.mountPath
-        , logoSrc = "splash-image.png"
-        , videoSrc = "splash-video.mp4"
-        , buildNumber = flags.buildNumber
-        }
-        seed
+    Random.step Id.generator flags.seed
+        |> Tuple.mapFirst (fromSessionId flags)
+
+
+fromSessionId : Flags -> Id -> Config
+fromSessionId flags sessionId =
+    { sessionId = sessionId
+    , browser = flags.browser
+    , mountPath = flags.mountPath
+    , logoSrc = "splash-image.png"
+    , videoSrc = "splash-video.mp4"
+    , buildNumber = flags.buildNumber
+    }
 
 
 assetSrc : Config -> (Config -> String) -> String

@@ -2,18 +2,18 @@ module Page.Offline
     exposing
         ( Msg
         , css
+        , track
         , update
         , view
         )
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Html exposing (Html)
 import Html.CssHelpers
 import Html.Custom
-import Ports
-import Tracking exposing (Event(PageOfflineRefreshClick))
+import Ports exposing (JsMsg(RefreshPage))
 
 
 -- TYPES --
@@ -27,20 +27,26 @@ type Msg
 -- UPDATE --
 
 
-update : Taco -> Msg -> Cmd Msg
-update taco msg =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         RefreshClicked ->
-            PageOfflineRefreshClick
-                |> Ports.track taco
+            Ports.send RefreshPage
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        RefreshClicked ->
+            Tracking.noProps "refresh click"
 
 
 
 -- STYLES --
-
-
-type Class
-    = None
 
 
 css : Stylesheet

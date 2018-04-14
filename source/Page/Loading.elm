@@ -1,6 +1,6 @@
 module Page.Loading exposing (..)
 
-import Html exposing (Html, a, br, div, p)
+import Html exposing (Html, p)
 import Html.Custom
 import Page exposing (HoldUp(..))
 

@@ -1,8 +1,7 @@
 module Update exposing (update)
 
-import Data.Drawing exposing (Drawing)
 import Data.Entities as Entities
-import Data.Taco as Taco exposing (Taco)
+import Data.Taco as Taco
 import Data.User as User
 import Html.InitDrawing as InitDrawing
 import Id
@@ -12,6 +11,7 @@ import Nav
 import Page exposing (Page(..), Problem(..))
 import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
+import Page.Documentation as Documentation
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
@@ -29,19 +29,6 @@ import Ports exposing (JsMsg(..))
 import Return2 as R2
 import Return3 as R3
 import Route exposing (Route(..))
-import Tracking
-    exposing
-        ( Event
-            ( DrawingDelete
-            , DrawingsLoad
-            , LoginSucceed
-            , LogoutSucceed
-            , MsgDecodeFail
-            , PageMsgMismatch
-            , RouteChange
-            , RouteChangeFail
-            )
-        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -49,44 +36,34 @@ update msg ({ taco, page } as model) =
     case msg of
         RouteChanged (Ok route) ->
             handleRoute route model
-                |> R2.addCmd
-                    (trackRouteChange taco model route)
 
         RouteChanged (Err url) ->
             { model
                 | page = Error InvalidUrl
             }
-                |> R2.withCmd
-                    (Ports.track taco (RouteChangeFail url))
+                |> R2.withNoCmd
 
         LogInSucceeded user ->
-            [ Route.goTo Route.Landing
-            , Ports.track taco LoginSucceed
-            ]
-                |> Cmd.batch
+            Route.goTo Route.Landing
                 |> R2.withModel model
                 |> R2.mapModel
                     (Model.setUser (User.LoggedIn user))
 
         LogOutSucceeded ->
-            [ Route.goTo Route.Login
-            , Ports.track taco LogoutSucceed
-            ]
-                |> Cmd.batch
+            Route.goTo Route.Login
                 |> R2.withModel model
                 |> R2.mapModel
                     (Model.setUser User.LoggedOut)
 
-        MsgDecodeFailed err ->
-            MsgDecodeFail err
-                |> Ports.track taco
-                |> R2.withModel model
+        MsgDecodeFailed _ ->
+            model
+                |> R2.withNoCmd
 
         HomeMsg subMsg ->
             case ( page, taco.user ) of
                 ( Page.Home subModel, User.LoggedIn _ ) ->
                     subModel
-                        |> Home.update taco subMsg
+                        |> Home.update subMsg
                         |> R2.mapCmd HomeMsg
                         |> R2.mapModel (setPage Page.Home model)
 
@@ -97,104 +74,83 @@ update msg ({ taco, page } as model) =
             case page of
                 Page.InitDrawing subModel ->
                     subModel
-                        |> InitDrawing.update taco subMsg
+                        |> InitDrawing.update subMsg
                         |> R2.mapCmd InitDrawingMsg
                         |> R2.mapModel (setPage Page.InitDrawing model)
 
                 _ ->
-                    PageMsgMismatch
-                        "init-drawing"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         AllowanceExceededMsg subMsg ->
             case page of
                 Page.AllowanceExceeded ->
-                    AllowanceExceeded.update taco subMsg
+                    AllowanceExceeded.update subMsg
                         |> Cmd.map AllowanceExceededMsg
                         |> R2.withModel model
 
                 _ ->
-                    PageMsgMismatch
-                        "allowance-exceeded"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         PricingMsg subMsg ->
             case page of
                 Page.Pricing ->
-                    Pricing.update taco subMsg
+                    Pricing.update subMsg
                         |> Cmd.map PricingMsg
                         |> R2.withModel model
 
                 _ ->
-                    PageMsgMismatch
-                        "pricing"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         RoadMapMsg subMsg ->
             case page of
                 Page.RoadMap subModel ->
                     subModel
-                        |> RoadMap.update taco subMsg
-                        |> R2.mapCmd RoadMapMsg
-                        |> R2.mapModel (setPage Page.RoadMap model)
+                        |> RoadMap.update subMsg
+                        |> setPage Page.RoadMap model
+                        |> R2.withNoCmd
 
                 _ ->
-                    PageMsgMismatch
-                        "road-map"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         ContactMsg subMsg ->
             case page of
                 Page.Contact subModel ->
                     subModel
-                        |> Contact.update taco subMsg
-                        |> R2.mapCmd ContactMsg
-                        |> R2.mapModel (setPage Page.Contact model)
+                        |> Contact.update subMsg
+                        |> setPage Page.Contact model
+                        |> R2.withNoCmd
 
                 _ ->
-                    PageMsgMismatch
-                        "contact"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         SplashMsg subMsg ->
             case page of
                 Page.Splash ->
                     subMsg
-                        |> Splash.update taco
+                        |> Splash.update
                         |> Cmd.map SplashMsg
                         |> R2.withModel model
 
                 _ ->
-                    PageMsgMismatch
-                        "splash"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         OfflineMsg subMsg ->
             case ( page, taco.user ) of
                 ( Page.Offline, User.Offline ) ->
                     subMsg
-                        |> Offline.update taco
+                        |> Offline.update
                         |> Cmd.map OfflineMsg
                         |> R2.withModel model
 
                 _ ->
-                    PageMsgMismatch
-                        "offline"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         RegisterMsg subMsg ->
             case page of
@@ -205,26 +161,20 @@ update msg ({ taco, page } as model) =
                         |> R2.mapModel (setPage Page.Register model)
 
                 _ ->
-                    PageMsgMismatch
-                        "register"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         LoginMsg subMsg ->
             case page of
                 Page.Login subModel ->
                     subModel
-                        |> Login.update taco subMsg
+                        |> Login.update subMsg
                         |> R2.mapCmd LoginMsg
                         |> R2.mapModel (setPage Page.Login model)
 
                 _ ->
-                    PageMsgMismatch
-                        "login"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         ForgotPasswordMsg subMsg ->
             case page of
@@ -235,62 +185,50 @@ update msg ({ taco, page } as model) =
                         |> R2.mapModel (setPage Page.ForgotPassword model)
 
                 _ ->
-                    PageMsgMismatch
-                        "forgot-password"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         ResetPasswordMsg subMsg ->
             case page of
                 Page.ResetPassword subModel ->
                     subModel
-                        |> ResetPassword.update taco subMsg
+                        |> ResetPassword.update subMsg
                         |> R2.mapCmd ResetPasswordMsg
                         |> R2.mapModel (setPage Page.ResetPassword model)
 
                 _ ->
-                    PageMsgMismatch
-                        "reset-password"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         LogoutMsg subMsg ->
             case page of
-                Page.Logout subModel ->
-                    subModel
-                        |> Logout.update taco subMsg
-                        |> R2.mapCmd LogoutMsg
-                        |> R2.mapModel (setPage Page.Logout model)
+                Page.Logout _ ->
+                    subMsg
+                        |> Logout.update
+                        |> setPage Page.Logout model
+                        |> R2.withNoCmd
 
                 _ ->
-                    PageMsgMismatch
-                        "logout"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         VerifyMsg subMsg ->
             case page of
                 Page.Verify subModel ->
                     subModel
-                        |> Verify.update taco subMsg
+                        |> Verify.update subMsg
                         |> R2.mapCmd VerifyMsg
                         |> R2.mapModel (setPage Page.Verify model)
 
                 _ ->
-                    PageMsgMismatch
-                        "verify"
-                        (Page.toString page)
-                        |> Ports.track taco
-                        |> R2.withModel model
+                    model
+                        |> R2.withNoCmd
 
         ErrorMsg subMsg ->
             case page of
                 Page.Error _ ->
                     subMsg
-                        |> Error.update taco
+                        |> Error.update
                         |> R2.withModel model
 
                 _ ->
@@ -300,23 +238,17 @@ update msg ({ taco, page } as model) =
             case ( page, taco.user ) of
                 ( Page.Settings subModel, User.LoggedIn user ) ->
                     subModel
-                        |> Settings.update taco subMsg user
+                        |> Settings.update subMsg user
                         |> R3.mapCmd SettingsMsg
                         |> R3.incorp incorpSettings model
 
                 _ ->
-                    [ Route.goTo Route.Login
-                    , PageMsgMismatch
-                        "settings"
-                        (Page.toString page)
-                        |> Ports.track taco
-                    ]
-                        |> Cmd.batch
+                    Route.goTo Route.Login
                         |> R2.withModel model
 
         NavMsg subMsg ->
             subMsg
-                |> Nav.update taco
+                |> Nav.update
                 |> Cmd.map NavMsg
                 |> R2.withModel model
 
@@ -337,8 +269,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                |> R2.withCmd
-                    (trackDrawingsLoad taco drawings)
+                |> R2.withNoCmd
 
         DrawingDeleted (Ok id) ->
             { model
@@ -356,8 +287,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                |> R2.withCmd
-                    (Ports.track taco (DrawingDelete Nothing))
+                |> R2.withNoCmd
 
         DrawingDeleted (Err ( id, err )) ->
             { model
@@ -371,8 +301,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                |> R2.withCmd
-                    (Ports.track taco (DrawingDelete (Just err)))
+                |> R2.withNoCmd
 
 
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
@@ -445,8 +374,17 @@ handleRoute destination model =
                 |> R2.withNoCmd
 
         Route.Documentation ->
-            { model | page = Page.Documentation }
-                |> R2.withNoCmd
+            case model.page of
+                Page.Documentation _ ->
+                    model
+                        |> R2.withNoCmd
+
+                _ ->
+                    Documentation.init model.taco.seed
+                        |> Tuple.mapFirst
+                            (setPage Page.Documentation model)
+                        |> Model.mixinSeed
+                        |> R2.withNoCmd
 
         Route.Contact ->
             case model.page of
@@ -540,19 +478,3 @@ incorpSettings subModel maybeReply model =
             model
                 |> Model.setUser (User.LoggedIn user)
                 |> R2.withNoCmd
-
-
-trackRouteChange : Taco -> Model -> Route -> Cmd Msg
-trackRouteChange taco model route =
-    RouteChange
-        (Page.toString model.page)
-        (toString route)
-        |> Ports.track taco
-
-
-trackDrawingsLoad : Taco -> List Drawing -> Cmd Msg
-trackDrawingsLoad taco drawings =
-    drawings
-        |> List.length
-        |> DrawingsLoad
-        |> Ports.track taco

@@ -9,7 +9,7 @@ import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Config as Config exposing (Config)
 import Data.Taco exposing (Taco)
-import Html exposing (Html, br, div, img, p)
+import Html exposing (Html, br, div, img)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom exposing (p_)
@@ -23,11 +23,6 @@ type Class
     | Logo
     | LogoContainer
     | Divider
-
-
-imageSize : Float
-imageSize =
-    150
 
 
 css : Stylesheet

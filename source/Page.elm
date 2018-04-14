@@ -8,6 +8,7 @@ module Page
 
 import Html.InitDrawing as InitDrawing
 import Page.Contact as Contact
+import Page.Documentation as Documentation
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.Login as Login
@@ -23,7 +24,7 @@ type Page
     = Home Home.Model
     | InitDrawing InitDrawing.Model
     | About
-    | Documentation
+    | Documentation Documentation.Model
     | Contact Contact.Model
     | Pricing
     | RoadMap RoadMap.Model
@@ -66,7 +67,7 @@ toString page =
         About ->
             "about"
 
-        Documentation ->
+        Documentation _ ->
             "documentation"
 
         Contact _ ->

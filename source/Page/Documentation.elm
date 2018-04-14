@@ -1,6 +1,8 @@
 module Page.Documentation
     exposing
-        ( css
+        ( Model
+        , css
+        , init
         , view
         )
 
@@ -10,10 +12,25 @@ import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Feature as Feature exposing (Feature)
 import Data.Taco exposing (Taco)
-import Html exposing (Html, br, div, img, p)
+import Helpers.Random
+import Html exposing (Html, div, img, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom exposing (p_)
+import Random.Pcg exposing (Seed)
+
+
+-- TYPES --
+
+
+type alias Model =
+    List Feature
+
+
+init : Seed -> ( Model, Seed )
+init =
+    Helpers.Random.shuffle Feature.all
+
 
 
 -- STYLES --
@@ -105,8 +122,8 @@ documentationNamespace =
     Html.CssHelpers.withNamespace documentationNamespace
 
 
-view : Taco -> List (Html msg)
-view taco =
+view : Taco -> Model -> List (Html msg)
+view taco model =
     [ div
         [ class [ TextContainer ] ]
         [ p
@@ -118,14 +135,13 @@ view taco =
         []
     , div
         [ class [ Body ] ]
-        (features taco)
+        (features taco model)
     ]
 
 
-features : Taco -> List (Html msg)
+features : Taco -> Model -> List (Html msg)
 features taco =
-    Feature.all
-        |> List.map (feature taco)
+    List.map (feature taco)
 
 
 feature : Taco -> Feature -> Html msg

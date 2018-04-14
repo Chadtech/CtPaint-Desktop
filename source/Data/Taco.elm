@@ -11,7 +11,7 @@ import Data.Config as Config exposing (Config)
 import Data.Entities as Entities exposing (Entities)
 import Data.Flags exposing (Flags)
 import Data.User as User
-import Random.Pcg as Random exposing (Seed)
+import Random.Pcg exposing (Seed)
 
 
 type alias Taco =

@@ -6,6 +6,7 @@ module Page.Home
         , drawingDeleted
         , drawingsLoaded
         , init
+        , track
         , update
         , view
         )
@@ -14,13 +15,13 @@ import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
-import Data.Config as Config exposing (Config)
 import Data.Drawing as Drawing exposing (Drawing)
-import Data.Taco as Taco exposing (Taco)
-import Data.User as User exposing (User)
+import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
+import Data.User exposing (User)
 import Date exposing (Date)
 import Date.Extra
-import Html exposing (Html, a, div, img, input, p, text)
+import Html exposing (Html, a, div, img, input, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
@@ -37,24 +38,7 @@ import Ports
             )
         )
 import Return2 as R2
-import Tracking
-    exposing
-        ( Event
-            ( PageHomeBackToDrawingsClick
-            , PageHomeCloseDrawingClick
-            , PageHomeCloseNewDrawingClick
-            , PageHomeDeleteDrawingClick
-            , PageHomeDeleteDrawingNoClick
-            , PageHomeDeleteDrawingYesClick
-            , PageHomeDrawingClick
-            , PageHomeMakeADrawingClick
-            , PageHomeNewDrawingClick
-            , PageHomeOpenDrawingInCtPaintClick
-            , PageHomeOpenDrawingLinkClick
-            , PageHomeRefreshClick
-            , PageHomeTryAgainClick
-            )
-        )
+import Util exposing (def)
 
 
 -- TYPES --
@@ -116,25 +100,20 @@ init =
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         DrawingClicked id ->
             SpecificDrawing id
                 |> setMain model
-                |> R2.withCmd
-                    (Ports.track taco PageHomeDrawingClick)
+                |> R2.withNoCmd
 
         CloseDrawingClicked ->
             goToDrawingsView
-                |> R2.addCmd
-                    (Ports.track taco PageHomeCloseDrawingClick)
                 |> R2.mapModel (setMain model)
 
         CloseNewDrawingClicked ->
             goToDrawingsView
-                |> R2.addCmd
-                    (Ports.track taco PageHomeNewDrawingClick)
                 |> R2.mapModel (setMain model)
 
         HeaderMouseDown ->
@@ -145,41 +124,31 @@ update taco msg model =
             InitDrawing.init
                 |> NewDrawing
                 |> setMain model
-                |> R2.withCmd
-                    (Ports.track taco PageHomeNewDrawingClick)
+                |> R2.withNoCmd
 
         OpenDrawingInCtPaint id ->
-            [ Ports.send (OpenDrawingInPaintApp id)
-            , Ports.track taco PageHomeOpenDrawingInCtPaintClick
-            ]
-                |> Cmd.batch
+            OpenDrawingInPaintApp id
+                |> Ports.send
                 |> R2.withModel (Loading OneDrawing)
                 |> R2.mapModel (setMain model)
 
         OpenDrawingLink id ->
-            [ id
+            id
                 |> Drawing.toUrl
                 |> OpenInNewWindow
                 |> Ports.send
-            , PageHomeOpenDrawingLinkClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
                 |> R2.withModel model
 
         DeleteDrawingClicked id ->
             DeleteDrawing id
                 |> setMain model
-                |> R2.withCmd
-                    (Ports.track taco PageHomeDeleteDrawingClick)
+                |> R2.withNoCmd
 
         DeleteYesClicked ->
             case model.main of
                 DeleteDrawing id ->
                     delete id
                         |> R2.mapModel (setMain model)
-                        |> R2.addCmd
-                            (Ports.track taco PageHomeDeleteDrawingYesClick)
 
                 _ ->
                     model
@@ -190,8 +159,7 @@ update taco msg model =
                 DeleteDrawing id ->
                     SpecificDrawing id
                         |> setMain model
-                        |> R2.withCmd
-                            (Ports.track taco PageHomeDeleteDrawingNoClick)
+                        |> R2.withNoCmd
 
                 _ ->
                     model
@@ -201,31 +169,23 @@ update taco msg model =
             InitDrawing.init
                 |> NewDrawing
                 |> setMain model
-                |> R2.withCmd
-                    (Ports.track taco PageHomeMakeADrawingClick)
+                |> R2.withNoCmd
 
         RefreshClicked ->
-            [ Ports.send GetDrawings
-            , PageHomeRefreshClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+            Ports.send GetDrawings
                 |> R2.withModel (Loading AllDrawings)
                 |> R2.mapModel (setMain model)
 
         BackToDrawingsClicked ->
             DrawingsView
                 |> setMain model
-                |> R2.withCmd
-                    (Ports.track taco PageHomeBackToDrawingsClick)
+                |> R2.withNoCmd
 
-        TryAgainClicked id ->
+        TryAgainClicked _ ->
             case model.main of
                 DidntDelete id ->
                     delete id
                         |> R2.mapModel (setMain model)
-                        |> R2.addCmd
-                            (Ports.track taco PageHomeTryAgainClick)
 
                 _ ->
                     model
@@ -234,7 +194,7 @@ update taco msg model =
         InitDrawingMsg subMsg ->
             case model.main of
                 NewDrawing subModel ->
-                    handleInitMsg taco subMsg subModel
+                    handleInitMsg subMsg subModel
                         |> R2.mapModel (setMain model)
 
                 _ ->
@@ -247,10 +207,10 @@ setMain model main =
     { model | main = main }
 
 
-handleInitMsg : Taco -> InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg )
-handleInitMsg taco subMsg subModel =
+handleInitMsg : InitDrawing.Msg -> InitDrawing.Model -> ( Main, Cmd Msg )
+handleInitMsg subMsg subModel =
     subModel
-        |> InitDrawing.update taco subMsg
+        |> InitDrawing.update subMsg
         |> R2.mapModel NewDrawing
         |> R2.mapCmd InitDrawingMsg
 
@@ -292,6 +252,80 @@ drawingDeleted result model =
 
         _ ->
             model
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        DrawingClicked id ->
+            id
+                |> Id.encode
+                |> def "id"
+                |> List.singleton
+                |> def "drawing click"
+                |> Just
+
+        CloseDrawingClicked ->
+            Tracking.noProps "close-drawing click"
+
+        CloseNewDrawingClicked ->
+            Tracking.noProps "close-new-drawing click"
+
+        NewDrawingClicked ->
+            Tracking.noProps "new-drawing click"
+
+        OpenDrawingInCtPaint id ->
+            id
+                |> Id.encode
+                |> def "id"
+                |> List.singleton
+                |> def "open-drawing-in-ctpaint click"
+                |> Just
+
+        OpenDrawingLink id ->
+            id
+                |> Id.encode
+                |> def "id"
+                |> List.singleton
+                |> def "open-drawing-link click"
+                |> Just
+
+        DeleteDrawingClicked id ->
+            id
+                |> Id.encode
+                |> def "id"
+                |> List.singleton
+                |> def "delete-drawing click"
+                |> Just
+
+        DeleteYesClicked ->
+            Tracking.noProps "delete-drawing-yes click"
+
+        DeleteNoClicked ->
+            Tracking.noProps "delete-drawing-no click"
+
+        MakeADrawingClicked ->
+            Tracking.noProps "make-a-drawing click"
+
+        RefreshClicked ->
+            Tracking.noProps "refresh click"
+
+        BackToDrawingsClicked ->
+            Tracking.noProps "back-to-drawings click"
+
+        TryAgainClicked _ ->
+            Tracking.noProps "try-again click"
+
+        InitDrawingMsg subMsg ->
+            InitDrawing.track subMsg
+                |> Tracking.namespace "init-drawing"
+
+        HeaderMouseDown ->
+            Nothing
 
 
 
@@ -458,23 +492,17 @@ homeNamespace =
     Html.CssHelpers.withNamespace homeNamespace
 
 
-type NotLoggedIn
-    = Offline
-    | LoggedOut
-    | LoggingIn
-
-
 view : Taco -> User -> Model -> List (Html Msg)
 view taco user model =
-    [ leftSide taco.config user
+    [ leftSide user
     , div
         [ class [ DrawingsContainer ] ]
-        (rightSide taco user model)
+        (rightSide taco model)
     ]
 
 
-rightSide : Taco -> User -> Model -> List (Html Msg)
-rightSide taco user model =
+rightSide : Taco -> Model -> List (Html Msg)
+rightSide taco model =
     case model.main of
         SpecificDrawing id ->
             case Id.get id taco.entities.drawings of
@@ -743,23 +771,23 @@ errorView =
     Html.text ""
 
 
-leftSide : Config -> User -> Html Msg
-leftSide config user =
+leftSide : User -> Html Msg
+leftSide user =
     div
         [ class [ LeftSide ] ]
-        [ profile config user ]
+        [ profile user ]
 
 
-profile : Config -> User -> Html Msg
-profile config user =
+profile : User -> Html Msg
+profile user =
     user
-        |> profileChildren config
+        |> profileChildren
         |> Html.Custom.container []
 
 
-profileChildren : Config -> User -> List (Html Msg)
-profileChildren config user =
-    [ profilePicture config user.profilePic
+profileChildren : User -> List (Html Msg)
+profileChildren user =
+    [ profilePicture user.profilePic
     , bio user
     ]
 
@@ -774,8 +802,8 @@ bio user =
         ]
 
 
-profilePicture : Config -> String -> Html Msg
-profilePicture config url =
+profilePicture : String -> Html Msg
+profilePicture url =
     div
         [ class [ ProfilePictureContainer ] ]
         [ img

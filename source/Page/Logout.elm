@@ -1,14 +1,22 @@
-module Page.Logout exposing (..)
+module Page.Logout
+    exposing
+        ( Model
+        , Msg(LogoutFailed)
+        , css
+        , init
+        , track
+        , update
+        , view
+        )
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
-import Html exposing (Html, a, br, div, p)
+import Data.Tracking as Tracking
+import Html exposing (Html, p)
 import Html.CssHelpers
 import Html.Custom
-import Ports
-import Return2 as R2
-import Tracking exposing (Event(PageLogoutFail))
+import Json.Encode as Encode
+import Util exposing (def)
 
 
 -- TYPES --
@@ -32,21 +40,31 @@ type Msg
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model
+update msg =
     case msg of
         LogoutFailed err ->
-            PageLogoutFail err
-                |> Ports.track taco
-                |> R2.withModel (Fail err)
+            Fail err
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        LogoutFailed err ->
+            err
+                |> Encode.string
+                |> def "error"
+                |> List.singleton
+                |> def "logout-fail"
+                |> Just
 
 
 
 -- STYLES --
-
-
-type Class
-    = Text
 
 
 css : Stylesheet

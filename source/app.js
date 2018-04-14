@@ -40,6 +40,7 @@ Desktop = function(manifest) {
         deleteDrawing: Drawing.delete,
         forgotPassword: User.forgotPassword,
         resetPassword: User.resetPassword,
+        refreshPage: location.reload,
         track: track
     };
 

@@ -9,6 +9,7 @@ import Html.InitDrawing
 import Html.Main
 import Id
 import Json.Decode as Decode exposing (Value)
+import Json.Encode as Encode
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Navigation exposing (Location)
@@ -34,8 +35,9 @@ import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
 import Return2 as R2
 import Route
-import Tracking exposing (Event(AppInit, AppInitFail))
+import Track exposing (track)
 import Update
+import Util exposing (def)
 
 
 -- MAIN --
@@ -63,10 +65,18 @@ update msg result =
         Ok model ->
             Update.update msg model
                 |> Tuple.mapFirst Ok
+                |> R2.addCmd (getTrackingCmd msg model)
 
         Err err ->
             Err err
                 |> R2.withNoCmd
+
+
+getTrackingCmd : Msg -> Model -> Cmd Msg
+getTrackingCmd msg model =
+    model
+        |> track msg
+        |> Ports.sendTracking model.taco
 
 
 
@@ -90,7 +100,12 @@ init json location =
         Err err ->
             { sessionId = Id.fromString "ERROR"
             , email = Nothing
-            , event = AppInitFail err
+            , name = "app init fail"
+            , properties =
+                err
+                    |> Encode.string
+                    |> def "error"
+                    |> List.singleton
             }
                 |> Ports.Track
                 |> Ports.send
@@ -105,12 +120,13 @@ initPage location model =
 
 trackInit : Taco -> Flags -> Cmd Msg
 trackInit taco flags =
-    { isMac = flags.isMac
-    , browser = flags.browser
-    , buildNumber = flags.buildNumber
-    }
-        |> AppInit
-        |> Ports.track taco
+    [ def "is-mac" <| Encode.bool flags.isMac
+    , def "browser" <| Encode.string (toString flags.browser)
+    , def "buildNumber" <| Encode.int flags.buildNumber
+    ]
+        |> def "app init"
+        |> Just
+        |> Ports.sendTracking taco
 
 
 
@@ -137,7 +153,7 @@ view result =
         Ok model ->
             viewModel model
 
-        Err err ->
+        Err _ ->
             errorView "Something went wrong with this apps initialization."
 
 
@@ -182,8 +198,9 @@ viewModel model =
             About.view model.taco
                 |> viewWithNav model identity
 
-        Page.Documentation ->
-            Documentation.view model.taco
+        Page.Documentation subModel ->
+            subModel
+                |> Documentation.view model.taco
                 |> viewWithNav model identity
 
         Page.Pricing ->

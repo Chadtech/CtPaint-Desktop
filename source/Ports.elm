@@ -2,11 +2,11 @@ port module Ports exposing (..)
 
 import Data.Keys as Keys
 import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Data.User as User
 import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Keyboard.Extra.Browser exposing (Browser)
-import Tracking
 import Util exposing (def)
 
 
@@ -29,6 +29,7 @@ type JsMsg
     | GetDrawings
     | ForgotPassword String
     | ResetPassword String String String
+    | RefreshPage
     | Track Tracking.Payload
 
 
@@ -49,14 +50,20 @@ type alias UpdatePayload =
     }
 
 
-track : Taco -> Tracking.Event -> Cmd msg
-track { config, user } event =
-    { sessionId = config.sessionId
-    , email = User.getEmail user
-    , event = event
-    }
-        |> Track
-        |> send
+sendTracking : Taco -> Maybe Tracking.Event -> Cmd msg
+sendTracking { config, user } trackingEvent =
+    case trackingEvent of
+        Just ( name, properties ) ->
+            { sessionId = config.sessionId
+            , email = User.getEmail user
+            , name = name
+            , properties = properties
+            }
+                |> Track
+                |> send
+
+        Nothing ->
+            Cmd.none
 
 
 fromKeyValues : String -> List ( String, Value ) -> Cmd msg
@@ -157,6 +164,9 @@ send msg =
             , def "password" <| Encode.string password
             ]
                 |> fromKeyValues "resetPassword"
+
+        RefreshPage ->
+            noPayload "refreshPage"
 
         Track payload ->
             "track"

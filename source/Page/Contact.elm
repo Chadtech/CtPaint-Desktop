@@ -4,6 +4,7 @@ module Page.Contact
         , Msg
         , css
         , init
+        , track
         , update
         , view
         )
@@ -11,15 +12,14 @@ module Page.Contact
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
-import Html exposing (Html, a, br, div, p, span, textarea)
+import Data.Tracking as Tracking
+import Html exposing (Html, a, div, p, span, textarea)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput)
-import Ports
-import Return2 as R2
-import Tracking exposing (Event(PageContactSubmitClick))
+import Json.Encode as Encode
+import Util exposing (def)
 
 
 -- TYPES --
@@ -51,31 +51,33 @@ init =
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> Model
+update msg model =
     case msg of
         FieldUpdated field ->
             if model.sendClicked then
                 model
-                    |> R2.withNoCmd
             else
                 { model | field = field }
-                    |> R2.withNoCmd
 
         SendClicked ->
-            trackingCmd taco model
-                |> R2.withModel
-                    { model
-                        | sendClicked = True
-                    }
+            { model | sendClicked = True }
 
 
-trackingCmd : Taco -> Model -> Cmd Msg
-trackingCmd taco model =
-    if model.field /= "" then
-        Ports.track taco (PageContactSubmitClick model.field)
-    else
-        Cmd.none
+
+-- TRACKING --
+
+
+track : Msg -> Model -> Maybe Tracking.Event
+track msg model =
+    case msg of
+        SendClicked ->
+            [ def "comment" <| Encode.string model.field ]
+                |> def "submit click"
+                |> Just
+
+        FieldUpdated _ ->
+            Nothing
 
 
 

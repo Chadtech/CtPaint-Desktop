@@ -4,6 +4,7 @@ module Html.InitDrawing
         , Msg
         , css
         , init
+        , track
         , update
         , view
         )
@@ -11,31 +12,21 @@ module Html.InitDrawing
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
-import Html exposing (Attribute, Html, a, div, form, input, p)
+import Data.Tracking as Tracking
+import Html exposing (Html, a, div, form, input, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Json.Encode as Encode
 import Ports
     exposing
         ( JsMsg
-            ( OpenPaintApp
-            , OpenPaintAppWithParams
+            ( OpenPaintAppWithParams
             , OpenUrlInPaintApp
             )
         )
 import Return2 as R2
-import Tracking
-    exposing
-        ( Event
-            ( HtmlInitDrawingColorClick
-            , HtmlInitDrawingFromUrlClick
-            , HtmlInitDrawingFromUrlEnterPress
-            , HtmlInitDrawingSubmitClick
-            , HtmlInitDrawingSubmitEnterPress
-            )
-        )
 import Util exposing (def)
 
 
@@ -127,18 +118,14 @@ init =
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         FromUrlClicked ->
             fromUrl model
-                |> R2.addCmd
-                    (Ports.track taco HtmlInitDrawingFromUrlClick)
 
         UrlInitSubmitted ->
             fromUrl model
-                |> R2.addCmd
-                    (Ports.track taco HtmlInitDrawingFromUrlEnterPress)
 
         FieldUpdated Name str ->
             { model | name = str }
@@ -160,39 +147,13 @@ update taco msg model =
 
         ColorClicked color ->
             { model | backgroundColor = color }
-                |> R2.withCmd (trackColorClick taco color)
+                |> R2.withNoCmd
 
         NewInitSubmitted ->
             openPaintApp model
-                |> R2.addCmd
-                    (trackNewDrawingEnter taco model)
 
         StartNewDrawingClicked ->
             openPaintApp model
-                |> R2.addCmd
-                    (trackNewDrawingClick taco model)
-
-
-trackColorClick : Taco -> BackgroundColor -> Cmd Msg
-trackColorClick taco bgColor =
-    HtmlInitDrawingColorClick (toString bgColor)
-        |> Ports.track taco
-
-
-trackNewDrawingClick : Taco -> Model -> Cmd Msg
-trackNewDrawingClick taco model =
-    HtmlInitDrawingSubmitClick
-        model.width
-        model.height
-        |> Ports.track taco
-
-
-trackNewDrawingEnter : Taco -> Model -> Cmd Msg
-trackNewDrawingEnter taco model =
-    HtmlInitDrawingSubmitEnterPress
-        model.width
-        model.height
-        |> Ports.track taco
 
 
 validateWidth : Model -> Model
@@ -235,6 +196,38 @@ fromUrl model =
             |> Ports.send
             |> R2.withModel
                 { model | submitted = True }
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        FromUrlClicked ->
+            Tracking.noProps "from-url click"
+
+        UrlInitSubmitted ->
+            Tracking.noProps "from-url enter press"
+
+        FieldUpdated _ _ ->
+            Nothing
+
+        ColorClicked bgColor ->
+            bgColor
+                |> toString
+                |> Encode.string
+                |> def "color"
+                |> List.singleton
+                |> def "color click"
+                |> Just
+
+        NewInitSubmitted ->
+            Tracking.noProps "submit enter press"
+
+        StartNewDrawingClicked ->
+            Tracking.noProps "submit click"
 
 
 
@@ -397,17 +390,12 @@ newView model =
             ]
         ]
     , a
-        (startNewButtonAttrs model)
+        [ class [ Button ]
+        , onClick StartNewDrawingClicked
+        ]
         [ Html.text "start new drawing" ]
     ]
         |> form [ onSubmit NewInitSubmitted ]
-
-
-startNewButtonAttrs : Model -> List (Attribute Msg)
-startNewButtonAttrs model =
-    [ class [ Button ]
-    , onClick StartNewDrawingClicked
-    ]
 
 
 colorBox : BackgroundColor -> BackgroundColor -> Html Msg

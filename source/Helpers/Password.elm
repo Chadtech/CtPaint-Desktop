@@ -7,7 +7,7 @@ validate : String -> String -> Maybe String
 validate password passwordConfirm =
     [ passwordsMatch password passwordConfirm
     , atLeastOneLowerCase password
-    , atLeastOneLowerCase password
+    , atLeastOneUpperCase password
     , atLeastOneSpecialCharacter password
     , longEnough password
     ]

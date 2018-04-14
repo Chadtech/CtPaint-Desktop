@@ -5,6 +5,7 @@ module Page.Register
         , Problem(..)
         , css
         , init
+        , track
         , update
         , view
         )
@@ -14,6 +15,7 @@ import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Helpers.Password
 import Html
     exposing
@@ -21,7 +23,6 @@ import Html
         , Html
         , a
         , br
-        , div
         , form
         , input
         , p
@@ -31,21 +32,11 @@ import Html.Attributes as Attr
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Ports exposing (JsMsg(..), RegistrationPayload)
+import Json.Encode as Encode
+import Json.Encode.Extra as Encode
+import Ports exposing (JsMsg(..))
 import Return2 as R2
 import Tos
-import Tracking
-    exposing
-        ( Event
-            ( PageRegisterEmailAgreeClick
-            , PageRegisterGoBackFromTosClick
-            , PageRegisterReadTosClick
-            , PageRegisterResponse
-            , PageRegisterSubmitClick
-            , PageRegisterSubmitEnterPress
-            , PageRegisterTosAgreeClick
-            )
-        )
 import Util exposing (def)
 import Validate exposing (ifBlank)
 
@@ -468,13 +459,9 @@ update taco msg model =
     case msg of
         Submitted ->
             ifFields (attemptRegistration taco) model
-                |> R2.addCmd
-                    (Ports.track taco PageRegisterSubmitEnterPress)
 
         SubmitClicked ->
             ifFields (attemptRegistration taco) model
-                |> R2.addCmd
-                    (Ports.track taco PageRegisterSubmitClick)
 
         FieldUpdated field str ->
             ifFields
@@ -482,17 +469,12 @@ update taco msg model =
                 model
 
         Succeeded email ->
-            PageRegisterResponse Nothing
-                |> Ports.track taco
-                |> R2.withModel (Success email)
+            Success email
+                |> R2.withNoCmd
 
         Failed problem ->
-            problem
-                |> toString
-                |> Just
-                |> PageRegisterResponse
-                |> Ports.track taco
-                |> R2.withModel (Fail problem)
+            Fail problem
+                |> R2.withNoCmd
 
         TosAgreeClicked ->
             ifFields toggleTos model
@@ -608,22 +590,52 @@ updateField field str fields =
             { fields | passwordConfirm = str }
 
 
-handleFail : String -> Fields -> Fields
-handleFail fail fields =
-    case fail of
-        "UsernameExistsException: User already exists" ->
-            { fields
-                | errors =
-                    "Email is already registered to an account"
-                        |> def Email
-                        |> List.singleton
-            }
 
-        other ->
-            { fields
-                | errors =
-                    [ def Email other ]
-            }
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        Submitted ->
+            Tracking.noProps "submit enter press"
+
+        SubmitClicked ->
+            Tracking.noProps "submit click"
+
+        FieldUpdated _ _ ->
+            Nothing
+
+        Succeeded _ ->
+            trackResponse Nothing
+
+        Failed problem ->
+            problem
+                |> toString
+                |> Just
+                |> trackResponse
+
+        TosAgreeClicked ->
+            Tracking.noProps "tos-agree click"
+
+        ReadTosClicked ->
+            Tracking.noProps "read-tos click"
+
+        GoBackFromTosClicked ->
+            Tracking.noProps "go-back-from-tos click"
+
+        EmailAgreeClicked ->
+            Tracking.noProps "email-agree click"
+
+
+trackResponse : Maybe String -> Maybe Tracking.Event
+trackResponse maybeError =
+    [ maybeError
+        |> Encode.maybe Encode.string
+        |> def "error"
+    ]
+        |> def "response"
+        |> Just
 
 
 
@@ -636,6 +648,7 @@ validate =
     , .name >> ifBlank ( Name, "name field is required" )
     , validPassword
     , validEmail
+    , emailsMatch
     ]
         |> Validate.all
 

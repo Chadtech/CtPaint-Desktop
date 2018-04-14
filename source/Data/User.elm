@@ -9,8 +9,8 @@ module Data.User
         )
 
 import Data.Keys as Keys
-import Json.Decode as Decode exposing (Decoder, Value)
-import Json.Decode.Pipeline as Pipeline
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline
     exposing
         ( custom
         , decode

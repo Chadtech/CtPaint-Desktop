@@ -33,7 +33,7 @@ import Html.Variables
     exposing
         ( leftSideWidth
         )
-import MouseEvents exposing (MouseEvent, Position)
+import MouseEvents exposing (MouseEvent)
 import Util exposing (def)
 
 
@@ -52,7 +52,6 @@ type Class
     | Error
     | SpinnerContainer
     | ToolButton
-    | Button
     | Container
     | Background
 
@@ -343,12 +342,11 @@ toolButton : ToolButtonState msg -> Html msg
 toolButton state =
     let
         attrs =
-            [ classList
+            classList
                 [ def ToolButton True
                 , def Selected state.selected
                 ]
-            ]
-                ++ state.attrs
+                :: state.attrs
     in
     Html.a attrs [ Html.text state.icon ]
 

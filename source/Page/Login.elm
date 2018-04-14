@@ -4,6 +4,7 @@ module Page.Login
         , Msg(LoginFailed)
         , css
         , init
+        , track
         , update
         , view
         )
@@ -11,13 +12,11 @@ module Page.Login
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Html
     exposing
         ( Attribute
         , Html
-        , a
-        , div
         , form
         , input
         , p
@@ -27,19 +26,15 @@ import Html.Attributes as Attr
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Json.Encode as Encode
 import Ports exposing (JsMsg(..))
 import Return2 as R2
 import Route
-import Tracking
-    exposing
-        ( Event
-            ( PageLoginClick
-            , PageLoginEnterPress
-            , PageLoginFail
-            , PageLoginForgotPasswordClick
-            )
-        )
+import Util exposing (def)
 import Validate exposing (ifBlank)
+
+
+-- TYPES --
 
 
 type alias Model =
@@ -87,8 +82,8 @@ init =
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         FieldUpdated Email str ->
             { model | email = str }
@@ -100,29 +95,20 @@ update taco msg model =
 
         Submitted ->
             attemptLogin model
-                |> R2.addCmd
-                    (Ports.track taco PageLoginEnterPress)
 
         LoginClicked ->
             attemptLogin model
-                |> R2.addCmd
-                    (Ports.track taco PageLoginClick)
 
         LoginFailed err ->
-            PageLoginFail err
-                |> Ports.track taco
-                |> R2.withModel
-                    { model
-                        | responseError =
-                            Just (responseError err)
-                        , state = Ready
-                    }
+            { model
+                | responseError =
+                    Just (responseError err)
+                , state = Ready
+            }
+                |> R2.withNoCmd
 
         ForgotPasswordClicked ->
-            [ Route.goTo Route.ForgotPassword
-            , Ports.track taco PageLoginForgotPasswordClick
-            ]
-                |> Cmd.batch
+            Route.goTo Route.ForgotPassword
                 |> R2.withModel model
 
 
@@ -160,6 +146,12 @@ attemptLoginCmd model noErrors =
 responseError : String -> String
 responseError err =
     case err of
+        "UsernameExistsException: User already exists" ->
+            "Email is already registered to an account"
+
+        "UsernameExistsException: User already exists." ->
+            "Email is already registered to an account"
+
         "UserNotFoundException: User does not exist." ->
             "Either the user does not exist or the password entered was incorrect"
 
@@ -171,6 +163,31 @@ responseError err =
 
         _ ->
             err
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        FieldUpdated _ _ ->
+            Nothing
+
+        Submitted ->
+            Tracking.noProps "login enter press"
+
+        LoginClicked ->
+            Tracking.noProps "login click"
+
+        LoginFailed err ->
+            [ def "error" <| Encode.string err ]
+                |> def "response"
+                |> Just
+
+        ForgotPasswordClicked ->
+            Tracking.noProps "forgot-password click"
 
 
 
@@ -252,11 +269,11 @@ viewBody model =
             readyView model
 
         LoggingIn ->
-            loggingInView model
+            loggingInView
 
 
-loggingInView : Model -> List (Html Msg)
-loggingInView model =
+loggingInView : List (Html Msg)
+loggingInView =
     [ Html.Custom.spinner ]
 
 
@@ -295,6 +312,7 @@ readyView model =
                 ]
                 [ Html.text "I forgot my password" ]
             ]
+        , errorView_ Password
         , Html.Custom.menuButton
             [ onClick LoginClicked ]
             [ Html.text "log in" ]

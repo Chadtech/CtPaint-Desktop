@@ -2,6 +2,7 @@ module Page.Splash
     exposing
         ( Msg
         , css
+        , track
         , update
         , view
         )
@@ -11,6 +12,7 @@ import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Config as Config
 import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Html exposing (Html, a, div, img, p, video)
 import Html.Attributes as Attrs
 import Html.CssHelpers
@@ -18,13 +20,6 @@ import Html.Custom
 import Html.Events exposing (onClick)
 import Ports exposing (JsMsg(OpenPaintApp))
 import Route exposing (Route(About))
-import Tracking
-    exposing
-        ( Event
-            ( PageSplashDrawClick
-            , PageSplashLearnMoreClick
-            )
-        )
 
 
 -- TYPES --
@@ -39,22 +34,28 @@ type Msg
 -- UPDATE --
 
 
-update : Taco -> Msg -> Cmd Msg
-update taco msg =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         LearnMoreClicked ->
-            [ Route.goTo About
-            , PageSplashLearnMoreClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+            Route.goTo About
 
         DrawClicked ->
-            [ Ports.send OpenPaintApp
-            , PageSplashDrawClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+            Ports.send OpenPaintApp
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        LearnMoreClicked ->
+            Tracking.noProps "learn-more click"
+
+        DrawClicked ->
+            Tracking.noProps "draw click"
 
 
 

@@ -6,6 +6,7 @@ module Page.ResetPassword
         , failed
         , init
         , succeeded
+        , track
         , update
         , view
         )
@@ -13,7 +14,7 @@ module Page.ResetPassword
 import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Helpers.Password
 import Html exposing (Attribute, Html, a, form, input, p)
 import Html.Attributes as Attrs
@@ -23,17 +24,6 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(ResetPassword))
 import Return2 as R2
 import Route
-import Tracking
-    exposing
-        ( Event
-            ( PageResetPasswordGoHomeClick
-            , PageResetPasswordLoginClick
-            , PageResetPasswordResponse
-            , PageResetPasswordSubmitClick
-            , PageResetPasswordSubmitEnterPress
-            , PageResetPasswordTryAgainClick
-            )
-        )
 import Util
 
 
@@ -111,15 +101,11 @@ init email code =
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         GoHomeClicked ->
-            [ Route.goTo Route.Landing
-            , PageResetPasswordGoHomeClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+            Route.goTo Route.Landing
                 |> R2.withModel model
 
         FieldUpdated Password str ->
@@ -132,8 +118,6 @@ update taco msg model =
             case model.state of
                 Ready readyModel ->
                     resetPassword model readyModel
-                        |> R2.addCmd
-                            (Ports.track taco PageResetPasswordSubmitEnterPress)
 
                 _ ->
                     model
@@ -143,60 +127,40 @@ update taco msg model =
             case model.state of
                 Ready readyModel ->
                     resetPassword model readyModel
-                        |> R2.addCmd
-                            (Ports.track taco PageResetPasswordSubmitClick)
 
                 _ ->
                     model
                         |> R2.withNoCmd
 
         Succeeded ->
-            PageResetPasswordResponse Nothing
-                |> Ports.track taco
-                |> R2.withModel
-                    { model | state = Success }
+            { model | state = Success }
+                |> R2.withNoCmd
 
         Failed err ->
-            handleError taco model err
+            handleError model err
 
         TryAgainClicked ->
-            [ Route.goTo Route.ForgotPassword
-            , PageResetPasswordTryAgainClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+            Route.goTo Route.ForgotPassword
                 |> R2.withModel model
 
         LoginClicked ->
-            [ Route.goTo Route.Login
-            , PageResetPasswordLoginClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+            Route.goTo Route.Login
                 |> R2.withModel model
 
 
-handleError : Taco -> Model -> String -> ( Model, Cmd Msg )
-handleError taco model err =
+handleError : Model -> String -> ( Model, Cmd Msg )
+handleError model err =
     case err of
         "ExpiredCodeException: Invalid code provided, please request a code again." ->
             InvalidCode
                 |> setFail model
-                |> R2.withCmd (trackFail taco err)
+                |> R2.withNoCmd
 
         _ ->
             err
                 |> Other
                 |> setFail model
-                |> R2.withCmd (trackFail taco err)
-
-
-trackFail : Taco -> String -> Cmd Msg
-trackFail taco err =
-    err
-        |> Just
-        |> PageResetPasswordResponse
-        |> Ports.track taco
+                |> R2.withNoCmd
 
 
 ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )
@@ -257,6 +221,38 @@ resetPassword model readyModel =
 validatePassword : ReadyModel -> Maybe String
 validatePassword { password, passwordConfirm } =
     Helpers.Password.validate password passwordConfirm
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        GoHomeClicked ->
+            Tracking.noProps "go-home click"
+
+        FieldUpdated _ _ ->
+            Nothing
+
+        Submitted ->
+            Tracking.noProps "submit enter press"
+
+        SubmitClicked ->
+            Tracking.noProps "submit click"
+
+        Succeeded ->
+            Tracking.response Nothing
+
+        Failed err ->
+            Tracking.response (Just err)
+
+        TryAgainClicked ->
+            Tracking.noProps "try-again click"
+
+        LoginClicked ->
+            Tracking.noProps "login click"
 
 
 

@@ -165,16 +165,6 @@ userDecoder taco =
     User.userDecoder taco.config.browser
 
 
-decodePayload : Decoder a -> Value -> Result String a
-decodePayload decoder json =
-    Decode.decodeValue (Decode.field "payload" decoder) json
-
-
 payload : Decoder a -> Decoder a
 payload =
     Decode.field "payload"
-
-
-decodeStringPayload : Value -> Result String String
-decodeStringPayload =
-    decodePayload Decode.string

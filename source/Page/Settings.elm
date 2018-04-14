@@ -7,6 +7,7 @@ module Page.Settings
         , failed
         , init
         , succeeded
+        , track
         , update
         , view
         )
@@ -14,13 +15,14 @@ module Page.Settings
 import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Data.User exposing (User)
 import Html exposing (Attribute, Html, a, div, form, input, p)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Json.Encode as Encode
 import Ports
     exposing
         ( JsMsg(UpdateUser)
@@ -28,15 +30,6 @@ import Ports
         )
 import Return2 as R2
 import Return3 as R3 exposing (Return)
-import Tracking
-    exposing
-        ( Event
-            ( PageSettingsNavClick
-            , PageSettingsSaveClick
-            , PageSettingsSaveResponse
-            , PageSettingsSubmitEnterPress
-            )
-        )
 import Util exposing (def)
 
 
@@ -109,14 +102,12 @@ init user =
 -- UPDATE --
 
 
-update : Taco -> Msg -> User -> Model -> Return Model Msg Reply
-update taco msg user model =
+update : Msg -> User -> Model -> Return Model Msg Reply
+update msg user model =
     case msg of
         NavClickedOn page ->
-            PageSettingsNavClick (toString page)
-                |> Ports.track taco
-                |> R2.withModel { model | page = page }
-                |> R3.withNoReply
+            { model | page = page }
+                |> R3.withNothing
 
         FieldUpdated Name str ->
             { model | name = str }
@@ -129,40 +120,28 @@ update taco msg user model =
                 |> R3.withNothing
 
         Submitted ->
-            PageSettingsSubmitEnterPress
-                |> Ports.track taco
-                |> R2.withModel model
-                |> R3.withNoReply
+            model
+                |> R3.withNothing
 
         SaveClicked ->
-            if model.changed && model.state == Ready then
-                [ model
+            if canSave model then
+                model
                     |> toUpdatePayload user
                     |> UpdateUser
                     |> Ports.send
-                , PageSettingsSaveClick False
-                    |> Ports.track taco
-                ]
-                    |> Cmd.batch
                     |> R2.withModel { model | state = Sending }
                     |> R3.withNoReply
             else
-                PageSettingsSaveClick True
-                    |> Ports.track taco
-                    |> R2.withModel model
-                    |> R3.withNoReply
+                model
+                    |> R3.withNothing
 
         SaveSucceeded ->
-            PageSettingsSaveResponse Nothing
-                |> Ports.track taco
-                |> R2.withModel { model | state = Ready }
-                |> R3.withNoReply
+            { model | state = Ready }
+                |> R3.withNothing
 
-        SaveFailed err ->
-            PageSettingsSaveResponse (Just err)
-                |> Ports.track taco
-                |> R2.withModel { model | state = Fail }
-                |> R3.withNoReply
+        SaveFailed _ ->
+            { model | state = Fail }
+                |> R3.withNothing
 
 
 toUpdatePayload : User -> Model -> UpdatePayload
@@ -192,6 +171,54 @@ hasChanges model srcUser =
     toUser model srcUser /= srcUser
 
 
+canSave : Model -> Bool
+canSave model =
+    model.changed && model.state == Ready
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Model -> Maybe Tracking.Event
+track msg model =
+    case msg of
+        NavClickedOn page ->
+            [ def "nav-page" <| Encode.string (toString page) ]
+                |> def "nav click"
+                |> Just
+
+        FieldUpdated _ _ ->
+            Nothing
+
+        Submitted ->
+            Tracking.noProps "submit enter press"
+
+        SaveClicked ->
+            [ model
+                |> canSave
+                |> not
+                |> Encode.bool
+                |> def "is-disabled"
+            ]
+                |> def "save click"
+                |> Just
+
+        SaveSucceeded ->
+            Nothing
+                |> trackResponse
+
+        SaveFailed err ->
+            err
+                |> Just
+                |> trackResponse
+
+
+trackResponse : Maybe String -> Maybe Tracking.Event
+trackResponse =
+    Tracking.response >> Tracking.namespace "save"
+
+
 
 -- STYLES --
 
@@ -200,7 +227,6 @@ type Class
     = Body
     | Text
     | KeyConfigMsg
-    | Long
     | Label
     | Input
     | Main

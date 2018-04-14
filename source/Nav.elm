@@ -2,6 +2,7 @@ module Nav
     exposing
         ( Msg
         , css
+        , track
         , update
         , view
         )
@@ -14,18 +15,19 @@ import Chadtech.Colors
         )
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco as Taco exposing (Taco)
+import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Data.User as User exposing (User)
 import Html exposing (Html, a, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
 import Html.Variables
+import Json.Encode as Encode
 import Model exposing (Model)
 import Page exposing (Page)
-import Ports
 import Route exposing (Route)
-import Tracking exposing (Event(NavClick))
+import Util exposing (def)
 
 
 -- TYPES --
@@ -39,17 +41,28 @@ type Msg
 -- UPDATE --
 
 
-update : Taco -> Msg -> Cmd Msg
-update taco msg =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         RouteClicked route ->
-            [ Route.goTo route
-            , route
+            Route.goTo route
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        RouteClicked route ->
+            route
                 |> toString
-                |> NavClick
-                |> Ports.track taco
-            ]
-                |> Cmd.batch
+                |> Encode.string
+                |> def "route"
+                |> List.singleton
+                |> def "nav click"
+                |> Just
 
 
 
@@ -162,7 +175,7 @@ isSelected page route =
         ( Page.About, Route.About ) ->
             True
 
-        ( Page.Documentation, Route.Documentation ) ->
+        ( Page.Documentation _, Route.Documentation ) ->
             True
 
         ( Page.Contact _, Route.Contact ) ->

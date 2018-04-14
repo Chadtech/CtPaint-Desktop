@@ -2,13 +2,14 @@ module Page.AllowanceExceeded
     exposing
         ( Msg
         , css
+        , track
         , update
         , view
         )
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Html exposing (Html, p)
 import Html.CssHelpers
 import Html.Custom
@@ -27,11 +28,22 @@ type Msg
 -- UPDATE --
 
 
-update : Taco -> Msg -> Cmd Msg
-update taco msg =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         RegisterClicked ->
             Route.goTo Route.Register
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        RegisterClicked ->
+            Tracking.noProps "register click"
 
 
 

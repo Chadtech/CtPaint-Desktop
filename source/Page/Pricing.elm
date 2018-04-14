@@ -2,6 +2,7 @@ module Page.Pricing
     exposing
         ( Msg
         , css
+        , track
         , update
         , view
         )
@@ -11,20 +12,14 @@ import Css exposing (..)
 import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Data.User as User
-import Html exposing (Attribute, Html, a, div, img, p)
+import Html exposing (Attribute, Html, a, div, p)
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick)
 import Ports exposing (JsMsg(OpenPaintApp))
 import Route exposing (Route(Register))
-import Tracking
-    exposing
-        ( Event
-            ( PagePricingDrawNowClick
-            , PagePricingRegisterClick
-            )
-        )
 
 
 -- TYPES --
@@ -39,20 +34,28 @@ type Msg
 -- UPDATE --
 
 
-update : Taco -> Msg -> Cmd Msg
-update taco msg =
+update : Msg -> Cmd Msg
+update msg =
     case msg of
         DrawNowClicked ->
-            [ Ports.send OpenPaintApp
-            , Ports.track taco PagePricingDrawNowClick
-            ]
-                |> Cmd.batch
+            Ports.send OpenPaintApp
 
         RegisterClicked ->
-            [ Route.goTo Register
-            , Ports.track taco PagePricingRegisterClick
-            ]
-                |> Cmd.batch
+            Route.goTo Register
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        DrawNowClicked ->
+            Tracking.noProps "draw-now click"
+
+        RegisterClicked ->
+            Tracking.noProps "register click"
 
 
 

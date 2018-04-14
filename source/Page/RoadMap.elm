@@ -4,6 +4,7 @@ module Page.RoadMap
         , Msg
         , css
         , init
+        , track
         , update
         , view
         )
@@ -12,18 +13,18 @@ import Chadtech.Colors as Ct
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
+import Data.Tracking as Tracking
 import Data.User as User
-import Html exposing (Attribute, Html, a, br, div, p, textarea)
+import Helpers.Random
+import Html exposing (Attribute, Html, a, div, p, textarea)
 import Html.Attributes as Attrs
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput)
-import Ports
-import Random.Pcg as Random exposing (Generator, Seed)
-import Return2 as R2
+import Json.Encode as Encode
+import Random.Pcg exposing (Seed)
 import Set exposing (Set)
-import Tracking exposing (Event(PageRoadMapWantClick))
-import Util
+import Util exposing (def)
 
 
 -- TYPES --
@@ -49,7 +50,8 @@ type Msg
 
 init : Seed -> ( Model, Seed )
 init =
-    shuffle wants >> Tuple.mapFirst fromWants
+    Helpers.Random.shuffle wants
+        >> Tuple.mapFirst fromWants
 
 
 fromWants : List String -> Model
@@ -101,95 +103,69 @@ wants =
     ]
 
 
-shuffle : List String -> Seed -> ( List String, Seed )
-shuffle =
-    shuffleHelper []
-
-
-shuffleHelper : List String -> List String -> Seed -> ( List String, Seed )
-shuffleHelper done remaining seed =
-    case remaining of
-        [] ->
-            ( done, seed )
-
-        first :: rest ->
-            let
-                ( ( randomElement, newRemaining ), newSeed ) =
-                    Random.step (indexGenerator remaining) seed
-                        |> Tuple.mapFirst (get first rest)
-            in
-            shuffleHelper
-                (randomElement :: done)
-                newRemaining
-                newSeed
-
-
-indexGenerator : List a -> Generator Int
-indexGenerator list =
-    Random.int 0 (List.length list - 1)
-
-
-get : a -> List a -> Int -> ( a, List a )
-get first rest index =
-    case rest of
-        [] ->
-            ( first, [] )
-
-        second :: rest_ ->
-            if index == 0 then
-                ( first, rest )
-            else
-                get second rest_ (index - 1)
-                    |> Tuple.mapSecond ((::) first)
-
-
 
 -- UPDATE --
 
 
-update : Taco -> Msg -> Model -> ( Model, Cmd Msg )
-update taco msg model =
+update : Msg -> Model -> Model
+update msg model =
     case msg of
         WantClicked want ->
-            if Set.member want model.clickedWants then
-                model
-                    |> R2.withNoCmd
-            else
-                { model
-                    | clickedWants =
-                        Set.insert
-                            want
-                            model.clickedWants
-                }
-                    |> R2.withCmd (trackCmd taco want)
+            { model
+                | clickedWants =
+                    Set.insert
+                        want
+                        model.clickedWants
+            }
 
         OtherWantUpdated str ->
-            if model.otherWantClicked then
-                model
-                    |> R2.withNoCmd
-            else
-                { model
-                    | otherWant = str
-                }
-                    |> R2.withNoCmd
+            { model
+                | otherWant = str
+            }
 
         OtherWantClicked ->
             { model
                 | otherWantClicked = True
             }
-                |> R2.withCmd (trackOtherWant taco model)
 
 
-trackOtherWant : Taco -> Model -> Cmd Msg
-trackOtherWant taco model =
-    Util.cmdIf
-        (model.otherWant /= "")
-        (trackCmd taco ("Other want : " ++ model.otherWant))
+
+-- TRACKING --
 
 
-trackCmd : Taco -> String -> Cmd Msg
-trackCmd taco =
-    Ports.track taco << PageRoadMapWantClick
+track : Msg -> Model -> Maybe Tracking.Event
+track msg model =
+    case msg of
+        WantClicked want ->
+            if hasAlreadyBeenClicked want model then
+                Nothing
+            else
+                want
+                    |> Encode.string
+                    |> def "want"
+                    |> List.singleton
+                    |> def "want click"
+                    |> Just
+
+        OtherWantUpdated _ ->
+            Nothing
+
+        OtherWantClicked ->
+            if model.otherWantClicked then
+                Nothing
+            else
+                model.otherWant
+                    |> (++) "Other want : "
+                    |> Encode.string
+                    |> def "want"
+                    |> List.singleton
+                    |> def "want click"
+                    |> Just
+
+
+hasAlreadyBeenClicked : String -> Model -> Bool
+hasAlreadyBeenClicked want model =
+    Set.member want model.clickedWants
 
 
 

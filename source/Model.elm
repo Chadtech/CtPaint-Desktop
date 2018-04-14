@@ -7,7 +7,7 @@ module Model
         )
 
 import Data.Taco as Taco exposing (Taco)
-import Data.User as User exposing (User)
+import Data.User as User
 import Page exposing (Page(..))
 import Random.Pcg exposing (Seed)
 

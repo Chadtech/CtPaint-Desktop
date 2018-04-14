@@ -6,20 +6,22 @@ module Page.ForgotPassword
         , failed
         , init
         , succeeded
+        , track
         , update
         , view
         )
 
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
-import Html exposing (Attribute, Html, a, div, form, input, p)
+import Data.Tracking as Tracking
+import Html exposing (Html, form, input, p)
 import Html.Attributes as Attr
 import Html.CssHelpers
 import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Ports exposing (JsMsg(ForgotPassword))
 import Return2 as R2
-import Util exposing (def)
+import Util
 
 
 -- TYPES --
@@ -159,6 +161,29 @@ submitIfNoProblem readyModel =
 submit : String -> Cmd Msg
 submit =
     ForgotPassword >> Ports.send
+
+
+
+-- TRACKING --
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        EmailUpdated _ ->
+            Nothing
+
+        Submitted ->
+            Tracking.noProps "submit enter press"
+
+        SubmitClicked ->
+            Tracking.noProps "submit click"
+
+        Succeeded ->
+            Tracking.response Nothing
+
+        Failed err ->
+            Tracking.response (Just err)
 
 
 
