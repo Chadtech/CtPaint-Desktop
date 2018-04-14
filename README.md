@@ -19,27 +19,36 @@ Oh, and install `elm` and `elm-css` as well.
 ## Directory Structure
 
 ```
-├── Comply.elm         -- For handling page update functions
-├── Data               
-│   ├── Config.elm     -- The config stores values that dont change during runtime
-│   ├── Drawing.elm    -- This is the drawing, a fundamental type in CtPaint
-│   ├── Entities.elm   -- Entities is a place to store remote data
-│   ├── Flags.elm      -- The initial values of the app
-│   ├── Taco.elm       -- A Taco stores values that are useful across the whole app
-│   └── User.elm       -- The user, and the different states of being logged in
-├── Desktop.elm        -- The Main Elm file
-├── Html
-│   ├── Custom.elm     -- Widely used custom html and css
+├── Data                -- For modules dedicated to one data type and its helpers
+│   ├── Config.elm      -- A config is for values defined at init and never changed
+│   ├── Drawing.elm
+│   ├── Entities.elm
+│   ├── Feature.elm
+│   ├── Flags.elm       -- Values passed into the app at init
+│   ├── Taco.elm        -- A Taco is for values globally relevant
+│   ├── Tracking.elm
+│   └── User.elm
+├── Desktop.elm         -- The main Elm file
+├── Helpers             -- Helpers are miscellanious useful functions
+│   ├── Email.elm
+│   ├── Password.elm
+│   └── Random.elm
+├── Html                -- Html functions useful in many places
+│   ├── Custom.elm
 │   ├── InitDrawing.elm
 │   ├── Main.elm
 │   └── Variables.elm
-├── Js
-│   └── Flags.js
-├── Model.elm
-├── Msg.elm
-├── Nav.elm            -- The nav bar
-├── Page
+├── Js                  -- All the JS code
+│   ├── Drawing.js
+│   ├── Flags.js        -- Code for building the flags for the Elm app
+│   ├── PaintApp.js
+│   └── User.js
+├── Model.elm           -- The main Model
+├── Msg.elm             -- The main Message type
+├── Nav.elm             -- The navigation bar
+├── Page                -- All the pages in the application
 │   ├── About.elm
+│   ├── AllowanceExceeded.elm
 │   ├── Contact.elm
 │   ├── Documentation.elm
 │   ├── Error.elm
@@ -51,18 +60,18 @@ Oh, and install `elm` and `elm-css` as well.
 │   ├── Offline.elm
 │   ├── Pricing.elm
 │   ├── Register.elm
+│   ├── ResetPassword.elm
 │   ├── RoadMap.elm
 │   ├── Settings.elm
 │   ├── Splash.elm
 │   └── Verify.elm
 ├── Page.elm
-├── Ports.elm
-├── Reply.elm          -- Aka an "ExternalMsg", replies from update functions 
-├── Route.elm
-├── Stylesheets.elm    -- Elm-css stylesheet compilation
-├── Tos.elm            -- Terms of Service
-├── Tracking.elm       -- Tracking UI events, WIP
-├── Update.elm
+├── Ports.elm           -- Sending information into the JS side of the app
+├── Route.elm           -- interpretting the url, and routing to the right page
+├── Stylesheets.elm     -- CSS generation module
+├── Tos.elm             -- "Terms of Service"
+├── Track.elm           -- Main UI tracking module
+├── Update.elm          -- Main update function listening for Msgs
 ├── Util.elm
 └── app.js
 ```

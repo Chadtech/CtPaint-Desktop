@@ -8,6 +8,9 @@ module Data.Feature
 import Data.Config exposing (Config)
 
 
+{-| Feature, as in, a feature in the CtPaint
+drawing application.
+-}
 type alias Feature =
     { name : String
     , description : String
