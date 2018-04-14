@@ -1,6 +1,6 @@
 # CtPaint Desktop
 
-This is the desktop part of CtPaint. By that I mean, the home page, settings page, and the login, and all the things that are not part of the paint app. Thats just part of the larger architecture of CtPaint. Theres an over-arching App-Shell, that manages the initialization of sub-apps. 
+This is the desktop part of CtPaint. By that I mean, the home page, settings page, and the login, and all the things that are not part of the paint application. Now that I have hindsight, "Desktop" appears to be a poor name. "Main" might have been better. Desktop and PaintApp are just parts of a broader application. Theres an over-arching App-Shell, that manages the initialization of the Desktop and PaintApp apps. 
 
 ## Getting Started
 
