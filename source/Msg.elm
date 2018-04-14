@@ -17,6 +17,7 @@ import Json.Decode as Decode
         )
 import Json.Decode.Pipeline as Pipeline exposing (required)
 import Nav
+import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
@@ -54,6 +55,7 @@ type Msg
     | OfflineMsg Offline.Msg
     | SettingsMsg Settings.Msg
     | InitDrawingMsg InitDrawing.Msg
+    | AllowanceExceededMsg AllowanceExceeded.Msg
     | DrawingsLoaded (List Drawing)
     | DrawingDeleted (Result ( Id, String ) Id)
     | MsgDecodeFailed String

@@ -14,6 +14,8 @@ gulp
 --> localhost:2964
 ```
 
+Oh, and install `elm` and `elm-css` as well.
+
 ## Directory Structure
 
 ```

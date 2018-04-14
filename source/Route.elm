@@ -19,6 +19,7 @@ type Route
     | Logout
     | Register
     | Verify String String
+    | AllowanceExceeded
 
 
 fromLocation : Location -> Result String Route
@@ -48,6 +49,7 @@ route =
     , Url.map Register (s "register")
     , Url.map Settings (s "settings")
     , Url.map Verify (s "verify" </> Url.string </> Url.string)
+    , Url.map AllowanceExceeded (s "allowanceexceeded")
     ]
         |> Url.oneOf
 
@@ -101,6 +103,9 @@ toPieces route =
 
         Verify email code ->
             [ "verify", email, code ]
+
+        AllowanceExceeded ->
+            [ "allowanceexceeded" ]
 
 
 goTo : Route -> Cmd msg

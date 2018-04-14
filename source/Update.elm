@@ -10,6 +10,7 @@ import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Nav
 import Page exposing (Page(..), Problem(..))
+import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
@@ -103,6 +104,20 @@ update msg ({ taco, page } as model) =
                 _ ->
                     PageMsgMismatch
                         "init-drawing"
+                        (Page.toString page)
+                        |> Ports.track taco
+                        |> R2.withModel model
+
+        AllowanceExceededMsg subMsg ->
+            case page of
+                Page.AllowanceExceeded ->
+                    AllowanceExceeded.update taco subMsg
+                        |> Cmd.map AllowanceExceededMsg
+                        |> R2.withModel model
+
+                _ ->
+                    PageMsgMismatch
+                        "allowance-exceeded"
                         (Page.toString page)
                         |> Ports.track taco
                         |> R2.withModel model
@@ -477,6 +492,17 @@ handleRoute destination model =
                 |> setPage Page.Verify model
                 |> logout
                 |> R2.addCmd (Ports.send (VerifyEmail email code))
+
+        Route.AllowanceExceeded ->
+            case model.taco.user of
+                User.LoggedIn _ ->
+                    Home.init
+                        |> R2.mapCmd HomeMsg
+                        |> R2.mapModel (setPage Page.Home model)
+
+                _ ->
+                    { model | page = Page.AllowanceExceeded }
+                        |> R2.withNoCmd
 
 
 logout : Model -> ( Model, Cmd Msg )

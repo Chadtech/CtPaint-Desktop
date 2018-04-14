@@ -6,6 +6,7 @@ import Html.InitDrawing
 import Html.Main
 import Nav
 import Page.About
+import Page.AllowanceExceeded
 import Page.Contact
 import Page.Documentation
 import Page.Error
@@ -47,6 +48,7 @@ main =
     , Page.RoadMap.css
     , Page.ForgotPassword.css
     , Page.ResetPassword.css
+    , Page.AllowanceExceeded.css
     , Tos.css
     ]
         |> Css.File.compile

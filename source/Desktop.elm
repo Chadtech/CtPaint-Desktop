@@ -14,6 +14,7 @@ import Msg exposing (Msg(..))
 import Navigation exposing (Location)
 import Page exposing (HoldUp(..), Page(..), Problem(..))
 import Page.About as About
+import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
 import Page.Documentation as Documentation
 import Page.Error as Error
@@ -233,6 +234,10 @@ viewModel model =
 
         Page.Verify subModel ->
             Html.map VerifyMsg (Verify.view subModel)
+
+        Page.AllowanceExceeded ->
+            [ AllowanceExceeded.view ]
+                |> viewWithNav model AllowanceExceededMsg
 
         Page.Loading holdUp ->
             Loading.view holdUp

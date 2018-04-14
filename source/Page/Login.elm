@@ -193,6 +193,7 @@ type Class
     = Text
     | Long
     | ForgotLink
+    | Body
 
 
 css : Stylesheet
@@ -201,6 +202,8 @@ css =
         [ width (px 120) ]
     , Css.class Long
         [ width (px 300) ]
+    , Css.class Body
+        [ width (px 400) ]
     , Css.class ForgotLink
         [ color Ct.important0
         , hover
@@ -234,7 +237,8 @@ view model =
         }
     , model
         |> viewBody
-        |> Html.Custom.cardBody []
+        |> Html.Custom.cardBody
+            [ class [ Body ] ]
     ]
         |> Html.Custom.cardSolitary []
         |> List.singleton
@@ -316,9 +320,8 @@ fieldErrorView errors field =
         [] ->
             Html.text ""
 
-        error :: _ ->
+        ( _, error ) :: _ ->
             error
-                |> Tuple.second
                 |> Html.Custom.error []
 
 

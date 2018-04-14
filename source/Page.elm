@@ -34,6 +34,7 @@ type Page
     | ResetPassword ResetPassword.Model
     | Logout Logout.Model
     | Verify Verify.Model
+    | AllowanceExceeded
     | Splash
     | Offline
     | Loading HoldUp
@@ -97,6 +98,9 @@ toString page =
 
         Verify _ ->
             "verify"
+
+        AllowanceExceeded ->
+            "allowance-exceeded"
 
         Splash ->
             "splash"
