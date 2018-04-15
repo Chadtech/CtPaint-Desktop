@@ -52,7 +52,7 @@ type alias UpdatePayload =
 
 sendTracking : Taco -> Maybe Tracking.Event -> Cmd msg
 sendTracking { config, user } trackingEvent =
-    case trackingEvent of
+    case Tracking.namespace "desktop" trackingEvent of
         Just ( name, properties ) ->
             { sessionId = config.sessionId
             , email = User.getEmail user

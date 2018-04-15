@@ -100,7 +100,7 @@ init json location =
         Err err ->
             { sessionId = Id.fromString "ERROR"
             , email = Nothing
-            , name = "app init fail"
+            , name = "desktop app init fail"
             , properties =
                 err
                     |> Encode.string
