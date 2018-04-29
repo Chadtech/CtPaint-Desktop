@@ -92,7 +92,7 @@ init : User -> Model
 init user =
     { page = UserData
     , name = user.name
-    , profilePicUrl = user.profilePic
+    , profilePicUrl = Maybe.withDefault "" user.profilePic
     , changed = False
     , state = Ready
     }
@@ -115,7 +115,7 @@ update msg user model =
                 |> R3.withNothing
 
         FieldUpdated ProfilePicUrl str ->
-            { model | name = str }
+            { model | profilePicUrl = str }
                 |> validate user
                 |> R3.withNothing
 
@@ -148,7 +148,13 @@ toUpdatePayload : User -> Model -> UpdatePayload
 toUpdatePayload srcUser model =
     { email = srcUser.email
     , name = model.name
-    , profilePicUrl = model.profilePicUrl
+    , profilePicUrl =
+        case model.profilePicUrl of
+            "" ->
+                "NONE"
+
+            _ ->
+                model.profilePicUrl
     }
 
 
@@ -161,7 +167,13 @@ toUser : Model -> User -> User
 toUser model srcUser =
     { email = srcUser.email
     , name = model.name
-    , profilePic = model.profilePicUrl
+    , profilePic =
+        case model.profilePicUrl of
+            "" ->
+                Nothing
+
+            _ ->
+                Just model.profilePicUrl
     , keyConfig = srcUser.keyConfig
     }
 

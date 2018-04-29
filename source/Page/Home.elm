@@ -802,13 +802,13 @@ bio user =
         ]
 
 
-profilePicture : String -> Html Msg
+profilePicture : Maybe String -> Html Msg
 profilePicture url =
     div
         [ class [ ProfilePictureContainer ] ]
         [ img
             [ class [ ProfilePicture ]
-            , Attrs.src url
+            , Attrs.src <| Maybe.withDefault "" url
             ]
             []
         ]

@@ -14,6 +14,7 @@ import Json.Decode.Pipeline
     exposing
         ( custom
         , decode
+        , optional
         , required
         )
 import Keyboard.Extra.Browser exposing (Browser)
@@ -29,7 +30,7 @@ type Model
 type alias User =
     { email : String
     , name : String
-    , profilePic : String
+    , profilePic : Maybe String
     , keyConfig : Keys.Config
     }
 
@@ -60,8 +61,27 @@ userDecoder browser =
     decode User
         |> required "email" Decode.string
         |> required "name" Decode.string
-        |> required "picture" Decode.string
+        |> optional "picture" profilePicDecoder Nothing
         |> custom (configDecoder browser)
+
+
+profilePicDecoder : Decoder (Maybe String)
+profilePicDecoder =
+    Decode.string
+        |> Decode.andThen toProfilePicDecoder
+
+
+toProfilePicDecoder : String -> Decoder (Maybe String)
+toProfilePicDecoder str =
+    case str of
+        "" ->
+            Decode.succeed Nothing
+
+        "NONE" ->
+            Decode.succeed Nothing
+
+        _ ->
+            Decode.succeed (Just str)
 
 
 configDecoder : Browser -> Decoder Keys.Config
