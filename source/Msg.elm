@@ -58,7 +58,7 @@ type Msg
     | AllowanceExceededMsg AllowanceExceeded.Msg
     | DrawingsLoaded (List Drawing)
     | DrawingDeleted (Result ( Id, String ) Id)
-    | MsgDecodeFailed String
+    | MsgDecodeFailed String String
 
 
 decode : Taco -> Value -> Msg
@@ -68,13 +68,28 @@ decode taco json =
             msg
 
         Err err ->
-            MsgDecodeFailed err
+            MsgDecodeFailed err (getType json)
+
+
+getType : Value -> String
+getType json =
+    case decodeValue typeDecoder json of
+        Ok title ->
+            title
+
+        Err err ->
+            "Error : " ++ err
 
 
 decoder : Taco -> Decoder Msg
 decoder taco =
-    Decode.field "type" Decode.string
+    typeDecoder
         |> Decode.andThen (payload << toMsg taco)
+
+
+typeDecoder : Decoder String
+typeDecoder =
+    Decode.field "type" Decode.string
 
 
 toMsg : Taco -> String -> Decoder Msg

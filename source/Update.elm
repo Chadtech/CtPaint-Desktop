@@ -55,7 +55,7 @@ update msg ({ taco, page } as model) =
                 |> R2.mapModel
                     (Model.setUser User.LoggedOut)
 
-        MsgDecodeFailed _ ->
+        MsgDecodeFailed _ _ ->
             model
                 |> R2.withNoCmd
 

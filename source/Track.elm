@@ -56,11 +56,10 @@ track msg { page, taco } =
         LogOutSucceeded ->
             Tracking.noProps "logout succeed"
 
-        MsgDecodeFailed err ->
-            err
-                |> Encode.string
-                |> def "error"
-                |> List.singleton
+        MsgDecodeFailed err type_ ->
+            [ def "error" <| Encode.string err
+            , def "type" <| Encode.string type_
+            ]
                 |> def "msg decode fail"
                 |> Just
 
