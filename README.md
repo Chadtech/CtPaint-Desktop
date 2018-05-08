@@ -54,7 +54,6 @@ Oh, and install `elm` and `elm-css` as well.
 │   ├── Error.elm
 │   ├── ForgotPassword.elm
 │   ├── Home.elm
-│   ├── Loading.elm
 │   ├── Login.elm
 │   ├── Logout.elm
 │   ├── Offline.elm
