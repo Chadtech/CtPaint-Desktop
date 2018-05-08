@@ -1,11 +1,12 @@
-module Helpers.Random
-    exposing
-        ( shuffle
-        )
+module Helpers.Random exposing (shuffle)
 
 import Random.Pcg as Random exposing (Generator, Seed)
 
 
+{-| Take a list, and randomly re-arrange the
+list so that its members are in randomly
+different order
+-}
 shuffle : List a -> Seed -> ( List a, Seed )
 shuffle =
     shuffleHelper []

@@ -2,7 +2,6 @@ module Html.Main
     exposing
         ( css
         , view
-        , viewWithNav
         )
 
 import Chadtech.Colors exposing (ignorable2)
@@ -15,6 +14,18 @@ import Html.Variables
 import Model exposing (Model)
 import Msg exposing (Msg(NavMsg))
 import Nav
+
+
+{-|
+
+    This module is kind of like a frame for the page views.
+    The page views are rendered inside of a general body,
+    that is underneath the nav bar. This module is for
+    rendering the body, and the nav bar, and its given
+    a bunch of page html to render inside the body.
+
+-}
+
 
 
 -- STYLES --
@@ -66,14 +77,8 @@ mainNamespace =
     Html.CssHelpers.withNamespace mainNamespace
 
 
-view : List (Html msg) -> Html msg
-view =
-    div
-        [ class [ Main ] ]
-
-
-viewWithNav : Model -> List (Html Msg) -> Html Msg
-viewWithNav model children =
+view : Model -> List (Html Msg) -> Html Msg
+view model children =
     div
         [ class [ Main ] ]
         [ Nav.view model

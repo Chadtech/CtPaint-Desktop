@@ -35,6 +35,28 @@ import Page.Verify as Verify
 import Route exposing (Route(..))
 
 
+{-|
+
+    Msgs represent things that can happen in
+    the application, so for that reason they
+    are always named after what happened rather
+    than what the application needs to do (so,
+    "RouteChanged" instead of "SetRoute").
+
+    Furthermore this application uses Msgs in
+    tracking too. Every page has an update
+    function and a track function. When a
+    Msg comes in it is passed into the update
+    function and the track function. Most Msgs
+    have a tracking event.
+
+-}
+
+
+
+-- TYPE --
+
+
 type Msg
     = RouteChanged (Result String Route)
     | LogInSucceeded User
@@ -59,6 +81,18 @@ type Msg
     | DrawingsLoaded (List Drawing)
     | DrawingDeleted (Result ( Id, String ) Id)
     | MsgDecodeFailed String String
+
+
+{-|
+
+    Decoding is for decoding Msgs that
+    come in through the ports
+
+-}
+
+
+
+-- DECODER --
 
 
 decode : Taco -> Value -> Msg

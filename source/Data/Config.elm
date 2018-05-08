@@ -30,7 +30,8 @@ type alias Config =
 
 fromFlags : Flags -> ( Config, Seed )
 fromFlags flags =
-    Random.step Id.generator flags.seed
+    flags.seed
+        |> Random.step Id.generator
         |> Tuple.mapFirst (fromSessionId flags)
 
 
@@ -43,6 +44,10 @@ fromSessionId flags sessionId =
     , videoSrc = "splash-video.mp4"
     , buildNumber = flags.buildNumber
     }
+
+
+
+-- HELPERS --
 
 
 assetSrc : Config -> (Config -> String) -> String

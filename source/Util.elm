@@ -1,8 +1,9 @@
 module Util exposing (..)
 
-import Html exposing (Attribute, Html)
-import Html.Events exposing (keyCode, on)
-import Json.Decode as Decode exposing (Decoder)
+import Html exposing (Html)
+
+
+-- TUPLE --
 
 
 def : a -> b -> ( a, b )
@@ -11,19 +12,7 @@ def =
 
 
 
--- CMD --
-
-
-cmdIf : Bool -> Cmd msg -> Cmd msg
-cmdIf condition cmd =
-    if condition then
-        cmd
-    else
-        Cmd.none
-
-
-
--- GENERAL --
+-- MAYBE --
 
 
 maybeCons : Maybe a -> List a -> List a
@@ -49,6 +38,10 @@ firstJust maybes =
             Nothing
 
 
+
+-- LIST --
+
+
 contains : List a -> a -> Bool
 contains =
     flip List.member
@@ -66,27 +59,6 @@ showIf show str =
         "********"
 
 
-onEnter : msg -> Attribute msg
-onEnter msg =
-    on "keydown" (Decode.andThen (enterDecoder msg) keyCode)
-
-
-enterDecoder : msg -> Int -> Decoder msg
-enterDecoder msg code =
-    if code == 13 then
-        Decode.succeed msg
-    else
-        Decode.fail "Not enter"
-
-
-viewIf : Bool -> Html msg -> Html msg
-viewIf condition html =
-    if condition then
-        html
-    else
-        Html.text ""
-
-
 viewMaybe : Maybe a -> (a -> Html msg) -> Html msg
 viewMaybe maybe htmlFunc =
     case maybe of
@@ -95,48 +67,3 @@ viewMaybe maybe htmlFunc =
 
         Nothing ->
             Html.text ""
-
-
-
--- EMAIL --
-
-
-isValidEmail : String -> Bool
-isValidEmail email =
-    case String.split "@" email of
-        "" :: _ ->
-            False
-
-        local :: domain :: [] ->
-            separateDomain domain local
-
-        _ ->
-            False
-
-
-separateDomain : String -> String -> Bool
-separateDomain domain local =
-    case String.split "." domain of
-        _ :: "" :: [] ->
-            False
-
-        "" :: _ :: [] ->
-            False
-
-        name :: extension :: [] ->
-            [ local, name, extension ]
-                |> String.concat
-                |> String.all isAlphanumeric
-
-        _ ->
-            False
-
-
-isAlphanumeric : Char -> Bool
-isAlphanumeric char =
-    String.contains (String.fromChar char) alphanumeric
-
-
-alphanumeric : String
-alphanumeric =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

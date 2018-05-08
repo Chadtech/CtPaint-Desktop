@@ -25,7 +25,6 @@ type JsMsg
     | UpdateUser UpdatePayload
     | Login String String
     | VerifyEmail String String
-    | GetUserAttributes
     | GetDrawings
     | ForgotPassword String
     | ResetPassword String String String
@@ -148,9 +147,6 @@ send msg =
             , def "code" <| Encode.string code
             ]
                 |> fromKeyValues "verifyEmail"
-
-        GetUserAttributes ->
-            noPayload "getUserAttributes"
 
         GetDrawings ->
             noPayload "getDrawings"

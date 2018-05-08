@@ -18,7 +18,6 @@ module Html.Custom
         , outdent
         , p_
         , spinner
-        , toolButton
         )
 
 import Chadtech.Colors as Ct
@@ -37,6 +36,15 @@ import MouseEvents exposing (MouseEvent)
 import Util exposing (def)
 
 
+{-|
+
+    Html.Custom is for html elements and styles
+    that are used in many places in the application
+
+-}
+
+
+
 -- STYLES --
 
 
@@ -48,10 +56,8 @@ type Class
     | Body
     | Header
     | Selected
-    | Null
     | Error
     | SpinnerContainer
-    | ToolButton
     | Container
     | Background
 
@@ -79,17 +85,6 @@ css =
     , fieldStyle
     , form
         [ margin (px 0) ]
-    , (Css.class ToolButton << List.append outdent)
-        [ width (px 20)
-        , height (px 20)
-        , fontFamilies [ "icons" ]
-        , fontSize (em 1)
-        , textAlign center
-        , padding (px 0)
-        , lineHeight (px 20)
-        , active indent
-        , withClass Selected indent
-        ]
     , spinnerContainer
     , Css.class Error
         [ backgroundColor Ct.lowWarning
@@ -259,11 +254,6 @@ aStyle =
     , property "-moz-osx-font-smoothing" "grayscale"
     , hover [ color Ct.point1 ]
     , withClass Selected indent
-    , withClass Null
-        [ backgroundColor Ct.ignorable1
-        , hover [ color Ct.point0 ]
-        , active outdent
-        ]
     ]
         |> List.append mixins
         |> a
@@ -317,7 +307,7 @@ basicFontSize =
 -- VIEW --
 
 
-{ classList, class } =
+{ class } =
     Html.CssHelpers.withNamespace appNamespace
 
 
@@ -329,26 +319,6 @@ menuButton attrs =
 field : List (Attribute msg) -> List (Html msg) -> Html msg
 field attrs =
     Html.div (class [ Field ] :: attrs)
-
-
-type alias ToolButtonState msg =
-    { icon : String
-    , selected : Bool
-    , attrs : List (Html.Attribute msg)
-    }
-
-
-toolButton : ToolButtonState msg -> Html msg
-toolButton state =
-    let
-        attrs =
-            classList
-                [ def ToolButton True
-                , def Selected state.selected
-                ]
-                :: state.attrs
-    in
-    Html.a attrs [ Html.text state.icon ]
 
 
 card : List (Attribute msg) -> List (Html msg) -> Html msg

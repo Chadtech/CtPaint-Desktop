@@ -61,6 +61,10 @@ update msg model =
                 { model | field = field }
 
         SendClicked ->
+            -- Nothing happens here,
+            -- because the actual comment
+            -- is recorded in a tracking
+            -- event
             { model | sendClicked = True }
 
 

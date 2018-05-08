@@ -16,6 +16,7 @@ import Css.Elements
 import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
+import Helpers.Email
 import Helpers.Password
 import Html
     exposing
@@ -655,7 +656,7 @@ validate =
 
 validEmail : Fields -> List ( Field, String )
 validEmail { email } =
-    if Util.isValidEmail email then
+    if Helpers.Email.validate email then
         []
     else
         [ ( Email, "Please enter a valid email address" ) ]

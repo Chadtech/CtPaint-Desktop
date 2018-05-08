@@ -14,6 +14,7 @@ module Page.ForgotPassword
 import Css exposing (..)
 import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
+import Helpers.Email
 import Html exposing (Html, form, input, p)
 import Html.Attributes as Attr
 import Html.CssHelpers
@@ -205,7 +206,7 @@ getProblem readyModel =
 
 isEmailValid : String -> Maybe Problem
 isEmailValid email =
-    if Util.isValidEmail email then
+    if Helpers.Email.validate email then
         Nothing
     else
         Just EmailIsntValid

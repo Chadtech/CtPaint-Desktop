@@ -27,6 +27,10 @@ import Tos
 port files : CssFileStructure -> Cmd msg
 
 
+
+-- For generating the css used for this app
+
+
 main : CssCompilerProgram
 main =
     [ Page.Register.css

@@ -14,6 +14,25 @@ import Json.Encode.Extra as Encode
 import Util exposing (def)
 
 
+{-|
+
+    Tracking refers to tracking UX events, like
+    clicks, and navigations, and http responses.
+    Those events are listened to, and then sent
+    to the backend to be stored. This tracking
+    data is really useful for development.
+    Errors, for example, are tracked. There
+    are always really ugly errors the user
+    experiences that the developer is totally
+    unaware of. More generally tho, knowing how
+    users use the application helps developers
+    know what to develop. It helps developers
+    know what users want.
+
+-}
+
+
+
 -- TYPES --
 
 

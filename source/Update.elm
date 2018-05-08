@@ -304,6 +304,10 @@ update msg ({ taco, page } as model) =
                 |> R2.withNoCmd
 
 
+
+-- HELPERS --
+
+
 handleRoute : Route -> Model -> ( Model, Cmd Msg )
 handleRoute destination model =
     case destination of
@@ -456,10 +460,6 @@ logout model =
         _ ->
             model
                 |> R2.withNoCmd
-
-
-
--- HELPERS --
 
 
 setPage : (subModel -> Page) -> Model -> subModel -> Model

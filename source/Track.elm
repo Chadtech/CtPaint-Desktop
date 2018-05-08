@@ -26,6 +26,13 @@ import Page.Verify as Verify
 import Util exposing (def)
 
 
+{-|
+
+    Much like the update function,
+    however its meant to map the incoming
+    Msgs to a tracking event.
+
+-}
 track : Msg -> Model -> Maybe Tracking.Event
 track msg { page, taco } =
     case msg of

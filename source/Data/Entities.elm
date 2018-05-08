@@ -25,6 +25,15 @@ type alias Entities =
     { drawings : Db Drawing }
 
 
+empty : Entities
+empty =
+    { drawings = Id.emptyDb .id }
+
+
+
+-- HELPERS --
+
+
 loadDrawings : Entities -> List Drawing -> Entities
 loadDrawings entities drawings =
     { entities
@@ -42,8 +51,3 @@ deleteDrawing id entities =
         | drawings =
             Id.remove id entities.drawings
     }
-
-
-empty : Entities
-empty =
-    { drawings = Id.emptyDb .id }

@@ -30,6 +30,19 @@ import Return2 as R2
 import Util exposing (def)
 
 
+{-|
+
+    InitDrawing is a component used to initialize
+    the PaintApp. Its used in two places at the
+    time of writing this: 0 in the init drawing page
+    which only serves to initialize new drawings, and 1;
+    in the home page one can start a new drawing, and
+    this same menu is used.
+
+-}
+
+
+
 -- TYPES --
 
 
@@ -45,6 +58,11 @@ type alias Model =
     }
 
 
+{-| When the init drawing page finishes, it
+initializes the PaintApp by passing along the
+information in the url. This function builds
+the query string in the url.
+-}
 toQueryString : Model -> String
 toQueryString { name, width, height, backgroundColor } =
     [ "width=" ++ toString (max 1 width)
@@ -56,6 +74,9 @@ toQueryString { name, width, height, backgroundColor } =
         |> (++) "?"
 
 
+{-| The name field in the query string
+is handled separately because its optional
+-}
 addNameQueryString : String -> String -> String
 addNameQueryString name queryStr =
     case name of

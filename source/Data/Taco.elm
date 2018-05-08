@@ -14,6 +14,16 @@ import Data.User as User
 import Random.Pcg exposing (Seed)
 
 
+{-|
+
+    Formal term : Taco
+    Some values are used only in specific contexts,
+    like the Models for specific pages. Others are
+    used through out the whole application. The taco
+    is for storing widely used values that arent
+    specific to any particular application state
+
+-}
 type alias Taco =
     { user : User.Model
     , seed : Seed

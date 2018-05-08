@@ -13,7 +13,7 @@ import Json.Encode as Encode
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Navigation exposing (Location)
-import Page exposing (HoldUp(..), Page(..), Problem(..))
+import Page exposing (Page(..), Problem(..))
 import Page.About as About
 import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
@@ -21,7 +21,6 @@ import Page.Documentation as Documentation
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
-import Page.Loading as Loading
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline
@@ -94,7 +93,8 @@ init json location =
             { page = Blank
             , taco = taco
             }
-                |> initPage location
+                |> Update.update (onNavigation location)
+                |> Tuple.mapFirst Ok
                 |> R2.addCmd (trackInit taco flags)
 
         Err err ->
@@ -111,12 +111,6 @@ init json location =
                 |> Ports.Track
                 |> Ports.send
                 |> R2.withModel (Err err)
-
-
-initPage : Location -> Model -> ( Result String Model, Cmd Msg )
-initPage location model =
-    Update.update (onNavigation location) model
-        |> Tuple.mapFirst Ok
 
 
 trackInit : Taco -> Flags -> Cmd Msg
@@ -163,21 +157,21 @@ errorView =
     Error.view >> Html.map ErrorMsg
 
 
-viewWithNav : Model -> (subMsg -> Msg) -> List (Html subMsg) -> Html Msg
-viewWithNav model toMsg =
-    List.map (Html.map toMsg)
-        >> Html.Main.viewWithNav model
-
-
 viewModel : Model -> Html Msg
 viewModel model =
+    let
+        viewWithNav : (subMsg -> Msg) -> List (Html subMsg) -> Html Msg
+        viewWithNav toMsg =
+            List.map (Html.map toMsg)
+                >> Html.Main.view model
+    in
     case model.page of
         Page.Home subModel ->
             case model.taco.user of
                 User.LoggedIn user ->
                     subModel
                         |> Home.view model.taco user
-                        |> viewWithNav model HomeMsg
+                        |> viewWithNav HomeMsg
 
                 _ ->
                     errorView "Something went wrong with your authentication, sorry"
@@ -193,59 +187,59 @@ viewModel model =
                 |> List.singleton
                 |> Html.Custom.background []
                 |> List.singleton
-                |> viewWithNav model InitDrawingMsg
+                |> viewWithNav InitDrawingMsg
 
         Page.About ->
             About.view model.taco
-                |> viewWithNav model identity
+                |> viewWithNav identity
 
         Page.Documentation subModel ->
             subModel
                 |> Documentation.view model.taco
-                |> viewWithNav model identity
+                |> viewWithNav identity
 
         Page.Pricing ->
             Pricing.view model.taco
-                |> viewWithNav model PricingMsg
+                |> viewWithNav PricingMsg
 
         Page.RoadMap subModel ->
             subModel
                 |> RoadMap.view model.taco
-                |> viewWithNav model RoadMapMsg
+                |> viewWithNav RoadMapMsg
 
         Page.Contact subModel ->
             subModel
                 |> Contact.view
-                |> viewWithNav model ContactMsg
+                |> viewWithNav ContactMsg
 
         Page.Offline ->
             Offline.view
-                |> viewWithNav model OfflineMsg
+                |> viewWithNav OfflineMsg
 
         Page.Splash ->
             Splash.view model.taco
-                |> viewWithNav model SplashMsg
+                |> viewWithNav SplashMsg
 
         Page.Settings subModel ->
             subModel
                 |> Settings.view
-                |> viewWithNav model SettingsMsg
+                |> viewWithNav SettingsMsg
 
         Page.Register subModel ->
             [ Register.view subModel ]
-                |> viewWithNav model RegisterMsg
+                |> viewWithNav RegisterMsg
 
         Page.Login subModel ->
             [ Login.view subModel ]
-                |> viewWithNav model LoginMsg
+                |> viewWithNav LoginMsg
 
         Page.ForgotPassword subModel ->
             [ ForgotPassword.view subModel ]
-                |> viewWithNav model ForgotPasswordMsg
+                |> viewWithNav ForgotPasswordMsg
 
         Page.ResetPassword subModel ->
             [ ResetPassword.view subModel ]
-                |> viewWithNav model ResetPasswordMsg
+                |> viewWithNav ResetPasswordMsg
 
         Page.Logout subModel ->
             Html.map LogoutMsg (Logout.view subModel)
@@ -255,10 +249,7 @@ viewModel model =
 
         Page.AllowanceExceeded ->
             [ AllowanceExceeded.view ]
-                |> viewWithNav model AllowanceExceededMsg
-
-        Page.Loading holdUp ->
-            Loading.view holdUp
+                |> viewWithNav AllowanceExceededMsg
 
         Error InvalidUrl ->
             errorView "Sorry, something is wrong with your url"

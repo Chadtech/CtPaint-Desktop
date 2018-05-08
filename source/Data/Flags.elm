@@ -13,6 +13,14 @@ import Keyboard.Extra.Browser
 import Random.Pcg as Random exposing (Seed)
 
 
+{-|
+
+    Formal term : Flags
+    These are the initial values of the Elm app
+    that come from the JavaScript side of the whole
+    application. The flags are decoded from JSON
+
+-}
 type alias Flags =
     { user : User.Model
     , isMac : Bool

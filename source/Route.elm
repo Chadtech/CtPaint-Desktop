@@ -1,9 +1,32 @@
-module Route exposing (..)
+module Route
+    exposing
+        ( Route(..)
+        , fromLocation
+        , goTo
+        , toUrl
+        )
 
 import Navigation exposing (Location)
 import UrlParser as Url exposing ((</>), Parser, s)
 
 
+-- TYPES --
+
+
+{-|
+
+    Routes, not to be confused with Pages.
+
+    Routes are a narrow list of possible urls.
+    The Landing route is just "www.ctpaint.org".
+    The login Route is "www.ctpaint.org/login".
+    There isnt a Landing page however, the landing
+    route goes to different pages depending on if
+    the user is logged in. There are pages that
+    dont have routes, like the error page and the
+    blank page.
+
+-}
 type Route
     = Landing
     | InitDrawing
@@ -20,6 +43,10 @@ type Route
     | Register
     | Verify String String
     | AllowanceExceeded
+
+
+
+-- HELPERS --
 
 
 fromLocation : Location -> Result String Route

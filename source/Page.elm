@@ -1,7 +1,6 @@
 module Page
     exposing
-        ( HoldUp(..)
-        , Page(..)
+        ( Page(..)
         , Problem(..)
         , toString
         )
@@ -18,6 +17,9 @@ import Page.ResetPassword as ResetPassword
 import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Verify as Verify
+
+
+-- TYPES --
 
 
 type Page
@@ -38,13 +40,8 @@ type Page
     | AllowanceExceeded
     | Splash
     | Offline
-    | Loading HoldUp
     | Error Problem
     | Blank
-
-
-type HoldUp
-    = UserAttributes
 
 
 type Problem
@@ -55,6 +52,13 @@ type Problem
 -- HELPERS --
 
 
+{-| Pages correspond to specific strings in different
+functionality of this application, and to make sure
+the pages are mapped to the right strings, this function
+is used. If I just wrote "home" where I needed home I
+might get a typo. But by using the union type the compiler
+will catch my mistakes.
+-}
 toString : Page -> String
 toString page =
     case page of
@@ -108,9 +112,6 @@ toString page =
 
         Offline ->
             "offline"
-
-        Loading holdUp ->
-            "loading : " ++ Basics.toString holdUp
 
         Blank ->
             "blank"
