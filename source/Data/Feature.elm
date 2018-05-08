@@ -10,6 +10,10 @@ import Data.Config exposing (Config)
 
 {-| Feature, as in, a feature in the CtPaint
 drawing application.
+
+This data type is really just used on the
+documentation page.
+
 -}
 type alias Feature =
     { name : String
