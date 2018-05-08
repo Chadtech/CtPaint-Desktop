@@ -56,6 +56,7 @@ sendTracking { config, user } trackingEvent =
         Just ( name, properties ) ->
             { sessionId = config.sessionId
             , email = User.getEmail user
+            , buildNumber = config.buildNumber
             , name = name
             , properties = properties
             }
