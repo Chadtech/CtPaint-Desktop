@@ -1,6 +1,8 @@
 # CtPaint Desktop
 
-This is the desktop part of CtPaint. By that I mean, the home page, settings page, and the login, and all the things that are not part of the paint application. Now that I have hindsight, "Desktop" appears to be a poor name. "Main" might have been better. Desktop and PaintApp are just parts of a broader application. Theres an over-arching App-Shell, that manages the initialization of the Desktop and PaintApp apps. 
+This is the desktop part of CtPaint. By that I mean, the home page, settings page, and the login, and all the things that are not part of the paint application ("PaintApp"). Now that I have hindsight, "Desktop" appears to be a poor name. "Main" might have been better. Desktop and PaintApp are just two parts of a broader application. Theres an over-arching App-Shell, that manages the initialization of the Desktop and PaintApp apps. App-Shell is an Elm app with no view, that just parses the url, determines what application to run, and builds the flags for the right app and initializes it. 
+
+I chose this architecture, firstly because I expect users to either be in PaintApp or Desktop and secondly because the PaintApp is relatively large compared to everything else. Having to re-initialize the whole application when the use transitions between PaintApp and Desktop is a penalty, but its worth it. If these two apps were together, it would be much bigger and more monolithic, but more importantly there would be a lot of lingering state that wouldnt be significant to the UX.
 
 ## Getting Started
 
