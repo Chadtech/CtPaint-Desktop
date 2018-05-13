@@ -258,8 +258,8 @@ drawingDeleted result model =
 -- TRACKING --
 
 
-track : Msg -> Maybe Tracking.Event
-track msg =
+track : Msg -> Model -> Maybe Tracking.Event
+track msg model =
     case msg of
         DrawingClicked id ->
             id
@@ -321,8 +321,14 @@ track msg =
             Tracking.noProps "try-again click"
 
         InitDrawingMsg subMsg ->
-            InitDrawing.track subMsg
-                |> Tracking.namespace "init-drawing"
+            case model.main of
+                NewDrawing subModel ->
+                    subModel
+                        |> InitDrawing.track subMsg
+                        |> Tracking.namespace "init-drawing"
+
+                _ ->
+                    Nothing
 
         HeaderMouseDown ->
             Nothing

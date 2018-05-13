@@ -76,8 +76,9 @@ track msg { page, taco } =
                     "home"
             in
             case ( page, taco.user ) of
-                ( Page.Home _, User.LoggedIn _ ) ->
-                    Home.track subMsg
+                ( Page.Home subModel, User.LoggedIn _ ) ->
+                    subModel
+                        |> Home.track subMsg
                         |> Tracking.namespace pageStr
 
                 _ ->
@@ -89,8 +90,9 @@ track msg { page, taco } =
                     "init-drawing"
             in
             case page of
-                Page.InitDrawing _ ->
-                    InitDrawing.track subMsg
+                Page.InitDrawing subModel ->
+                    subModel
+                        |> InitDrawing.track subMsg
                         |> Tracking.namespace pageStr
 
                 _ ->

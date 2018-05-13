@@ -100,7 +100,7 @@ css =
     , (Css.class FeatureList << List.append Html.Custom.indent)
         [ width (px (subscriptionWidth - 4))
         , height (px 300)
-        , overflow scroll
+        , overflow auto
         , backgroundColor Ct.background2
         , marginBottom (px 8)
         ]

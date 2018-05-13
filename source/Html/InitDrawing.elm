@@ -223,11 +223,17 @@ fromUrl model =
 -- TRACKING --
 
 
-track : Msg -> Maybe Tracking.Event
-track msg =
+track : Msg -> Model -> Maybe Tracking.Event
+track msg model =
     case msg of
         FromUrlClicked ->
-            Tracking.noProps "from-url click"
+            model
+                |> fromUrlDisabled
+                |> Encode.bool
+                |> def "disabled"
+                |> List.singleton
+                |> def "from-url click"
+                |> Just
 
         UrlInitSubmitted ->
             Tracking.noProps "from-url enter press"
@@ -249,6 +255,11 @@ track msg =
 
         StartNewDrawingClicked ->
             Tracking.noProps "submit click"
+
+
+fromUrlDisabled : Model -> Bool
+fromUrlDisabled =
+    .url >> String.isEmpty
 
 
 
@@ -457,7 +468,7 @@ urlView model =
     , a
         [ classList
             [ def Button True
-            , def Disabled (model.url == "")
+            , def Disabled (fromUrlDisabled model)
             ]
         , onClick FromUrlClicked
         ]
