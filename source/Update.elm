@@ -324,10 +324,10 @@ handleRoute destination model =
             }
                 |> logout
 
-        Route.ResetPassword email code ->
+        Route.ResetPassword ->
             { model
                 | page =
-                    ResetPassword.init email code
+                    ResetPassword.init
                         |> Page.ResetPassword
             }
                 |> logout
@@ -429,11 +429,10 @@ handleRoute destination model =
                     Route.goTo Route.Login
                         |> R2.withModel model
 
-        Route.Verify email code ->
-            Verify.init email
+        Route.Verify ->
+            Verify.init
                 |> setPage Page.Verify model
                 |> logout
-                |> R2.addCmd (Ports.send (VerifyEmail email code))
 
         Route.AllowanceExceeded ->
             case model.taco.user of
