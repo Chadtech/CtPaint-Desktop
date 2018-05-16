@@ -354,6 +354,16 @@ readyBody model =
         , onSubmit Submitted
         ]
         [ field
+            "email"
+            [ value_ model.email
+            , onInput_ Email
+            ]
+        , field
+            "code"
+            [ value_ model.code
+            , onInput_ Code
+            ]
+        , field
             "password"
             [ value_ model.password
             , Attrs.type_ "password"
