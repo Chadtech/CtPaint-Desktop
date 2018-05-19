@@ -30,14 +30,7 @@ import Util
 -- TYPES --
 
 
-type alias Model =
-    { email : String
-    , code : String
-    , state : State
-    }
-
-
-type State
+type Model
     = Ready ReadyModel
     | Sending
     | Success
@@ -50,7 +43,9 @@ type Problem
 
 
 type alias ReadyModel =
-    { password : String
+    { email : String
+    , code : String
+    , password : String
     , passwordConfirm : String
     , error : Maybe String
     , show : Bool
@@ -58,7 +53,9 @@ type alias ReadyModel =
 
 
 type Field
-    = Password
+    = Email
+    | Code
+    | Password
     | PasswordConfirm
 
 
@@ -83,18 +80,16 @@ failed =
     Failed
 
 
-init : String -> String -> Model
-init email code =
-    { email = email
-    , code = code
-    , state =
-        { password = ""
-        , passwordConfirm = ""
-        , error = Nothing
-        , show = True
-        }
-            |> Ready
+init : Model
+init =
+    { email = ""
+    , code = ""
+    , password = ""
+    , passwordConfirm = ""
+    , error = Nothing
+    , show = True
     }
+        |> Ready
 
 
 
@@ -108,6 +103,12 @@ update msg model =
             Route.goTo Route.Landing
                 |> R2.withModel model
 
+        FieldUpdated Email str ->
+            ifReady model (updateEmail str)
+
+        FieldUpdated Code str ->
+            ifReady model (updateCode str)
+
         FieldUpdated Password str ->
             ifReady model (updatePassword str)
 
@@ -115,25 +116,13 @@ update msg model =
             ifReady model (updatePasswordConfirm str)
 
         Submitted ->
-            case model.state of
-                Ready readyModel ->
-                    resetPassword model readyModel
-
-                _ ->
-                    model
-                        |> R2.withNoCmd
+            submit model
 
         SubmitClicked ->
-            case model.state of
-                Ready readyModel ->
-                    resetPassword model readyModel
-
-                _ ->
-                    model
-                        |> R2.withNoCmd
+            submit model
 
         Succeeded ->
-            { model | state = Success }
+            Success
                 |> R2.withNoCmd
 
         Failed err ->
@@ -153,36 +142,38 @@ handleError model err =
     case err of
         "ExpiredCodeException: Invalid code provided, please request a code again." ->
             InvalidCode
-                |> setFail model
+                |> Fail
                 |> R2.withNoCmd
 
         _ ->
             err
                 |> Other
-                |> setFail model
+                |> Fail
                 |> R2.withNoCmd
 
 
 ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )
 ifReady model f =
-    case model.state of
+    case model of
         Ready readyModel ->
             f readyModel
-                |> Tuple.mapFirst (setReady model)
+                |> Tuple.mapFirst Ready
 
         _ ->
             model
                 |> R2.withNoCmd
 
 
-setFail : Model -> Problem -> Model
-setFail model problem =
-    { model | state = Fail problem }
+updateEmail : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
+updateEmail str model =
+    { model | email = str }
+        |> R2.withNoCmd
 
 
-setReady : Model -> ReadyModel -> Model
-setReady model readyModel =
-    { model | state = Ready readyModel }
+updateCode : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
+updateCode str model =
+    { model | code = str }
+        |> R2.withNoCmd
 
 
 updatePassword : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
@@ -197,24 +188,31 @@ updatePasswordConfirm str model =
         |> R2.withNoCmd
 
 
-resetPassword : Model -> ReadyModel -> ( Model, Cmd Msg )
-resetPassword model readyModel =
+submit : Model -> ( Model, Cmd Msg )
+submit model =
+    case model of
+        Ready readyModel ->
+            resetPassword readyModel
+
+        _ ->
+            model
+                |> R2.withNoCmd
+
+
+resetPassword : ReadyModel -> ( Model, Cmd Msg )
+resetPassword readyModel =
     case validatePassword readyModel of
         Nothing ->
             ResetPassword
-                model.email
-                model.code
+                readyModel.email
+                readyModel.code
                 readyModel.password
                 |> Ports.send
-                |> R2.withModel
-                    { model | state = Sending }
+                |> R2.withModel Sending
 
         Just error ->
-            { model
-                | state =
-                    { readyModel | error = Just error }
-                        |> Ready
-            }
+            { readyModel | error = Just error }
+                |> Ready
                 |> R2.withNoCmd
 
 
@@ -330,7 +328,7 @@ view model =
 
 body : Model -> List (Html Msg)
 body model =
-    case model.state of
+    case model of
         Ready readyModel ->
             readyBody readyModel
 
@@ -356,6 +354,16 @@ readyBody model =
         , onSubmit Submitted
         ]
         [ field
+            "email"
+            [ value_ model.email
+            , onInput_ Email
+            ]
+        , field
+            "code"
+            [ value_ model.code
+            , onInput_ Code
+            ]
+        , field
             "password"
             [ value_ model.password
             , Attrs.type_ "password"

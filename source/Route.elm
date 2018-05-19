@@ -38,10 +38,10 @@ type Route
     | Settings
     | Login
     | ForgotPassword
-    | ResetPassword String String
+    | ResetPassword
     | Logout
     | Register
-    | Verify String String
+    | Verify
     | AllowanceExceeded
 
 
@@ -71,11 +71,11 @@ route =
     , Url.map RoadMap (s "roadmap")
     , Url.map Login (s "login")
     , Url.map ForgotPassword (s "forgotpassword")
-    , Url.map ResetPassword (s "resetpassword" </> Url.string </> Url.string)
+    , Url.map ResetPassword (s "resetpassword")
     , Url.map Logout (s "logout")
     , Url.map Register (s "register")
     , Url.map Settings (s "settings")
-    , Url.map Verify (s "verify" </> Url.string </> Url.string)
+    , Url.map Verify (s "verify")
     , Url.map AllowanceExceeded (s "allowanceexceeded")
     ]
         |> Url.oneOf
@@ -122,14 +122,14 @@ toPieces route =
         ForgotPassword ->
             [ "forgotpassword" ]
 
-        ResetPassword email code ->
-            [ "resetpassword", email, code ]
+        ResetPassword ->
+            [ "resetpassword" ]
 
         Logout ->
             [ "logout" ]
 
-        Verify email code ->
-            [ "verify", email, code ]
+        Verify ->
+            [ "verify" ]
 
         AllowanceExceeded ->
             [ "allowanceexceeded" ]

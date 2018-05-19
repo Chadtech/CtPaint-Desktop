@@ -74,7 +74,7 @@ function get(Client, init) {
 function verify(Client, toElm, payload) {
     Client.verify(payload, {
         onFailure: function(err) {
-            toElm("verification failed", err);
+            toElm("verification failed", String(err));
         },
         onSuccess: function(result) {
             toElm('verification succeeded', result);
