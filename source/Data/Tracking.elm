@@ -80,8 +80,7 @@ namespace name =
 encode : Payload -> Value
 encode payload =
     [ payload.name
-        |> String.split " "
-        |> String.join "_"
+        |> Util.replace " " "_"
         |> Encode.string
         |> def "name"
     , def "properties" <| encodeProperties payload
