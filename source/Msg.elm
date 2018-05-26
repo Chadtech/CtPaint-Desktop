@@ -15,7 +15,7 @@ import Json.Decode as Decode
         , Value
         , decodeValue
         )
-import Json.Decode.Pipeline as Pipeline exposing (required)
+import Json.Decode.Pipeline as JDP
 import Nav
 import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
@@ -170,9 +170,9 @@ toMsg taco type_ =
                 |> Decode.map (Ok >> DrawingDeleted)
 
         "delete failed" ->
-            Pipeline.decode (,)
-                |> required "id" Id.decoder
-                |> required "error" Decode.string
+            JDP.decode (,)
+                |> JDP.required "id" Id.decoder
+                |> JDP.required "error" Decode.string
                 |> Decode.map (Err >> DrawingDeleted)
 
         "forgot password sent" ->

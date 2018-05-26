@@ -288,12 +288,14 @@ readyView model =
         [ onSubmit Submitted ]
         [ field "email"
             [ Attr.value model.email
+            , Attr.name "email"
             , onInput_ Email
             , Attr.spellcheck False
             ]
         , errorView_ Email
         , field "password"
             [ Attr.value model.password
+            , Attr.name "password"
             , Attr.type_ "password"
             , Attr.spellcheck False
             , onInput_ Password

@@ -305,6 +305,7 @@ fieldsView fields =
             "name"
             [ value_ fields.name
             , onInput_ Name
+            , Attr.name "name"
             ]
         , errorView_ Name
         , field
@@ -316,6 +317,7 @@ fieldsView fields =
             "email"
             [ value_ fields.email
             , onInput_ Email
+            , Attr.name "email"
             ]
         , errorView_ Email
         , field
@@ -329,6 +331,7 @@ fieldsView fields =
             [ value_ fields.password
             , Attr.type_ "password"
             , onInput_ Password
+            , Attr.name "password"
             ]
         , errorView_ Password
         , field
@@ -336,6 +339,7 @@ fieldsView fields =
             [ value_ fields.passwordConfirm
             , Attr.type_ "password"
             , onInput_ PasswordConfirm
+            , Attr.name "password"
             ]
         , errorView_ PasswordConfirm
         , tosCheck fields.agreesToTermsOfService

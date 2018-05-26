@@ -91,6 +91,11 @@ encodeConfig browser =
     Keys.encodeConfig browser >> Encode.encode 0 >> Encode.string
 
 
+encodeUrl : String -> Value
+encodeUrl =
+    Util.replace "/" "%2F" >> Encode.string
+
+
 send : JsMsg -> Cmd msg
 send msg =
     case msg of
@@ -106,7 +111,7 @@ send msg =
 
         OpenUrlInPaintApp url ->
             "openUrlInPaintApp"
-                |> withPayload (Encode.string url)
+                |> withPayload (encodeUrl url)
 
         OpenDrawingInPaintApp id ->
             "openDrawingInPaintApp"

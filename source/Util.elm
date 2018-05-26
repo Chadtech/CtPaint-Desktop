@@ -12,6 +12,17 @@ def =
 
 
 
+-- STRING --
+
+
+replace : String -> String -> String -> String
+replace target replacement str =
+    str
+        |> String.split target
+        |> String.join replacement
+
+
+
 -- MAYBE --
 
 
