@@ -461,7 +461,7 @@ css =
             , position absolute
             , width (px (leftSideWidth - 4))
             , height (px (leftSideWidth - 4))
-            , backgroundImage (url "https://i.imgur.com/ukKI571.png")
+            , backgroundImage (url "https://s3.us-east-2.amazonaws.com/ctpaint-drawings-uploads/48554601-77c9-11e8-8628-7b3dcff52954")
             , property "background-size" "150px 150px"
             ]
         ]
