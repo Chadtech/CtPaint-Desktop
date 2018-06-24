@@ -41,7 +41,6 @@ type alias Payload =
     , properties : List ( String, Value )
     , sessionId : Id
     , email : Maybe String
-    , buildNumber : Int
     }
 
 
@@ -92,7 +91,6 @@ encodeProperties : Payload -> Value
 encodeProperties payload =
     [ def "sessionId" <| Id.encode payload.sessionId
     , def "email" <| Encode.maybe Encode.string payload.email
-    , def "buildNumber" <| Encode.int payload.buildNumber
     ]
         |> List.append payload.properties
         |> Encode.object

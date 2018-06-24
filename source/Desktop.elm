@@ -100,7 +100,6 @@ init json location =
         Err err ->
             { sessionId = Id.fromString "ERROR"
             , email = Nothing
-            , buildNumber = -1
             , name = "desktop app init fail"
             , properties =
                 err
@@ -117,7 +116,7 @@ trackInit : Taco -> Flags -> Cmd Msg
 trackInit taco flags =
     [ def "is-mac" <| Encode.bool flags.isMac
     , def "browser" <| Encode.string (toString flags.browser)
-    , def "buildNumber" <| Encode.int flags.buildNumber
+    , def "build-number" <| Encode.int flags.buildNumber
     ]
         |> def "app init"
         |> Just
