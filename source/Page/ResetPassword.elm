@@ -1,15 +1,14 @@
-module Page.ResetPassword
-    exposing
-        ( Model
-        , Msg
-        , css
-        , failed
-        , init
-        , succeeded
-        , track
-        , update
-        , view
-        )
+module Page.ResetPassword exposing
+    ( Model
+    , Msg
+    , css
+    , failed
+    , init
+    , succeeded
+    , track
+    , update
+    , view
+    )
 
 import Css exposing (..)
 import Css.Elements
@@ -25,6 +24,7 @@ import Ports exposing (JsMsg(ResetPassword))
 import Return2 as R2
 import Route
 import Util
+
 
 
 -- TYPES --
@@ -458,9 +458,16 @@ field name attributes =
             [ class [ Long ] ]
             [ Html.text name ]
         , input
-            (class [ Long ] :: attributes)
+            (baseAttrs ++ attributes)
             []
         ]
+
+
+baseAttrs : List (Attribute Msg)
+baseAttrs =
+    [ class [ Long ]
+    , Attrs.spellcheck False
+    ]
 
 
 errorView : Maybe String -> Html Msg
