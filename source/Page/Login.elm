@@ -1,17 +1,15 @@
-module Page.Login
-    exposing
-        ( Model
-        , Msg(LoginFailed)
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.Login exposing
+    ( Model
+    , Msg
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html
     exposing
@@ -23,15 +21,12 @@ import Html
         , span
         )
 import Html.Attributes as Attr
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Encode as Encode
-import Ports exposing (JsMsg(..))
-import Return2 as R2
+import Ports exposing (JsMsg)
 import Route
-import Util exposing (def)
-import Validate exposing (ifBlank)
+import Util.String as StringUtil
+
 
 
 -- TYPES --
@@ -127,6 +122,7 @@ attemptLogin model =
         , state =
             if noErrors then
                 LoggingIn
+
             else
                 Ready
         , responseError = Nothing
@@ -139,6 +135,7 @@ attemptLoginCmd model noErrors =
     if noErrors then
         Login model.email model.password
             |> Ports.send
+
     else
         Cmd.none
 
@@ -195,11 +192,30 @@ track msg =
 
 
 validate : Model -> List ( Field, String )
-validate =
+validate model =
+    let
+        validateAll : List (Model -> List ( Field, String )) -> List ( Field, String )
+        validateAll remainingConditions =
+            case remainingConditions of
+                [] ->
+                    []
+
+                first :: rest ->
+                    first model ++ validateAll rest
+    in
     [ .email >> ifBlank ( Email, "Email field is required" )
     , .password >> ifBlank ( Password, "Password field is required" )
     ]
-        |> Validate.all
+        |> validateAll
+
+
+ifBlank : ( Field, String ) -> String -> List ( Field, String )
+ifBlank fieldAndError str =
+    if StringUtil.isBlank str then
+        [ fieldAndError ]
+
+    else
+        []
 
 
 

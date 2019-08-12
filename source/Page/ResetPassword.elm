@@ -11,17 +11,12 @@ module Page.ResetPassword exposing
     )
 
 import Css exposing (..)
-import Css.Elements
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Helpers.Password
 import Html exposing (Attribute, Html, a, form, input, p)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Ports exposing (JsMsg(ResetPassword))
-import Return2 as R2
+import Ports exposing (JsMsg)
 import Route
 import Util
 

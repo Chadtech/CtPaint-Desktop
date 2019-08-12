@@ -1,6 +1,6 @@
-module Helpers.Random exposing (shuffle)
+module Util.Random exposing (shuffle)
 
-import Random.Pcg as Random exposing (Generator, Seed)
+import Random exposing (Generator, Seed)
 
 
 {-| Take a list, and randomly re-arrange the
@@ -44,6 +44,7 @@ get first rest index =
         second :: rest_ ->
             if index == 0 then
                 ( first, rest )
+
             else
                 get second rest_ (index - 1)
                     |> Tuple.mapSecond ((::) first)

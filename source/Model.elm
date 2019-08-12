@@ -1,43 +1,33 @@
-module Model
-    exposing
-        ( Model
-        , mixinSeed
-        , setSeed
-        , setUser
-        )
+module Model exposing
+    ( Model(..)
+    , getSession
+    )
 
-import Data.Taco as Taco exposing (Taco)
-import Data.User as User
-import Page exposing (Page(..))
-import Random.Pcg exposing (Seed)
-
-
-type alias Model =
-    { page : Page
-    , taco : Taco
-    }
+import Session exposing (Session)
 
 
 
--- HELPERS --
+-------------------------------------------------------------------------------
+-- TYPES --
+-------------------------------------------------------------------------------
 
 
-setUser : User.Model -> Model -> Model
-setUser user model =
-    { model
-        | taco =
-            Taco.setUser user model.taco
-    }
+type Model
+    = Blank Session
+    | Splash Session
 
 
-setSeed : Seed -> Model -> Model
-setSeed seed model =
-    { model
-        | taco =
-            Taco.setSeed seed model.taco
-    }
+
+-------------------------------------------------------------------------------
+-- PUBLIC HELPERS --
+-------------------------------------------------------------------------------
 
 
-mixinSeed : ( Model, Seed ) -> Model
-mixinSeed ( model, seed ) =
-    setSeed seed model
+getSession : Model -> Session
+getSession model =
+    case model of
+        Blank session ->
+            session
+
+        Splash session ->
+            session

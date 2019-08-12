@@ -1,14 +1,13 @@
-module Data.Config
-    exposing
-        ( Config
-        , assetSrc
-        , fromFlags
-        )
+module Data.Config exposing
+    ( Config
+    , assetSrc
+    , fromFlags
+    )
 
+import Data.Browser exposing (Browser)
 import Data.Flags exposing (Flags)
-import Id exposing (Id)
-import Keyboard.Extra.Browser exposing (Browser)
-import Random.Pcg as Random exposing (Seed)
+import Data.SessionId as SessionId exposing (SessionId)
+import Random as Random exposing (Seed)
 
 
 {-|
@@ -19,7 +18,7 @@ import Random.Pcg as Random exposing (Seed)
 
 -}
 type alias Config =
-    { sessionId : Id
+    { sessionId : SessionId
     , browser : Browser
     , mountPath : String
     , logoSrc : String
@@ -31,11 +30,11 @@ type alias Config =
 fromFlags : Flags -> ( Config, Seed )
 fromFlags flags =
     flags.seed
-        |> Random.step Id.generator
+        |> Random.step SessionId.generator
         |> Tuple.mapFirst (fromSessionId flags)
 
 
-fromSessionId : Flags -> Id -> Config
+fromSessionId : Flags -> SessionId -> Config
 fromSessionId flags sessionId =
     { sessionId = sessionId
     , browser = flags.browser

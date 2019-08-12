@@ -1,44 +1,29 @@
-module Page.Home
-    exposing
-        ( Model
-        , Msg
-        , css
-        , drawingDeleted
-        , drawingsLoaded
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.Home exposing
+    ( Model
+    , Msg
+    , css
+    , drawingDeleted
+    , drawingsLoaded
+    , init
+    , track
+    , update
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements
-import Css.Namespace exposing (namespace)
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
 import Data.User exposing (User)
-import Date exposing (Date)
-import Date.Extra
 import Html exposing (Html, a, div, img, input, p)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick)
 import Html.InitDrawing as InitDrawing
 import Html.Variables exposing (leftSideWidth)
 import Id exposing (Id)
-import Ports
-    exposing
-        ( JsMsg
-            ( GetDrawings
-            , OpenDrawingInPaintApp
-            , OpenInNewWindow
-            )
-        )
-import Return2 as R2
-import Util exposing (def)
+import Ports exposing (JsMsg)
+
 
 
 -- TYPES --

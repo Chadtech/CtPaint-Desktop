@@ -1,33 +1,23 @@
-module Nav
-    exposing
-        ( Msg
-        , css
-        , track
-        , update
-        , view
-        )
+module Nav exposing
+    ( Msg
+    , css
+    , track
+    , update
+    , view
+    )
 
-import Chadtech.Colors
-    exposing
-        ( ignorable1
-        , ignorable2
-        , ignorable3
-        )
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
 import Data.User as User exposing (User)
 import Html exposing (Html, a, div, p)
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick)
 import Html.Variables
 import Json.Encode as Encode
 import Model exposing (Model)
 import Page exposing (Page)
 import Route exposing (Route)
-import Util exposing (def)
+
 
 
 -- TYPES --

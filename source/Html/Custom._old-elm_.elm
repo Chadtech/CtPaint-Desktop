@@ -1,39 +1,33 @@
-module Html.Custom
-    exposing
-        ( Closability(..)
-        , background
-        , basicFontSize
-        , cannotSelect
-        , card
-        , cardBody
-        , cardSolitary
-        , container
-        , css
-        , error
-        , field
-        , header
-        , indent
-        , makeNamespace
-        , menuButton
-        , outdent
-        , p_
-        , spinner
-        )
+module Html.Custom exposing
+    ( Closability(..)
+    , background
+    , basicFontSize
+    , cannotSelect
+    , card
+    , cardBody
+    , cardSolitary
+    , container
+    , css
+    , error
+    , field
+    , header
+    , indent
+    , makeNamespace
+    , menuButton
+    , outdent
+    , p_
+    , spinner
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements exposing (a, body, canvas, form, p)
-import Css.Namespace
 import Html exposing (Attribute, Html)
 import Html.Attributes
-import Html.CssHelpers
 import Html.Events exposing (onMouseDown)
 import Html.Variables
     exposing
         ( leftSideWidth
         )
-import MouseEvents exposing (MouseEvent)
-import Util exposing (def)
 
 
 {-|

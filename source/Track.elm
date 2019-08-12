@@ -8,9 +8,7 @@ import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Nav
 import Page exposing (Page(..), Problem(..))
-import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
-import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.Login as Login
@@ -23,7 +21,6 @@ import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
-import Util exposing (def)
 
 
 {-|

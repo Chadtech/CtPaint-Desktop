@@ -1,14 +1,12 @@
-module Util exposing (..)
+module Util exposing
+    ( firstJust
+    , maybeCons
+    , replace
+    , showIf
+    , viewMaybe
+    )
 
 import Html exposing (Html)
-
-
--- TUPLE --
-
-
-def : a -> b -> ( a, b )
-def =
-    (,)
 
 
 
@@ -50,15 +48,6 @@ firstJust maybes =
 
 
 
--- LIST --
-
-
-contains : List a -> a -> Bool
-contains =
-    flip List.member
-
-
-
 -- HTML --
 
 
@@ -66,6 +55,7 @@ showIf : Bool -> String -> String
 showIf show str =
     if show then
         str
+
     else
         "********"
 

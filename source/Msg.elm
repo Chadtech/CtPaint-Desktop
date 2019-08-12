@@ -1,23 +1,14 @@
-module Msg
-    exposing
-        ( Msg(..)
-        , decode
-        )
+module Msg exposing
+    ( Msg(..)
+    , decode
+    )
 
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
 import Data.User as User exposing (User)
 import Html.InitDrawing as InitDrawing
-import Id exposing (Id)
-import Json.Decode as Decode
-    exposing
-        ( Decoder
-        , Value
-        , decodeValue
-        )
-import Json.Decode.Pipeline as JDP
+import Json.Decode as Decode exposing (Decoder)
 import Nav
-import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
 import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword

@@ -1,19 +1,15 @@
-module Page.Offline
-    exposing
-        ( Msg
-        , css
-        , track
-        , update
-        , view
-        )
+module Page.Offline exposing
+    ( Msg
+    , css
+    , track
+    , update
+    , view
+    )
 
-import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html exposing (Html)
-import Html.CssHelpers
-import Html.Custom
-import Ports exposing (JsMsg(RefreshPage))
+import Ports exposing (JsMsg)
+
 
 
 -- TYPES --

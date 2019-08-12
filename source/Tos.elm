@@ -1,115 +1,78 @@
-module Tos
-    exposing
-        ( Section
-        , css
-        , tos
-        , view
-        )
+module Tos exposing
+    ( Section
+    , tos
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
-import Html exposing (Html, br, div, p)
-import Html.CssHelpers
-import Html.Custom
-
-
--- STYLES --
-
-
-type Class
-    = Container
-    | Title
-    | Content
-    | SectionClass
-    | Odd
-    | ListItem
-
-
-css : Stylesheet
-css =
-    [ (Css.class Container << List.append Html.Custom.indent)
-        [ backgroundColor Ct.background2
-        , overflow scroll
-        , height (px 400)
-        ]
-    , Css.class Title
-        []
-    , Css.class Odd
-        [ backgroundColor Ct.background3 ]
-    , Css.class SectionClass
-        [ padding (px 8) ]
-    , Css.class ListItem
-        [ marginLeft (px 11) ]
-    ]
-        |> namespace tosNamespace
-        |> stylesheet
-
-
-tosNamespace : String
-tosNamespace =
-    Html.Custom.makeNamespace "TermsOfService"
+import Html.Grid as Grid
+import Html.Styled exposing (Html)
+import Style
+import Util.Css as CssUtil
+import View.Text as Text
 
 
 
+-------------------------------------------------------------------------------
 -- VIEW --
-
-
-{ class, classList } =
-    Html.CssHelpers.withNamespace tosNamespace
+-------------------------------------------------------------------------------
 
 
 view : Html msg
 view =
-    div
-        [ class [ Container ] ]
-        children
-
-
-children : List (Html msg)
-children =
-    List.indexedMap sectionView tos
+    Grid.box
+        [ backgroundColor Ct.background2
+        , overflow scroll
+        , height (px 400)
+        ]
+        (List.indexedMap sectionView tos)
 
 
 sectionView : Int -> Section -> Html msg
-sectionView index section =
-    div
-        [ classList
-            [ ( SectionClass, True )
-            , ( Odd, index % 2 == 1 )
+sectionView index { title, content, list } =
+    let
+        backgroundColor : Style
+        backgroundColor =
+            if modBy 2 index == 1 then
+                Css.backgroundColor Ct.background3
+
+            else
+                CssUtil.noStyle
+
+        listView : String -> Html msg
+        listView listItem =
+            Grid.row
+                [ Style.leftPadding ]
+                [ Grid.column
+                    []
+                    [ Text.fromString ("* " ++ listItem) ]
+                ]
+
+        mainContent : List (Html msg)
+        mainContent =
+            [ Grid.row
+                [ Style.bottomMargin ]
+                [ Grid.column
+                    []
+                    [ Text.fromString title ]
+                ]
+            , Grid.row
+                []
+                [ Grid.column
+                    []
+                    [ Text.fromString content ]
+                ]
             ]
+    in
+    Grid.row
+        [ Style.padding
+        , backgroundColor
         ]
-        (sectionChildren section ++ listChildren section)
-
-
-sectionChildren : Section -> List (Html msg)
-sectionChildren { title, content } =
-    [ p
-        [ class [ Title ] ]
-        [ Html.text title ]
-    , br [] []
-    , p
-        [ class [ Content ] ]
-        [ Html.text content ]
-    ]
-
-
-listChildren : Section -> List (Html msg)
-listChildren { list } =
-    if List.isEmpty list then
-        []
-    else
-        list
-            |> List.map listItemView
-            |> List.intersperse (br [] [])
-            |> (::) (br [] [])
-
-
-listItemView : String -> Html msg
-listItemView listItem =
-    p
-        [ class [ ListItem ] ]
-        [ Html.text ("* " ++ listItem) ]
+        [ Grid.column
+            []
+            (mainContent ++ List.map listView list)
+        ]
 
 
 type alias Section =

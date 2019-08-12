@@ -1,23 +1,19 @@
-module Page.Documentation
-    exposing
-        ( Model
-        , css
-        , init
-        , view
-        )
+module Page.Documentation exposing
+    ( Model
+    , css
+    , init
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements
-import Css.Namespace exposing (namespace)
 import Data.Feature as Feature exposing (Feature)
 import Data.Taco exposing (Taco)
-import Helpers.Random
 import Html exposing (Html, div, img, p)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom exposing (p_)
-import Random.Pcg exposing (Seed)
+import Random exposing (Seed)
+import Util.Random as RandomUtil
+
 
 
 -- TYPES --
@@ -29,7 +25,7 @@ type alias Model =
 
 init : Seed -> ( Model, Seed )
 init =
-    Helpers.Random.shuffle Feature.all
+    RandomUtil.shuffle Feature.all
 
 
 

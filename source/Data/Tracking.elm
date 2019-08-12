@@ -1,17 +1,16 @@
-module Data.Tracking
-    exposing
-        ( Event
-        , Payload
-        , encode
-        , namespace
-        , noProps
-        , response
-        )
+module Data.Tracking exposing
+    ( Event
+    , Payload
+    , encode
+    , event
+    , namespace
+    , withProp
+    )
 
+import Data.SessionId as SesionId exposing (SessionId)
 import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
-import Json.Encode.Extra as Encode
-import Util exposing (def)
+import Util.Json.Encode as EncodeUtil
 
 
 {-|
@@ -33,64 +32,82 @@ import Util exposing (def)
 
 
 
+-------------------------------------------------------------------------------
 -- TYPES --
+-------------------------------------------------------------------------------
 
 
 type alias Payload =
     { name : String
-    , properties : List ( String, Value )
-    , sessionId : Id
+    , props : List ( String, Value )
+    , sessionId : SessionId
     , email : Maybe String
     }
 
 
 type alias Event =
-    ( String, List ( String, Value ) )
+    { name : String
+    , props : List ( String, Value )
+    }
 
 
 
+-------------------------------------------------------------------------------
 -- HELPERS --
+-------------------------------------------------------------------------------
 
 
-noProps : String -> Maybe Event
-noProps name =
-    Just (def name [])
+event : String -> Maybe Event
+event name =
+    Just { name = name, props = [] }
 
 
-response : Maybe String -> Maybe Event
-response maybeError =
-    maybeError
-        |> Encode.maybe Encode.string
-        |> def "error"
-        |> List.singleton
-        |> def "response"
-        |> Just
+withProp : String -> Encode.Value -> Maybe Event -> Maybe Event
+withProp propName value maybeEvent =
+    case maybeEvent of
+        Just event_ ->
+            Just
+                { event_
+                    | props =
+                        ( propName, value ) :: event_.props
+                }
+
+        Nothing ->
+            Nothing
 
 
 namespace : String -> Maybe Event -> Maybe Event
-namespace name =
-    Maybe.map (Tuple.mapFirst ((++) (name ++ " ")))
+namespace name maybeEvent =
+    case maybeEvent of
+        Just event_ ->
+            Just
+                { event_
+                    | name =
+                        [ name, event_.name ]
+                            |> String.join " "
+                }
 
-
-
--- PUBLIC --
+        Nothing ->
+            Nothing
 
 
 encode : Payload -> Value
-encode payload =
-    [ payload.name
-        |> Util.replace " " "_"
+encode { name, props, email, sessionId } =
+    let
+        encodedProps : Value
+        encodedProps =
+            [ Tuple.pair "sessionId" <|
+                SesionId.encode sessionId
+            , Tuple.pair "email" <|
+                EncodeUtil.maybe Encode.string email
+            ]
+                |> List.append props
+                |> Encode.object
+    in
+    [ name
+        |> String.replace " " "_"
         |> Encode.string
-        |> def "name"
-    , def "properties" <| encodeProperties payload
+        |> Tuple.pair "name"
+    , Tuple.pair "properties" encodedProps
     ]
-        |> Encode.object
-
-
-encodeProperties : Payload -> Value
-encodeProperties payload =
-    [ def "sessionId" <| Id.encode payload.sessionId
-    , def "email" <| Encode.maybe Encode.string payload.email
-    ]
-        |> List.append payload.properties
         |> Encode.object

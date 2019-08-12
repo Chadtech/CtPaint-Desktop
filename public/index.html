@@ -1,24 +1,31 @@
 <html>
   <head>
-    <title>CtPaint</title>
-    <link rel="stylesheet" type="text/css" href="http://localhost:2964/fonts.css"/>
-    <link rel="stylesheet" type="text/css" href="http://localhost:2964/desktop-styles.css"/>
-    <link rel="stylesheet" type="text/css" href="http://localhost:2964/spinner.css"/>
-    <link rel="icon" href="http://localhost:2964/ct-icon.png">
-    <script type="text/javascript" src="http://localhost:2964/desktop-elm.js"></script>
-    <script type="text/javascript" src="http://localhost:2964/client.js"></script>
-    <script type="text/javascript" src="http://localhost:2964/desktop.js"></script>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            background: #06120e;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="http://localhost:2956/fonts.css"/>
+    <link rel="icon" href="http://localhost:2956/ct-icon.png">
+    <script type="text/javascript" src="http://localhost:2956/client.js"></script>
+    <script type="text/javascript" src="http://localhost:2956/app.js"></script>
+    <script type="text/javascript" src="http://localhost:2956/elm.js"></script>
   </head>
   <body>
   </body>
   <script type="text/javascript">
-    Desktop({ 
+    StartCtPaint({
       Client: Client,
-      mountPath: "http://localhost:2964",
+      mountPath: "http://localhost:2956",
       track: function(msg) {
         console.log("-- TRACKING --", msg);
       },
-      buildNumber: 9000
+      buildNumber: 9000,
+      production: false
     });
   </script>
 </html>

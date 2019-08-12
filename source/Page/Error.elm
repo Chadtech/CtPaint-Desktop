@@ -8,13 +8,9 @@ module Page.Error
         )
 
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html exposing (Html, p)
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick)
-import Route
 
 
 -- TYPES --

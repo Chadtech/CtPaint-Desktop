@@ -1,19 +1,16 @@
-module Page.Register
-    exposing
-        ( Model
-        , Msg(..)
-        , Problem(..)
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.Register exposing
+    ( Model
+    , Msg(..)
+    , Problem(..)
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements
-import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
 import Helpers.Email
@@ -30,16 +27,12 @@ import Html
         , span
         )
 import Html.Attributes as Attr
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Encode as Encode
-import Json.Encode.Extra as Encode
 import Ports exposing (JsMsg(..))
-import Return2 as R2
 import Tos
-import Util exposing (def)
-import Validate exposing (ifBlank)
+import Util.String as StringUtil
+
 
 
 -- TYPES --
@@ -270,6 +263,7 @@ registeringView : Fields -> List (Html Msg)
 registeringView fields =
     if fields.termsOfServiceView then
         termsOfServiceView
+
     else
         fieldsView fields
 
@@ -412,6 +406,7 @@ checkedValue : Bool -> Attribute Msg
 checkedValue checked =
     if checked then
         Attr.value "x"
+
     else
         Attr.value " "
 
@@ -543,6 +538,7 @@ attemptRegistration taco fields =
                 Just "you have to agree to the terms of service to use this site"
         }
             |> R2.withNoCmd
+
     else if List.isEmpty errors then
         { fields
             | errors = errors
@@ -551,6 +547,7 @@ attemptRegistration taco fields =
             , show = False
         }
             |> R2.withCmd (registerCmd taco fields)
+
     else
         { fields
             | errors = errors
@@ -648,20 +645,40 @@ trackResponse maybeError =
 
 
 validate : Fields -> List ( Field, String )
-validate =
+validate fields =
+    let
+        validateAll : List (Fields -> List ( Field, String )) -> List ( Field, String )
+        validateAll remainingConditions =
+            case remainingConditions of
+                [] ->
+                    []
+
+                first :: rest ->
+                    first fields ++ validateAll rest
+    in
     [ .email >> ifBlank ( Email, "email field is required" )
     , .name >> ifBlank ( Name, "name field is required" )
     , validPassword
     , validEmail
     , emailsMatch
     ]
-        |> Validate.all
+        |> validateAll
+
+
+ifBlank : ( Field, String ) -> String -> List ( Field, String )
+ifBlank fieldAndError str =
+    if StringUtil.isBlank str then
+        [ fieldAndError ]
+
+    else
+        []
 
 
 validEmail : Fields -> List ( Field, String )
 validEmail { email } =
     if Helpers.Email.validate email then
         []
+
     else
         [ ( Email, "Please enter a valid email address" ) ]
 
@@ -680,5 +697,6 @@ emailsMatch : Fields -> List ( Field, String )
 emailsMatch { email, emailConfirm } =
     if email == emailConfirm then
         []
+
     else
         [ ( EmailConfirm, "Emails do not match" ) ]

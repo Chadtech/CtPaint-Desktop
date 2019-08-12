@@ -4,15 +4,12 @@ import Data.Entities as Entities
 import Data.Taco as Taco
 import Data.User as User
 import Html.InitDrawing as InitDrawing
-import Id
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Nav
 import Page exposing (Page(..), Problem(..))
-import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
 import Page.Documentation as Documentation
-import Page.Error as Error
 import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.Login as Login
@@ -26,9 +23,8 @@ import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
-import Return2 as R2
-import Return3 as R3
 import Route exposing (Route(..))
+import Util.Cmd as CmdUtil
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -41,68 +37,68 @@ update msg ({ taco, page } as model) =
             { model
                 | page = Error InvalidUrl
             }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         LogInSucceeded user ->
             Route.goTo Route.Landing
-                |> R2.withModel model
-                |> R2.mapModel
+                |> CmdUtil.withModel model
+                |> CmdUtil.mapModel
                     (Model.setUser (User.LoggedIn user))
 
         LogOutSucceeded ->
             Route.goTo Route.Login
-                |> R2.withModel model
-                |> R2.mapModel
+                |> CmdUtil.withModel model
+                |> CmdUtil.mapModel
                     (Model.setUser User.LoggedOut)
 
         MsgDecodeFailed _ _ ->
             model
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         HomeMsg subMsg ->
             case ( page, taco.user ) of
                 ( Page.Home subModel, User.LoggedIn _ ) ->
                     subModel
                         |> Home.update subMsg
-                        |> R2.mapCmd HomeMsg
-                        |> R2.mapModel (setPage Page.Home model)
+                        |> CmdUtil.mapCmd HomeMsg
+                        |> CmdUtil.mapModel (setPage Page.Home model)
 
                 _ ->
-                    model |> R2.withNoCmd
+                    model |> CmdUtil.withNoCmd
 
         InitDrawingMsg subMsg ->
             case page of
                 Page.InitDrawing subModel ->
                     subModel
                         |> InitDrawing.update subMsg
-                        |> R2.mapCmd InitDrawingMsg
-                        |> R2.mapModel (setPage Page.InitDrawing model)
+                        |> CmdUtil.mapCmd InitDrawingMsg
+                        |> CmdUtil.mapModel (setPage Page.InitDrawing model)
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         AllowanceExceededMsg subMsg ->
             case page of
                 Page.AllowanceExceeded ->
                     AllowanceExceeded.update subMsg
                         |> Cmd.map AllowanceExceededMsg
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         PricingMsg subMsg ->
             case page of
                 Page.Pricing ->
                     Pricing.update subMsg
                         |> Cmd.map PricingMsg
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         RoadMapMsg subMsg ->
             case page of
@@ -110,11 +106,11 @@ update msg ({ taco, page } as model) =
                     subModel
                         |> RoadMap.update subMsg
                         |> setPage Page.RoadMap model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         ContactMsg subMsg ->
             case page of
@@ -122,11 +118,11 @@ update msg ({ taco, page } as model) =
                     subModel
                         |> Contact.update subMsg
                         |> setPage Page.Contact model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         SplashMsg subMsg ->
             case page of
@@ -134,11 +130,11 @@ update msg ({ taco, page } as model) =
                     subMsg
                         |> Splash.update
                         |> Cmd.map SplashMsg
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         OfflineMsg subMsg ->
             case ( page, taco.user ) of
@@ -146,59 +142,59 @@ update msg ({ taco, page } as model) =
                     subMsg
                         |> Offline.update
                         |> Cmd.map OfflineMsg
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         RegisterMsg subMsg ->
             case page of
                 Page.Register subModel ->
                     subModel
                         |> Register.update taco subMsg
-                        |> R2.mapCmd RegisterMsg
-                        |> R2.mapModel (setPage Page.Register model)
+                        |> CmdUtil.mapCmd RegisterMsg
+                        |> CmdUtil.mapModel (setPage Page.Register model)
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         LoginMsg subMsg ->
             case page of
                 Page.Login subModel ->
                     subModel
                         |> Login.update subMsg
-                        |> R2.mapCmd LoginMsg
-                        |> R2.mapModel (setPage Page.Login model)
+                        |> CmdUtil.mapCmd LoginMsg
+                        |> CmdUtil.mapModel (setPage Page.Login model)
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         ForgotPasswordMsg subMsg ->
             case page of
                 Page.ForgotPassword subModel ->
                     subModel
                         |> ForgotPassword.update subMsg
-                        |> R2.mapCmd ForgotPasswordMsg
-                        |> R2.mapModel (setPage Page.ForgotPassword model)
+                        |> CmdUtil.mapCmd ForgotPasswordMsg
+                        |> CmdUtil.mapModel (setPage Page.ForgotPassword model)
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         ResetPasswordMsg subMsg ->
             case page of
                 Page.ResetPassword subModel ->
                     subModel
                         |> ResetPassword.update subMsg
-                        |> R2.mapCmd ResetPasswordMsg
-                        |> R2.mapModel (setPage Page.ResetPassword model)
+                        |> CmdUtil.mapCmd ResetPasswordMsg
+                        |> CmdUtil.mapModel (setPage Page.ResetPassword model)
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         LogoutMsg subMsg ->
             case page of
@@ -206,33 +202,33 @@ update msg ({ taco, page } as model) =
                     subMsg
                         |> Logout.update
                         |> setPage Page.Logout model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         VerifyMsg subMsg ->
             case page of
                 Page.Verify subModel ->
                     subModel
                         |> Verify.update subMsg
-                        |> R2.mapCmd VerifyMsg
-                        |> R2.mapModel (setPage Page.Verify model)
+                        |> CmdUtil.mapCmd VerifyMsg
+                        |> CmdUtil.mapModel (setPage Page.Verify model)
 
                 _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         ErrorMsg subMsg ->
             case page of
                 Page.Error _ ->
                     subMsg
                         |> Error.update
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
                 _ ->
-                    model |> R2.withNoCmd
+                    model |> CmdUtil.withNoCmd
 
         SettingsMsg subMsg ->
             case ( page, taco.user ) of
@@ -244,13 +240,13 @@ update msg ({ taco, page } as model) =
 
                 _ ->
                     Route.goTo Route.Login
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
         NavMsg subMsg ->
             subMsg
                 |> Nav.update
                 |> Cmd.map NavMsg
-                |> R2.withModel model
+                |> CmdUtil.withModel model
 
         DrawingsLoaded drawings ->
             { model
@@ -269,7 +265,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         DrawingDeleted (Ok id) ->
             { model
@@ -287,7 +283,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         DrawingDeleted (Err ( id, err )) ->
             { model
@@ -301,7 +297,7 @@ update msg ({ taco, page } as model) =
                         _ ->
                             page
             }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
 
 
@@ -340,7 +336,7 @@ handleRoute destination model =
             case model.page of
                 Page.Register _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     { model
@@ -353,69 +349,69 @@ handleRoute destination model =
             case model.taco.user of
                 User.LoggedIn _ ->
                     Home.init
-                        |> R2.mapCmd HomeMsg
-                        |> R2.mapModel (setPage Page.Home model)
+                        |> CmdUtil.mapCmd HomeMsg
+                        |> CmdUtil.mapModel (setPage Page.Home model)
 
                 User.Offline ->
                     { model | page = Page.Offline }
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     { model
                         | page = Page.Splash
                     }
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         Route.InitDrawing ->
             { model
                 | page =
                     Page.InitDrawing InitDrawing.init
             }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         Route.About ->
             { model | page = Page.About }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         Route.Documentation ->
             case model.page of
                 Page.Documentation _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     Documentation.init model.taco.seed
                         |> Tuple.mapFirst
                             (setPage Page.Documentation model)
                         |> Model.mixinSeed
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         Route.Contact ->
             case model.page of
                 Page.Contact _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     { model | page = Page.Contact Contact.init }
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         Route.Pricing ->
             { model | page = Page.Pricing }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         Route.RoadMap ->
             case model.page of
                 Page.RoadMap _ ->
                     model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     RoadMap.init model.taco.seed
                         |> Tuple.mapFirst
                             (setPage Page.RoadMap model)
                         |> Model.mixinSeed
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
         Route.Settings ->
             case model.taco.user of
@@ -423,11 +419,11 @@ handleRoute destination model =
                     user
                         |> Settings.init
                         |> setPage Page.Settings model
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
                 _ ->
                     Route.goTo Route.Login
-                        |> R2.withModel model
+                        |> CmdUtil.withModel model
 
         Route.Verify ->
             Verify.init
@@ -438,12 +434,12 @@ handleRoute destination model =
             case model.taco.user of
                 User.LoggedIn _ ->
                     Home.init
-                        |> R2.mapCmd HomeMsg
-                        |> R2.mapModel (setPage Page.Home model)
+                        |> CmdUtil.mapCmd HomeMsg
+                        |> CmdUtil.mapModel (setPage Page.Home model)
 
                 _ ->
                     { model | page = Page.AllowanceExceeded }
-                        |> R2.withNoCmd
+                        |> CmdUtil.withNoCmd
 
 
 logout : Model -> ( Model, Cmd Msg )
@@ -454,11 +450,11 @@ logout model =
                 | taco =
                     Taco.setUser User.LoggedOut model.taco
             }
-                |> R2.withCmd (Ports.send Ports.Logout)
+                |> CmdUtil.withCmd (Ports.send Ports.Logout)
 
         _ ->
             model
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
 
 setPage : (subModel -> Page) -> Model -> subModel -> Model
@@ -471,9 +467,9 @@ incorpSettings subModel maybeReply model =
     case maybeReply of
         Nothing ->
             { model | page = Page.Settings subModel }
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
         Just (Settings.SetUser user) ->
             model
                 |> Model.setUser (User.LoggedIn user)
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd

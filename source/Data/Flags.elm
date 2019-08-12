@@ -1,16 +1,10 @@
 module Data.Flags exposing (Flags, decoder)
 
+import Data.Browser as Browser exposing (Browser)
 import Data.User as User
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (custom, decode, optional, required)
-import Keyboard.Extra.Browser
-    exposing
-        ( Browser
-            ( Chrome
-            , FireFox
-            )
-        )
-import Random.Pcg as Random exposing (Seed)
+import Random exposing (Seed)
+import Util.Json.Decode as DecodeUtil
 
 
 {-|
@@ -37,40 +31,18 @@ type alias Flags =
 
 decoder : Decoder Flags
 decoder =
-    decode Flags
-        |> custom userDecoder
-        |> optional "isMac" Decode.bool True
-        |> required "browser" browserDecoder
-        |> required "buildNumber" Decode.int
-        |> required "mountPath" Decode.string
-        |> required "seed" (Decode.map Random.initialSeed Decode.int)
+    Decode.succeed Flags
+        |> DecodeUtil.apply userDecoder
+        |> DecodeUtil.applyField "isMac" (DecodeUtil.fallback True Decode.bool)
+        |> DecodeUtil.applyField "browser" Browser.decoder
+        |> DecodeUtil.applyField "buildNumber" Decode.int
+        |> DecodeUtil.applyField "mountPath" Decode.string
+        |> DecodeUtil.applyField "seed" (Decode.map Random.initialSeed Decode.int)
 
 
 userDecoder : Decoder User.Model
 userDecoder =
-    browserDecoder
+    Browser.decoder
         |> Decode.field "browser"
         |> Decode.andThen
             (User.decoder >> Decode.field "user")
-
-
-browserDecoder : Decoder Browser
-browserDecoder =
-    Decode.string
-        |> Decode.andThen toBrowser
-
-
-toBrowser : String -> Decoder Browser
-toBrowser browser =
-    case browser of
-        "Firefox" ->
-            Decode.succeed FireFox
-
-        "Chrome" ->
-            Decode.succeed Chrome
-
-        "Unknown" ->
-            Decode.succeed Chrome
-
-        other ->
-            Decode.fail ("Unknown browser type " ++ other)

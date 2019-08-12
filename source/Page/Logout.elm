@@ -1,22 +1,17 @@
-module Page.Logout
-    exposing
-        ( Model
-        , Msg(LogoutFailed)
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.Logout exposing
+    ( Model
+    , Msg
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
-import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html exposing (Html, p)
-import Html.CssHelpers
-import Html.Custom
 import Json.Encode as Encode
-import Util exposing (def)
+
 
 
 -- TYPES --

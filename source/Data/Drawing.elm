@@ -1,49 +1,67 @@
-module Data.Drawing
-    exposing
-        ( Drawing
-        , decoder
-        , toUrl
-        )
+module Data.Drawing exposing
+    ( Drawing
+    , decoder
+    , toUrl
+    )
 
-import Date exposing (Date)
 import Id exposing (Id)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (decode, required)
+import Time exposing (Posix)
+import Util.Json.Decode as DecodeUtil
+import Util.Posix as PosixUtil
+
+
+
+-------------------------------------------------------------------------------
+-- TYPES --
+-------------------------------------------------------------------------------
 
 
 type alias Drawing =
-    { id : Id
-    , publicId : Id
+    { publicId : PublicId
     , data : String
     , name : String
-    , createdAt : Date
-    , updatedAt : Date
+    , createdAt : Posix
+    , updatedAt : Posix
     }
 
 
-decoder : Decoder Drawing
+type PublicId
+    = PublicId String
+
+
+
+-------------------------------------------------------------------------------
+-- DECODER --
+-------------------------------------------------------------------------------
+
+
+decoder : Decoder ( Id Drawing, Drawing )
 decoder =
-    decode Drawing
-        |> required "drawingId" Id.decoder
-        |> required "publicId" Id.decoder
-        |> required "canvas" Decode.string
-        |> required "name" Decode.string
-        |> required "createdAt" dateDecoder
-        |> required "updatedAt" dateDecoder
+    let
+        contentDecoder : Decoder Drawing
+        contentDecoder =
+            Decode.succeed Drawing
+                |> DecodeUtil.applyField "publicId" (Decode.map PublicId Decode.string)
+                |> DecodeUtil.applyField "canvas" Decode.string
+                |> DecodeUtil.applyField "name" Decode.string
+                |> DecodeUtil.applyField "createdAt" PosixUtil.decoder
+                |> DecodeUtil.applyField "updatedAt" PosixUtil.decoder
+    in
+    Decode.map2 Tuple.pair
+        (Decode.field "drawingId" Id.decoder)
+        contentDecoder
 
 
-dateDecoder : Decoder Date
-dateDecoder =
-    Decode.map Date.fromTime Decode.float
 
-
-
+-------------------------------------------------------------------------------
 -- HELPERS --
+-------------------------------------------------------------------------------
 
 
-toUrl : Id -> String
-toUrl publicId =
+toUrl : PublicId -> String
+toUrl (PublicId publicId) =
     [ "https://s3.us-east-2.amazonaws.com/ctpaint-drawings-uploads"
-    , Id.toString publicId
+    , publicId
     ]
         |> String.join "/"

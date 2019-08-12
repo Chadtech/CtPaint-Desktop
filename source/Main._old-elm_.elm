@@ -1,21 +1,17 @@
-module Desktop exposing (..)
+module Main exposing (main)
 
 import Data.Flags as Flags exposing (Flags)
 import Data.Taco as Taco exposing (Taco)
 import Data.User as User
 import Html exposing (Html)
-import Html.Custom
 import Html.InitDrawing
 import Html.Main
-import Id
 import Json.Decode as Decode exposing (Value)
 import Json.Encode as Encode
 import Model exposing (Model)
 import Msg exposing (Msg(..))
-import Navigation exposing (Location)
 import Page exposing (Page(..), Problem(..))
 import Page.About as About
-import Page.AllowanceExceeded as AllowanceExceeded
 import Page.Contact as Contact
 import Page.Documentation as Documentation
 import Page.Error as Error
@@ -32,11 +28,11 @@ import Page.Settings as Settings
 import Page.Splash as Splash
 import Page.Verify as Verify
 import Ports exposing (JsMsg(..))
-import Return2 as R2
 import Route
 import Track exposing (track)
 import Update
-import Util exposing (def)
+import Util.Cmd as CmdUtil
+
 
 
 -- MAIN --
@@ -55,7 +51,7 @@ main =
 
 onNavigation : Location -> Msg
 onNavigation =
-    Route.fromLocation >> RouteChanged
+    Route.fromUrl >> RouteChanged
 
 
 update : Msg -> Result String Model -> ( Result String Model, Cmd Msg )
@@ -64,11 +60,12 @@ update msg result =
         Ok model ->
             Update.update msg model
                 |> Tuple.mapFirst Ok
-                |> R2.addCmd (getTrackingCmd msg model)
+                |> CmdUtil.addCmd
+                    (getTrackingCmd msg model)
 
         Err err ->
             Err err
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
 
 
 getTrackingCmd : Msg -> Model -> Cmd Msg

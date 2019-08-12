@@ -1,25 +1,21 @@
-module Page.Contact
-    exposing
-        ( Model
-        , Msg
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.Contact exposing
+    ( Model
+    , Msg
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html exposing (Html, a, div, p, span, textarea)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput)
 import Json.Encode as Encode
-import Util exposing (def)
+
 
 
 -- TYPES --
@@ -57,6 +53,7 @@ update msg model =
         FieldUpdated field ->
             if model.sendClicked then
                 model
+
             else
                 { model | field = field }
 
@@ -180,6 +177,7 @@ commentBoxText : Model -> String
 commentBoxText model =
     if model.sendClicked then
         "Sent! Thank you"
+
     else
         model.field
 

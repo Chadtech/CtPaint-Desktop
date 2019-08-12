@@ -1,28 +1,22 @@
-module Page.Verify
-    exposing
-        ( Model
-        , Msg(Failed, Succeeded)
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.Verify exposing
+    ( Model
+    , Msg
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
 import Css exposing (..)
-import Css.Elements
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html exposing (Html, input, p)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput)
 import Json.Encode as Encode
-import Ports exposing (JsMsg(VerifyEmail))
-import Return2 as R2
+import Ports exposing (JsMsg)
 import Route
-import Util exposing (def)
+
 
 
 -- INIT --
@@ -104,6 +98,7 @@ update msg model =
             if canClickLogin model then
                 Route.goTo Route.Login
                     |> R2.withModel model
+
             else
                 model
                     |> R2.withNoCmd

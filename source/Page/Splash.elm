@@ -1,28 +1,30 @@
-module Page.Splash
-    exposing
-        ( Msg
-        , css
-        , track
-        , update
-        , view
-        )
+module Page.Splash exposing
+    ( Msg
+    , track
+    , update
+    , view
+    )
 
-import Chadtech.Colors as Ct
-import Css exposing (..)
-import Css.Namespace exposing (namespace)
-import Data.Config as Config
-import Data.Taco exposing (Taco)
+import Css
+import Data.Document exposing (Document)
+import Data.MountPath exposing (MountPath)
+import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
-import Html exposing (Html, a, div, img, p, video)
-import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
-import Html.Events exposing (onClick)
-import Ports exposing (JsMsg(OpenPaintApp))
-import Route exposing (Route(About))
+import Html.Grid as Grid
+import Html.Styled exposing (Html)
+import Route
+import Style
+import View.Body as Body
+import View.Button as Button
+import View.Image as Image
+import View.Text as Text
+import View.Video as Video
 
 
+
+-------------------------------------------------------------------------------
 -- TYPES --
+-------------------------------------------------------------------------------
 
 
 type Msg
@@ -31,100 +33,79 @@ type Msg
 
 
 
--- UPDATE --
-
-
-update : Msg -> Cmd Msg
-update msg =
-    case msg of
-        LearnMoreClicked ->
-            Route.goTo About
-
-        DrawClicked ->
-            Ports.send OpenPaintApp
-
-
-
--- TRACKING --
-
-
-track : Msg -> Maybe Tracking.Event
-track msg =
-    case msg of
-        LearnMoreClicked ->
-            Tracking.noProps "learn-more click"
-
-        DrawClicked ->
-            Tracking.noProps "draw click"
-
-
-
--- STYLES --
-
-
-type Class
-    = Logo
-    | LogoContainer
-    | Video
-    | TextContainer
-    | ButtonsContainer
-    | Button
-
-
-css : Stylesheet
-css =
-    [ Css.class Logo
-        [ margin auto
-        , display block
-        , width (px 429)
-        ]
-    , (Css.class LogoContainer << List.append Html.Custom.indent)
-        [ margin auto
-        , display block
-        , width (px 800)
-        , backgroundColor Ct.background2
-        , marginBottom (px 8)
-        ]
-    , (Css.class Video << List.append Html.Custom.indent)
-        [ margin auto
-        , display block
-        , width (px 800)
-        ]
-    , Css.class TextContainer
-        [ width (px 800)
-        , display block
-        , margin auto
-        , marginBottom (px 8)
-        ]
-    , Css.class ButtonsContainer
-        [ width (px 800)
-        , displayFlex
-        , margin auto
-        , marginBottom (px 8)
-        , justifyContent spaceAround
-        ]
-    , Css.class Button
-        [ padding4 (px 16) (px 32) (px 16) (px 32) ]
-    ]
-        |> namespace splashNamespace
-        |> stylesheet
-
-
-splashNamespace : String
-splashNamespace =
-    Html.Custom.makeNamespace "Splash"
-
-
-
+-------------------------------------------------------------------------------
 -- VIEW --
+-------------------------------------------------------------------------------
 
 
-{ class } =
-    Html.CssHelpers.withNamespace splashNamespace
+view : MountPath -> Document Msg
+view mountPath =
+    { title = Nothing
+    , body = viewBody mountPath
+    }
 
 
-msg : String
-msg =
+viewBody : MountPath -> List (Html Msg)
+viewBody mountPath =
+    [ Body.config
+        [ Grid.row
+            [ Style.pit
+            , Style.marginVertical Style.i2
+            ]
+            [ Grid.column
+                []
+                [ Image.config
+                    (Image.logo mountPath)
+                    |> Image.withWidth 429
+                    |> Image.toHtml
+                ]
+            ]
+        , Grid.row
+            [ Style.marginBottom Style.i2 ]
+            [ Grid.column
+                []
+                [ Text.fromString splashMsg ]
+            ]
+        , Grid.row
+            [ Css.justifyContent Css.spaceAround ]
+            [ button
+                LearnMoreClicked
+                "learn more"
+            , button
+                DrawClicked
+                "start drawing"
+            ]
+        , Grid.row
+            [ Style.indent
+            , Style.marginTop Style.i2
+            ]
+            [ Grid.column
+                []
+                [ Video.config
+                    (Video.splash mountPath)
+                    |> Video.asFullWidth
+                    |> Video.toHtml
+                ]
+            ]
+        ]
+        |> Body.singleColumnWidth
+        |> Body.toHtml
+    ]
+
+
+button : Msg -> String -> Grid.Column Msg
+button msg label =
+    Grid.column
+        [ Grid.columnShrink ]
+        [ Button.config msg label
+            |> Button.asDoubleWidth
+            |> Button.makeTaller True
+            |> Button.toHtml
+        ]
+
+
+splashMsg : String
+splashMsg =
     """
     CtPaint is good pixel art software that runs in your internet browser.
     It has all the functionality of a classic paint program with cloud storage
@@ -133,37 +114,27 @@ msg =
     """
 
 
-view : Taco -> List (Html Msg)
-view { config } =
-    [ div
-        [ class [ LogoContainer ] ]
-        [ img
-            [ class [ Logo ]
-            , Attrs.src (Config.assetSrc config .logoSrc)
-            ]
-            []
-        ]
-    , div
-        [ class [ TextContainer ] ]
-        [ p [] [ Html.text msg ] ]
-    , div
-        [ class [ ButtonsContainer ] ]
-        [ a
-            [ class [ Button ]
-            , onClick DrawClicked
-            ]
-            [ Html.text "start drawing" ]
-        , a
-            [ class [ Button ]
-            , onClick LearnMoreClicked
-            ]
-            [ Html.text "learn more" ]
-        ]
-    , video
-        [ class [ Video ]
-        , Attrs.src (Config.assetSrc config .videoSrc)
-        , Attrs.autoplay True
-        , Attrs.loop True
-        ]
-        []
-    ]
+
+-------------------------------------------------------------------------------
+-- UPDATE --
+-------------------------------------------------------------------------------
+
+
+update : NavKey -> Msg -> Cmd Msg
+update key msg =
+    case msg of
+        LearnMoreClicked ->
+            Route.goTo key Route.About
+
+        DrawClicked ->
+            Route.goTo key Route.PaintApp
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        LearnMoreClicked ->
+            Tracking.event "learn-more click"
+
+        DrawClicked ->
+            Tracking.event "draw click"

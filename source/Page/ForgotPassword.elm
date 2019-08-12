@@ -1,28 +1,24 @@
-module Page.ForgotPassword
-    exposing
-        ( Model
-        , Msg
-        , css
-        , failed
-        , init
-        , succeeded
-        , track
-        , update
-        , view
-        )
+module Page.ForgotPassword exposing
+    ( Model
+    , Msg
+    , css
+    , failed
+    , init
+    , succeeded
+    , track
+    , update
+    , view
+    )
 
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Helpers.Email
 import Html exposing (Html, form, input, p)
 import Html.Attributes as Attr
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Ports exposing (JsMsg(ForgotPassword))
-import Return2 as R2
+import Ports exposing (JsMsg)
 import Util
+
 
 
 -- TYPES --
@@ -208,6 +204,7 @@ isEmailValid : String -> Maybe Problem
 isEmailValid email =
     if Helpers.Email.validate email then
         Nothing
+
     else
         Just EmailIsntValid
 

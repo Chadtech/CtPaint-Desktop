@@ -1,18 +1,13 @@
-module Html.Main
-    exposing
-        ( css
-        , view
-        )
+module Html.Main exposing
+    ( css
+    , view
+    )
 
-import Chadtech.Colors exposing (ignorable2)
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Html exposing (Html, div)
-import Html.CssHelpers
-import Html.Custom
 import Html.Variables
 import Model exposing (Model)
-import Msg exposing (Msg(NavMsg))
+import Msg exposing (Msg)
 import Nav
 
 

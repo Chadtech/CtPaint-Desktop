@@ -1,18 +1,15 @@
-module Page.About
-    exposing
-        ( css
-        , view
-        )
+module Page.About exposing
+    ( css
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Config as Config exposing (Config)
 import Data.Taco exposing (Taco)
 import Html exposing (Html, br, div, img)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom exposing (p_)
+
 
 
 -- STYLES --

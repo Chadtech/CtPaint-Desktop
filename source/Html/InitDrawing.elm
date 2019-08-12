@@ -1,33 +1,20 @@
-module Html.InitDrawing
-    exposing
-        ( Model
-        , Msg
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Html.InitDrawing exposing
+    ( Model
+    , Msg
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
-import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Html exposing (Html, a, div, form, input, p)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Encode as Encode
-import Ports
-    exposing
-        ( JsMsg
-            ( OpenPaintAppWithParams
-            , OpenUrlInPaintApp
-            )
-        )
-import Return2 as R2
-import Util exposing (def)
+import Ports exposing (JsMsg)
 
 
 {-|
@@ -212,6 +199,7 @@ fromUrl model =
     if String.isEmpty model.url then
         model
             |> R2.withNoCmd
+
     else
         OpenUrlInPaintApp model.url
             |> Ports.send
@@ -364,6 +352,7 @@ bodyView : Model -> List (Html Msg)
 bodyView model =
     if model.submitted then
         loadingView
+
     else
         [ newView model
         , div [ class [ Divider ] ] []

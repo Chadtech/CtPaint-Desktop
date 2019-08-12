@@ -1,25 +1,21 @@
-module Page.Pricing
-    exposing
-        ( Msg
-        , css
-        , track
-        , update
-        , view
-        )
+module Page.Pricing exposing
+    ( Msg
+    , css
+    , track
+    , update
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Elements
-import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
 import Data.User as User
 import Html exposing (Attribute, Html, a, div, p)
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick)
-import Ports exposing (JsMsg(OpenPaintApp))
-import Route exposing (Route(Register))
+import Ports exposing (JsMsg)
+import Route exposing (Route)
+
 
 
 -- TYPES --

@@ -1,36 +1,29 @@
-module Page.Settings
-    exposing
-        ( Model
-        , Msg
-        , Reply(..)
-        , css
-        , failed
-        , init
-        , succeeded
-        , track
-        , update
-        , view
-        )
+module Page.Settings exposing
+    ( Model
+    , Msg
+    , Reply(..)
+    , css
+    , failed
+    , init
+    , succeeded
+    , track
+    , update
+    , view
+    )
 
-import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Tracking as Tracking
 import Data.User exposing (User)
 import Html exposing (Attribute, Html, a, div, form, input, p)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Json.Encode as Encode
 import Ports
     exposing
-        ( JsMsg(UpdateUser)
+        ( JsMsg
         , UpdatePayload
         )
-import Return2 as R2
-import Return3 as R3 exposing (Return)
-import Util exposing (def)
+
 
 
 -- TYPES --
@@ -131,6 +124,7 @@ update msg user model =
                     |> Ports.send
                     |> R2.withModel { model | state = Sending }
                     |> R3.withNoReply
+
             else
                 model
                     |> R3.withNothing

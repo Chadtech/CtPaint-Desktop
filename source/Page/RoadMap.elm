@@ -1,30 +1,27 @@
-module Page.RoadMap
-    exposing
-        ( Model
-        , Msg
-        , css
-        , init
-        , track
-        , update
-        , view
-        )
+module Page.RoadMap exposing
+    ( Model
+    , Msg
+    , css
+    , init
+    , track
+    , update
+    , view
+    )
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
-import Css.Namespace exposing (namespace)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
 import Data.User as User
-import Helpers.Random
 import Html exposing (Attribute, Html, a, div, p, textarea)
 import Html.Attributes as Attrs
-import Html.CssHelpers
-import Html.Custom
 import Html.Events exposing (onClick, onInput)
 import Json.Encode as Encode
-import Random.Pcg exposing (Seed)
+import Random exposing (Seed)
 import Set exposing (Set)
 import Util exposing (def)
+import Util.Random as RandomUtil
+
 
 
 -- TYPES --
@@ -50,7 +47,7 @@ type Msg
 
 init : Seed -> ( Model, Seed )
 init =
-    Helpers.Random.shuffle wants
+    RandomUtil.shuffle wants
         >> Tuple.mapFirst fromWants
 
 
@@ -139,6 +136,7 @@ track msg model =
         WantClicked want ->
             if hasAlreadyBeenClicked want model then
                 Nothing
+
             else
                 want
                     |> Encode.string
@@ -153,6 +151,7 @@ track msg model =
         OtherWantClicked ->
             if model.otherWantClicked then
                 Nothing
+
             else
                 model.otherWant
                     |> (++) "Other want : "
@@ -326,6 +325,7 @@ shouldInput : Bool -> Maybe (Attribute Msg)
 shouldInput isLoggedIn =
     if isLoggedIn then
         Just (onInput OtherWantUpdated)
+
     else
         Nothing
 
@@ -334,6 +334,7 @@ suggestionPlaceholder : Bool -> String
 suggestionPlaceholder isLoggedIn =
     if isLoggedIn then
         "enter a suggestion here"
+
     else
         "you must be logged into send suggestions"
 
@@ -361,6 +362,7 @@ wantsSideText isLoggedIn =
         features. You can also fill in the suggestion field at the bottom and
         submit your own ideas.
         """
+
     else
         """
         Below is a list of features I would like to implement into CtPaint.
@@ -381,8 +383,10 @@ wantAttrs : Bool -> Set String -> String -> List (Attribute Msg)
 wantAttrs isLoggedIn clickedAlready want =
     if not isLoggedIn then
         [ class [ Want, Disabled ] ]
+
     else if Set.member want clickedAlready then
         [ class [ Want, Clicked ] ]
+
     else
         [ class [ Want ]
         , onClick (WantClicked want)

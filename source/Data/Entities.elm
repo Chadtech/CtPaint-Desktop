@@ -1,13 +1,13 @@
-module Data.Entities
-    exposing
-        ( Entities
-        , deleteDrawing
-        , empty
-        , loadDrawings
-        )
+module Data.Entities exposing
+    ( Entities
+    , deleteDrawing
+    , empty
+    , loadDrawings
+    )
 
 import Data.Drawing exposing (Drawing)
-import Id exposing (Db, Id)
+import Db exposing (Db)
+import Id exposing (Id)
 
 
 {-|
@@ -27,27 +27,27 @@ type alias Entities =
 
 empty : Entities
 empty =
-    { drawings = Id.emptyDb .id }
+    { drawings = Db.empty }
 
 
 
 -- HELPERS --
 
 
-loadDrawings : Entities -> List Drawing -> Entities
+loadDrawings : Entities -> List (Db.Row Drawing) -> Entities
 loadDrawings entities drawings =
     { entities
         | drawings =
             List.foldr
-                Id.insert
+                Db.insert
                 entities.drawings
                 drawings
     }
 
 
-deleteDrawing : Id -> Entities -> Entities
+deleteDrawing : Id Drawing -> Entities -> Entities
 deleteDrawing id entities =
     { entities
         | drawings =
-            Id.remove id entities.drawings
+            Db.remove id entities.drawings
     }
