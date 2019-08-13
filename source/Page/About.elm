@@ -35,7 +35,7 @@ textRows buildNumber =
         paragraphView : String -> Html msg
         paragraphView str =
             Grid.row
-                [ Style.marginBottom Style.i3 ]
+                [ Style.marginBottom 4 ]
                 [ Grid.column
                     []
                     [ Text.fromString str ]

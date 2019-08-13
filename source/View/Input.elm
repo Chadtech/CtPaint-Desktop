@@ -2,6 +2,7 @@ module View.Input exposing
     ( Input
     , Option
     , config
+    , isPassword
     , toHtml
     )
 
@@ -11,6 +12,7 @@ import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
 import Html.Styled.Events as Events
 import Style
+import Util.Maybe as MaybeUtil
 
 
 
@@ -28,11 +30,24 @@ type Input msg
 
 
 type Option msg
-    = Option
+    = Password
 
 
 type alias Summary msg =
-    { unit : Maybe msg }
+    { password : Bool
+    , unit : Maybe msg
+    }
+
+
+
+-------------------------------------------------------------------------------
+-- PRIVATE HELPERS --
+-------------------------------------------------------------------------------
+
+
+isPassword : Input msg -> Input msg
+isPassword =
+    addOption Password
 
 
 
@@ -52,12 +67,14 @@ optionsToSummary =
         modifySummary : Option msg -> Summary msg -> Summary msg
         modifySummary option summary =
             case option of
-                Option ->
-                    summary
+                Password ->
+                    { summary | password = True }
     in
     List.foldr
         modifySummary
-        { unit = Nothing }
+        { unit = Nothing
+        , password = False
+        }
 
 
 config : (String -> msg) -> String -> Input msg
@@ -75,20 +92,32 @@ toHtml (Input { value, onInput } options) =
         summary : Summary msg
         summary =
             optionsToSummary options
+
+        baseAttrs : List (Attribute msg)
+        baseAttrs =
+            [ Attrs.css
+                [ Style.pit
+                , Style.height 5
+                , Style.font
+                , Style.noOutline
+                , Css.color Colors.content4
+                , Style.fontSmoothingNone
+                , Style.padding 2
+                , Style.fullWidth
+                ]
+            , Attrs.value value
+            , Attrs.spellcheck False
+            , Events.onInput onInput
+            ]
+
+        conditionalAttrs : List (Attribute msg)
+        conditionalAttrs =
+            [ MaybeUtil.fromBool
+                summary.password
+                (Attrs.type_ "password")
+            ]
+                |> List.filterMap identity
     in
     Html.input
-        [ Attrs.css
-            [ Style.pit
-            , Style.height Style.i4
-            , Style.font
-            , Style.noOutline
-            , Css.color Colors.content4
-            , Style.fontSmoothingNone
-            , Style.padding Style.i1
-            , Style.fullWidth
-            ]
-        , Attrs.value value
-        , Attrs.spellcheck False
-        , Events.onInput onInput
-        ]
+        (baseAttrs ++ conditionalAttrs)
         []

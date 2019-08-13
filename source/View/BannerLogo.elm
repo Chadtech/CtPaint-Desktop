@@ -11,7 +11,7 @@ view : MountPath -> Html msg
 view mountPath =
     Grid.row
         [ Style.pit
-        , Style.marginVertical Style.i2
+        , Style.marginVertical 3
         ]
         [ Grid.column
             []

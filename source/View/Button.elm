@@ -212,13 +212,13 @@ buttonWidth : Summary -> Style
 buttonWidth summary =
     case summary.width of
         HalfWidth ->
-            Style.width Style.i5
+            Style.width 6
 
         SingleWidth ->
-            Style.width Style.i6
+            Style.width 7
 
         DoubleWidth ->
-            Style.width Style.i7
+            Style.width 8
 
         FullWidth ->
             Style.fullWidth
@@ -227,7 +227,7 @@ buttonWidth summary =
 buttonHeight : Bool -> Style
 buttonHeight tall =
     if tall then
-        Style.height Style.i5
+        Style.height 6
 
     else
-        Style.height Style.i4
+        Style.height 5

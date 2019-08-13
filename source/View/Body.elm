@@ -61,7 +61,7 @@ toHtml (Body options children) =
         width : Style
         width =
             if List.member SingleColumnWidth options then
-                Style.width Style.i9
+                Style.width 10
 
             else
                 CssUtil.noStyle

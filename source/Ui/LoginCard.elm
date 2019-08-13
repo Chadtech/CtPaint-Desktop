@@ -107,8 +107,8 @@ header =
 view : List (Html msg) -> Html msg
 view =
     Card.view
-        [ Style.width Style.i8
-        , Style.padding Style.i0
+        [ Style.width 9
+        , Style.padding 1
         , Css.flex (Css.int 0)
         ]
 
@@ -119,12 +119,13 @@ viewBody model =
         labelView : String -> Input Msg -> Html Msg
         labelView label input =
             Grid.row
-                [ Style.marginBottom Style.i0 ]
+                [ Style.marginBottom 1 ]
                 [ Label.view
                     label
-                    [ Style.width Style.i6
-                    , Style.paddingLeft Style.i0
-                    , Grid.exactWidthColumn (Css.px 128)
+                    [ Style.width 7
+                    , Style.paddingLeft 1
+                    , Grid.exactWidthColumn
+                        (Style.sizePx 7)
                     ]
                 , Grid.column
                     []
@@ -138,6 +139,7 @@ viewBody model =
     , Input.config
         PasswordUpdated
         (LoginField.getValue model.password)
+        |> Input.isPassword
         |> labelView "password"
     ]
 

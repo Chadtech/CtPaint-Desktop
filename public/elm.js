@@ -9380,85 +9380,15 @@ var Chadtech$elm_css_grid$Html$Grid$row = F2(
 				]),
 			A2(elm$core$List$map, Chadtech$elm_css_grid$Html$Grid$columnToHtml, columns));
 	});
-var Chadtech$elm_vector$Vector11$get = F2(
-	function (index, _n0) {
-		var vector = _n0.a;
-		switch (index.$) {
-			case 'Index0':
-				return vector.n0;
-			case 'Index1':
-				return vector.n1;
-			case 'Index2':
-				return vector.n2;
-			case 'Index3':
-				return vector.n3;
-			case 'Index4':
-				return vector.n4;
-			case 'Index5':
-				return vector.n5;
-			case 'Index6':
-				return vector.n6;
-			case 'Index7':
-				return vector.n7;
-			case 'Index8':
-				return vector.n8;
-			case 'Index9':
-				return vector.n9;
-			default:
-				return vector.n10;
-		}
-	});
-var author$project$Style$getScale = Chadtech$elm_vector$Vector11$get;
-var Chadtech$elm_vector$Vector11$Index0 = {$: 'Index0'};
-var author$project$Style$i0 = Chadtech$elm_vector$Vector11$Index0;
-var Chadtech$elm_vector$Vector11$Internal$Vector = function (a) {
-	return {$: 'Vector', a: a};
+var author$project$Style$scale = function (degree) {
+	return A2(elm$core$Basics$pow, 2, degree);
 };
-var Chadtech$elm_vector$Vector11$map = F2(
-	function (f, _n0) {
-		var vector = _n0.a;
-		return Chadtech$elm_vector$Vector11$Internal$Vector(
-			{
-				n0: f(vector.n0),
-				n1: f(vector.n1),
-				n10: f(vector.n10),
-				n2: f(vector.n2),
-				n3: f(vector.n3),
-				n4: f(vector.n4),
-				n5: f(vector.n5),
-				n6: f(vector.n6),
-				n7: f(vector.n7),
-				n8: f(vector.n8),
-				n9: f(vector.n9)
-			});
-	});
-var author$project$Style$mapScale = Chadtech$elm_vector$Vector11$map;
-var Chadtech$elm_vector$Vector11$initializeFromInt = function (f) {
-	return Chadtech$elm_vector$Vector11$Internal$Vector(
-		{
-			n0: f(0),
-			n1: f(1),
-			n10: f(10),
-			n2: f(2),
-			n3: f(3),
-			n4: f(4),
-			n5: f(5),
-			n6: f(6),
-			n7: f(7),
-			n8: f(8),
-			n9: f(9)
-		});
-};
-var author$project$Style$sizes = Chadtech$elm_vector$Vector11$initializeFromInt(
-	function (i) {
-		return A2(elm$core$Basics$pow, 2, i + 1);
-	});
 var rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
 var rtfeldman$elm_css$Css$px = A2(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$PxUnits, 'px');
-var author$project$Style$pxs = A2(
-	author$project$Style$mapScale,
-	A2(elm$core$Basics$composeR, elm$core$Basics$toFloat, rtfeldman$elm_css$Css$px),
-	author$project$Style$sizes);
+var author$project$Style$sizePx = A2(
+	elm$core$Basics$composeR,
+	author$project$Style$scale,
+	A2(elm$core$Basics$composeR, elm$core$Basics$toFloat, rtfeldman$elm_css$Css$px));
 var rtfeldman$elm_css$Css$prop3 = F4(
 	function (key, argA, argB, argC) {
 		return A2(
@@ -9474,7 +9404,7 @@ var rtfeldman$elm_css$Css$borderBottom3 = rtfeldman$elm_css$Css$prop3('border-bo
 var rtfeldman$elm_css$Css$solid = {borderStyle: rtfeldman$elm_css$Css$Structure$Compatible, textDecorationStyle: rtfeldman$elm_css$Css$Structure$Compatible, value: 'solid'};
 var author$project$Style$borderBottom = A2(
 	rtfeldman$elm_css$Css$borderBottom3,
-	A2(author$project$Style$getScale, author$project$Style$i0, author$project$Style$pxs),
+	author$project$Style$sizePx(1),
 	rtfeldman$elm_css$Css$solid);
 var Chadtech$ct_colors$Chadtech$Colors$content2 = rtfeldman$elm_css$Css$hex('#57524F');
 var rtfeldman$elm_css$Css$borderLeft3 = rtfeldman$elm_css$Css$prop3('border-left');
@@ -9488,12 +9418,12 @@ var author$project$Style$divider = rtfeldman$elm_css$Css$batch(
 		[
 			A3(
 			rtfeldman$elm_css$Css$borderLeft3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(2),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content0),
 			A3(
 			rtfeldman$elm_css$Css$borderRight3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(2),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content2),
 			rtfeldman$elm_css$Css$width(rtfeldman$elm_css$Css$zero),
@@ -9502,38 +9432,11 @@ var author$project$Style$divider = rtfeldman$elm_css$Css$batch(
 var author$project$Style$fullWidth = rtfeldman$elm_css$Css$width(
 	rtfeldman$elm_css$Css$pct(100));
 var rtfeldman$elm_css$Css$height = rtfeldman$elm_css$Css$prop1('height');
-var author$project$Style$heightSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$height, author$project$Style$pxs);
-var author$project$Style$height = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$heightSizes);
-};
-var Chadtech$elm_vector$Vector11$Index1 = {$: 'Index1'};
-var author$project$Style$i1 = Chadtech$elm_vector$Vector11$Index1;
-var Chadtech$elm_vector$Vector11$Index2 = {$: 'Index2'};
-var author$project$Style$i2 = Chadtech$elm_vector$Vector11$Index2;
-var Chadtech$elm_vector$Vector11$Index4 = {$: 'Index4'};
-var author$project$Style$i4 = Chadtech$elm_vector$Vector11$Index4;
+var author$project$Style$height = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$height, author$project$Style$sizePx);
 var rtfeldman$elm_css$Css$marginRight = rtfeldman$elm_css$Css$prop1('margin-right');
-var author$project$Style$marginRightSizes = A2(
-	author$project$Style$mapScale,
-	A2(
-		elm$core$Basics$composeR,
-		elm$core$Basics$toFloat,
-		A2(elm$core$Basics$composeR, rtfeldman$elm_css$Css$px, rtfeldman$elm_css$Css$marginRight)),
-	author$project$Style$sizes);
-var author$project$Style$marginRight = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$marginRightSizes);
-};
+var author$project$Style$marginRight = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginRight, author$project$Style$sizePx);
 var rtfeldman$elm_css$Css$padding = rtfeldman$elm_css$Css$prop1('padding');
-var author$project$Style$paddingSizes = A2(
-	author$project$Style$mapScale,
-	A2(
-		elm$core$Basics$composeR,
-		elm$core$Basics$toFloat,
-		A2(elm$core$Basics$composeR, rtfeldman$elm_css$Css$px, rtfeldman$elm_css$Css$padding)),
-	author$project$Style$sizes);
-var author$project$Style$padding = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$paddingSizes);
-};
+var author$project$Style$padding = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$padding, author$project$Style$sizePx);
 var author$project$Ui$Nav$NavBarOptionClicked = function (a) {
 	return {$: 'NavBarOptionClicked', a: a};
 };
@@ -9645,17 +9548,17 @@ var author$project$Style$indent = rtfeldman$elm_css$Css$batch(
 		[
 			A3(
 			rtfeldman$elm_css$Css$borderTop3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content0),
 			A3(
 			rtfeldman$elm_css$Css$borderLeft3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content0),
 			A3(
 			rtfeldman$elm_css$Css$borderRight3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content2),
 			author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content2)
@@ -9666,28 +9569,19 @@ var author$project$Style$noOutline = rtfeldman$elm_css$Css$outline(rtfeldman$elm
 var rtfeldman$elm_css$Css$cursor = rtfeldman$elm_css$Css$prop1('cursor');
 var rtfeldman$elm_css$Css$pointer = {cursor: rtfeldman$elm_css$Css$Structure$Compatible, value: 'pointer'};
 var author$project$Style$pointer = rtfeldman$elm_css$Css$cursor(rtfeldman$elm_css$Css$pointer);
-var Chadtech$elm_vector$Vector11$Index5 = {$: 'Index5'};
-var author$project$Style$i5 = Chadtech$elm_vector$Vector11$Index5;
 var author$project$View$Button$buttonHeight = function (tall) {
-	return tall ? author$project$Style$height(author$project$Style$i5) : author$project$Style$height(author$project$Style$i4);
+	return tall ? author$project$Style$height(6) : author$project$Style$height(5);
 };
-var Chadtech$elm_vector$Vector11$Index6 = {$: 'Index6'};
-var author$project$Style$i6 = Chadtech$elm_vector$Vector11$Index6;
-var Chadtech$elm_vector$Vector11$Index7 = {$: 'Index7'};
-var author$project$Style$i7 = Chadtech$elm_vector$Vector11$Index7;
-var author$project$Style$widthSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$width, author$project$Style$pxs);
-var author$project$Style$width = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$widthSizes);
-};
+var author$project$Style$width = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$width, author$project$Style$sizePx);
 var author$project$View$Button$buttonWidth = function (summary) {
 	var _n0 = summary.width;
 	switch (_n0.$) {
 		case 'HalfWidth':
-			return author$project$Style$width(author$project$Style$i5);
+			return author$project$Style$width(6);
 		case 'SingleWidth':
-			return author$project$Style$width(author$project$Style$i6);
+			return author$project$Style$width(7);
 		case 'DoubleWidth':
-			return author$project$Style$width(author$project$Style$i7);
+			return author$project$Style$width(8);
 		default:
 			return author$project$Style$fullWidth;
 	}
@@ -9697,17 +9591,17 @@ var author$project$Style$outdent = rtfeldman$elm_css$Css$batch(
 		[
 			A3(
 			rtfeldman$elm_css$Css$borderTop3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content2),
 			A3(
 			rtfeldman$elm_css$Css$borderLeft3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content2),
 			A3(
 			rtfeldman$elm_css$Css$borderRight3,
-			rtfeldman$elm_css$Css$px(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content0),
 			author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content0)
@@ -9864,7 +9758,7 @@ var author$project$Ui$Nav$view = function (model) {
 				_List_fromArray(
 					[
 						Chadtech$elm_css_grid$Html$Grid$columnShrink,
-						author$project$Style$marginRight(author$project$Style$i1),
+						author$project$Style$marginRight(2),
 						rtfeldman$elm_css$Css$batch(extraStyles)
 					]),
 				_List_fromArray(
@@ -9885,7 +9779,7 @@ var author$project$Ui$Nav$view = function (model) {
 			[
 				author$project$Style$fullWidth,
 				rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content1),
-				author$project$Style$padding(author$project$Style$i1),
+				author$project$Style$padding(2),
 				author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content0)
 			]),
 		_List_fromArray(
@@ -9894,7 +9788,7 @@ var author$project$Ui$Nav$view = function (model) {
 				optionView,
 				_List_fromArray(
 					[
-						author$project$Style$marginRight(author$project$Style$i2)
+						author$project$Style$marginRight(3)
 					]),
 				author$project$Ui$Nav$Option$Draw),
 				A2(
@@ -9903,8 +9797,8 @@ var author$project$Ui$Nav$view = function (model) {
 					[
 						author$project$Style$divider,
 						Chadtech$elm_css_grid$Html$Grid$columnShrink,
-						author$project$Style$marginRight(author$project$Style$i2),
-						author$project$Style$height(author$project$Style$i4)
+						author$project$Style$marginRight(3),
+						author$project$Style$height(5)
 					]),
 				_List_Nil),
 				A2(optionView, _List_Nil, author$project$Ui$Nav$Option$Title),
@@ -9936,13 +9830,8 @@ var author$project$Page$About$intro = '\n    CtPaint is good paint software that
 var author$project$Page$About$personal = '\n    It was made by one guy named "Chadtech" over the course of two years\n    in his free time.\n    ';
 var author$project$Page$About$tech = '\n    It was made with the following technology: Elm, Elm-Css, Elm-Canvas,\n    Browserify, Amazon Web Services, and Gulp.\n    ';
 var author$project$Page$About$thanks = '\n    Ive worked on this project for a long time, and so I have worked with\n    a lot of different people during the course of this project. In chronological\n    order, here are my thank yous. Thanks to Funkytek who caused me to get into\n    JavaScript whereafter I began working on CtPaint. Thanks to Jack Hou, a contributor\n    to Chromium, who added \'image rendering : pixelated\' to Google Chromium,\n    a development I followed closely and has been essential to the technology\n    behind CtPaint. Thanks to the meet ups NodeAZ, VegasJS, QueensJS, and\n    Elm Berlin for letting me talk about CtPaint. Thanks to my friend Jacob\n    Rosenthal who was always there to talk to me about code, and initially proposed\n    the idea of doing a kickstarter. Thanks to Ethan Hartman, Taylor Alexander, and\n    Alex Rees, all of whom were marketers who had great feedback about kickstarter campaigns.\n    Thanks to Patrick Gram, Bob Laudner, and David Urbanic, who  did a really good job\n    helping me put together my kickstarter video. Thanks to everyone who contributed to\n    the original kick starter even tho it wasnt successful. Thanks Sascha Naderer,\n    Andreas Kullenberg, Jun, Bo, and Erik \'Kasumi\' from the pixelation community,\n    for either their thorough and knowledgeable opinions on pixel art software, as\n    well as their time using the CtPaint alpha to provide feedback, or the pixel art\n    they have contributed to this project.\n    ';
-var Chadtech$elm_vector$Vector11$Index3 = {$: 'Index3'};
-var author$project$Style$i3 = Chadtech$elm_vector$Vector11$Index3;
 var rtfeldman$elm_css$Css$marginBottom = rtfeldman$elm_css$Css$prop1('margin-bottom');
-var author$project$Style$marginBottomSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$marginBottom, author$project$Style$pxs);
-var author$project$Style$marginBottom = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$marginBottomSizes);
-};
+var author$project$Style$marginBottom = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginBottom, author$project$Style$sizePx);
 var author$project$View$Text$unwrapOption = function (_n0) {
 	var attr = _n0.a;
 	return attr;
@@ -9975,7 +9864,7 @@ var author$project$Page$About$textRows = function (buildNumber) {
 			Chadtech$elm_css_grid$Html$Grid$row,
 			_List_fromArray(
 				[
-					author$project$Style$marginBottom(author$project$Style$i3)
+					author$project$Style$marginBottom(4)
 				]),
 			_List_fromArray(
 				[
@@ -10009,10 +9898,7 @@ var author$project$Page$About$textRows = function (buildNumber) {
 			]));
 };
 var rtfeldman$elm_css$Css$marginTop = rtfeldman$elm_css$Css$prop1('margin-top');
-var author$project$Style$marginTopSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$marginTop, author$project$Style$pxs);
-var author$project$Style$marginTop = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$marginTopSizes);
-};
+var author$project$Style$marginTop = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginTop, author$project$Style$sizePx);
 var author$project$Style$marginVertical = function (index) {
 	return rtfeldman$elm_css$Css$batch(
 		_List_fromArray(
@@ -10148,7 +10034,7 @@ var author$project$View$BannerLogo$view = function (mountPath) {
 		_List_fromArray(
 			[
 				author$project$Style$pit,
-				author$project$Style$marginVertical(author$project$Style$i2)
+				author$project$Style$marginVertical(3)
 			]),
 		_List_fromArray(
 			[
@@ -10253,8 +10139,6 @@ var rtfeldman$elm_css$Css$justifyContent = function (fn) {
 		fn(rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
 var author$project$Style$centerContent = rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$center);
-var Chadtech$elm_vector$Vector11$Index9 = {$: 'Index9'};
-var author$project$Style$i9 = Chadtech$elm_vector$Vector11$Index9;
 var elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -10270,7 +10154,7 @@ var rtfeldman$elm_css$Css$column = _Utils_update(
 var author$project$View$Body$toHtml = function (_n0) {
 	var options = _n0.a;
 	var children = _n0.b;
-	var width = A2(elm$core$List$member, author$project$View$Body$SingleColumnWidth, options) ? author$project$Style$width(author$project$Style$i9) : author$project$Util$Css$noStyle;
+	var width = A2(elm$core$List$member, author$project$View$Body$SingleColumnWidth, options) ? author$project$Style$width(10) : author$project$Util$Css$noStyle;
 	return A2(
 		Chadtech$elm_css_grid$Html$Grid$row,
 		_List_fromArray(
@@ -10319,8 +10203,6 @@ var author$project$View$CardHeader$config = function (model) {
 };
 var author$project$Ui$LoginCard$header = author$project$View$CardHeader$config(
 	{title: 'log in'});
-var Chadtech$elm_vector$Vector11$Index8 = {$: 'Index8'};
-var author$project$Style$i8 = Chadtech$elm_vector$Vector11$Index8;
 var Chadtech$elm_css_grid$Html$Grid$box = function (styles) {
 	return A2(
 		rtfeldman$elm_css$Html$Styled$node,
@@ -10335,7 +10217,7 @@ var author$project$View$Card$cardStyles = rtfeldman$elm_css$Css$batch(
 		[
 			author$project$Style$outdent,
 			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content1),
-			author$project$Style$padding(author$project$Style$i0)
+			author$project$Style$padding(1)
 		]));
 var author$project$View$Card$view = function (styles) {
 	return Chadtech$elm_css_grid$Html$Grid$box(
@@ -10344,8 +10226,8 @@ var author$project$View$Card$view = function (styles) {
 var author$project$Ui$LoginCard$view = author$project$View$Card$view(
 	_List_fromArray(
 		[
-			author$project$Style$width(author$project$Style$i8),
-			author$project$Style$padding(author$project$Style$i0),
+			author$project$Style$width(9),
+			author$project$Style$padding(1),
 			rtfeldman$elm_css$Css$flex(
 			rtfeldman$elm_css$Css$int(0))
 		]));
@@ -10358,16 +10240,7 @@ var Chadtech$elm_css_grid$Html$Grid$exactWidthColumn = function (width_) {
 			]));
 };
 var rtfeldman$elm_css$Css$paddingLeft = rtfeldman$elm_css$Css$prop1('padding-left');
-var author$project$Style$paddingLeftSizes = A2(
-	author$project$Style$mapScale,
-	A2(
-		elm$core$Basics$composeR,
-		elm$core$Basics$toFloat,
-		A2(elm$core$Basics$composeR, rtfeldman$elm_css$Css$px, rtfeldman$elm_css$Css$paddingLeft)),
-	author$project$Style$sizes);
-var author$project$Style$paddingLeft = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$paddingLeftSizes);
-};
+var author$project$Style$paddingLeft = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$paddingLeft, author$project$Style$sizePx);
 var author$project$Ui$LoginCard$EmailUpdated = function (a) {
 	return {$: 'EmailUpdated', a: a};
 };
@@ -10388,16 +10261,51 @@ var author$project$View$Input$config = F2(
 			{onInput: msgCtor, value: value},
 			_List_Nil);
 	});
+var author$project$View$Input$Password = {$: 'Password'};
+var author$project$View$Input$addOption = F2(
+	function (option, _n0) {
+		var model = _n0.a;
+		var options = _n0.b;
+		return A2(
+			author$project$View$Input$Input,
+			model,
+			A2(elm$core$List$cons, option, options));
+	});
+var author$project$View$Input$isPassword = author$project$View$Input$addOption(author$project$View$Input$Password);
+var author$project$Util$Maybe$fromBool = F2(
+	function (bool, value) {
+		return bool ? elm$core$Maybe$Just(value) : elm$core$Maybe$Nothing;
+	});
 var author$project$View$Input$optionsToSummary = function () {
 	var modifySummary = F2(
 		function (option, summary) {
-			return summary;
+			return _Utils_update(
+				summary,
+				{password: true});
 		});
 	return A2(
 		elm$core$List$foldr,
 		modifySummary,
-		{unit: elm$core$Maybe$Nothing});
+		{password: false, unit: elm$core$Maybe$Nothing});
 }();
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var rtfeldman$elm_css$Html$Styled$input = rtfeldman$elm_css$Html$Styled$node('input');
 var elm$json$Json$Encode$bool = _Json_wrap;
 var rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
@@ -10408,6 +10316,7 @@ var rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
 			elm$json$Json$Encode$bool(bool));
 	});
 var rtfeldman$elm_css$Html$Styled$Attributes$spellcheck = rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('spellcheck');
+var rtfeldman$elm_css$Html$Styled$Attributes$type_ = rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('type');
 var rtfeldman$elm_css$Html$Styled$Attributes$value = rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
 var rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -10445,26 +10354,37 @@ var author$project$View$Input$toHtml = function (_n0) {
 	var onInput = _n0.a.onInput;
 	var options = _n0.b;
 	var summary = author$project$View$Input$optionsToSummary(options);
-	return A2(
-		rtfeldman$elm_css$Html$Styled$input,
+	var conditionalAttrs = A2(
+		elm$core$List$filterMap,
+		elm$core$Basics$identity,
 		_List_fromArray(
 			[
-				rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						author$project$Style$pit,
-						author$project$Style$height(author$project$Style$i4),
-						author$project$Style$font,
-						author$project$Style$noOutline,
-						rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content4),
-						author$project$Style$fontSmoothingNone,
-						author$project$Style$padding(author$project$Style$i1),
-						author$project$Style$fullWidth
-					])),
-				rtfeldman$elm_css$Html$Styled$Attributes$value(value),
-				rtfeldman$elm_css$Html$Styled$Attributes$spellcheck(false),
-				rtfeldman$elm_css$Html$Styled$Events$onInput(onInput)
-			]),
+				A2(
+				author$project$Util$Maybe$fromBool,
+				summary.password,
+				rtfeldman$elm_css$Html$Styled$Attributes$type_('password'))
+			]));
+	var baseAttrs = _List_fromArray(
+		[
+			rtfeldman$elm_css$Html$Styled$Attributes$css(
+			_List_fromArray(
+				[
+					author$project$Style$pit,
+					author$project$Style$height(5),
+					author$project$Style$font,
+					author$project$Style$noOutline,
+					rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content4),
+					author$project$Style$fontSmoothingNone,
+					author$project$Style$padding(2),
+					author$project$Style$fullWidth
+				])),
+			rtfeldman$elm_css$Html$Styled$Attributes$value(value),
+			rtfeldman$elm_css$Html$Styled$Attributes$spellcheck(false),
+			rtfeldman$elm_css$Html$Styled$Events$onInput(onInput)
+		]);
+	return A2(
+		rtfeldman$elm_css$Html$Styled$input,
+		_Utils_ap(baseAttrs, conditionalAttrs),
 		_List_Nil);
 };
 var author$project$View$Label$view = F2(
@@ -10489,7 +10409,7 @@ var author$project$Ui$LoginCard$viewBody = function (model) {
 				Chadtech$elm_css_grid$Html$Grid$row,
 				_List_fromArray(
 					[
-						author$project$Style$marginBottom(author$project$Style$i0)
+						author$project$Style$marginBottom(1)
 					]),
 				_List_fromArray(
 					[
@@ -10498,10 +10418,10 @@ var author$project$Ui$LoginCard$viewBody = function (model) {
 						label,
 						_List_fromArray(
 							[
-								author$project$Style$width(author$project$Style$i6),
-								author$project$Style$paddingLeft(author$project$Style$i0),
+								author$project$Style$width(7),
+								author$project$Style$paddingLeft(1),
 								Chadtech$elm_css_grid$Html$Grid$exactWidthColumn(
-								rtfeldman$elm_css$Css$px(128))
+								author$project$Style$sizePx(7))
 							])),
 						A2(
 						Chadtech$elm_css_grid$Html$Grid$column,
@@ -10524,10 +10444,11 @@ var author$project$Ui$LoginCard$viewBody = function (model) {
 			A2(
 			labelView,
 			'password',
-			A2(
-				author$project$View$Input$config,
-				author$project$Ui$LoginCard$PasswordUpdated,
-				author$project$Ui$LoginCard$Field$getValue(model.password)))
+			author$project$View$Input$isPassword(
+				A2(
+					author$project$View$Input$config,
+					author$project$Ui$LoginCard$PasswordUpdated,
+					author$project$Ui$LoginCard$Field$getValue(model.password))))
 		]);
 };
 var author$project$Util$Html$mapList = function (f) {
@@ -10558,7 +10479,7 @@ var author$project$View$CardHeader$toHtml = function (_n0) {
 		_List_fromArray(
 			[
 				rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4),
-				author$project$Style$marginBottom(author$project$Style$i1)
+				author$project$Style$marginBottom(2)
 			]),
 		_List_fromArray(
 			[
@@ -10566,7 +10487,7 @@ var author$project$View$CardHeader$toHtml = function (_n0) {
 				Chadtech$elm_css_grid$Html$Grid$column,
 				_List_fromArray(
 					[
-						author$project$Style$padding(author$project$Style$i1)
+						author$project$Style$padding(2)
 					]),
 				_List_fromArray(
 					[
@@ -10720,7 +10641,7 @@ var author$project$Page$Splash$viewBody = function (mountPath) {
 							Chadtech$elm_css_grid$Html$Grid$row,
 							_List_fromArray(
 								[
-									author$project$Style$marginBottom(author$project$Style$i2)
+									author$project$Style$marginBottom(3)
 								]),
 							_List_fromArray(
 								[
@@ -10748,7 +10669,7 @@ var author$project$Page$Splash$viewBody = function (mountPath) {
 							_List_fromArray(
 								[
 									author$project$Style$indent,
-									author$project$Style$marginTop(author$project$Style$i2)
+									author$project$Style$marginTop(3)
 								]),
 							_List_fromArray(
 								[

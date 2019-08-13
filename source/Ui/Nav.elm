@@ -41,7 +41,7 @@ view model =
         optionView extraStyles option =
             Grid.column
                 [ Grid.columnShrink
-                , Style.marginRight Style.i1
+                , Style.marginRight 2
                 , Css.batch extraStyles
                 ]
                 [ Button.config
@@ -55,17 +55,17 @@ view model =
     Grid.row
         [ Style.fullWidth
         , Css.backgroundColor Colors.content1
-        , Style.padding Style.i1
+        , Style.padding 2
         , Style.borderBottom Colors.content0
         ]
         [ optionView
-            [ Style.marginRight Style.i2 ]
+            [ Style.marginRight 3 ]
             Option.Draw
         , Grid.column
             [ Style.divider
             , Grid.columnShrink
-            , Style.marginRight Style.i2
-            , Style.height Style.i4
+            , Style.marginRight 3
+            , Style.height 5
             ]
             []
         , optionView [] Option.Title

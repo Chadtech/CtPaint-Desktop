@@ -50,7 +50,7 @@ viewBody mountPath =
     [ Body.config
         [ BannerLogo.view mountPath
         , Grid.row
-            [ Style.marginBottom Style.i2 ]
+            [ Style.marginBottom 3 ]
             [ Grid.column
                 []
                 [ Text.fromString splashMsg ]
@@ -66,7 +66,7 @@ viewBody mountPath =
             ]
         , Grid.row
             [ Style.indent
-            , Style.marginTop Style.i2
+            , Style.marginTop 3
             ]
             [ Grid.column
                 []

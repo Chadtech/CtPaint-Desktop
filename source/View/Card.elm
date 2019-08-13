@@ -17,6 +17,6 @@ cardStyles : Style
 cardStyles =
     [ Style.outdent
     , Css.backgroundColor Colors.content1
-    , Style.padding Style.i0
+    , Style.padding 1
     ]
         |> Css.batch

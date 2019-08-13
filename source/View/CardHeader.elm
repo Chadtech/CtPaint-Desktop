@@ -89,10 +89,10 @@ toHtml (CardHeader model options) =
     in
     Grid.row
         [ Css.backgroundColor Colors.content4
-        , Style.marginBottom Style.i1
+        , Style.marginBottom 2
         ]
         [ Grid.column
-            [ Style.padding Style.i1 ]
+            [ Style.padding 2 ]
             [ Text.withStyles
                 [ Css.color Colors.content1 ]
                 model.title
