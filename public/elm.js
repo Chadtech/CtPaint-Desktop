@@ -3925,6 +3925,107 @@ function _Url_percentDecode(string)
 	}
 }
 
+// CREATE
+
+var _Regex_never = /.^/;
+
+var _Regex_fromStringWith = F2(function(options, string)
+{
+	var flags = 'g';
+	if (options.multiline) { flags += 'm'; }
+	if (options.caseInsensitive) { flags += 'i'; }
+
+	try
+	{
+		return elm$core$Maybe$Just(new RegExp(string, flags));
+	}
+	catch(error)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+});
+
+
+// USE
+
+var _Regex_contains = F2(function(re, string)
+{
+	return string.match(re) !== null;
+});
+
+
+var _Regex_findAtMost = F3(function(n, re, str)
+{
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex == re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch
+				? elm$core$Maybe$Just(submatch)
+				: elm$core$Maybe$Nothing;
+		}
+		out.push(A4(elm$regex$Regex$Match, result[0], result.index, number, _List_fromArray(subs)));
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _List_fromArray(out);
+});
+
+
+var _Regex_replaceAtMost = F4(function(n, re, replacer, string)
+{
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch
+				? elm$core$Maybe$Just(submatch)
+				: elm$core$Maybe$Nothing;
+		}
+		return replacer(A4(elm$regex$Regex$Match, match, arguments[arguments.length - 2], count, _List_fromArray(submatches)));
+	}
+	return string.replace(re, jsReplacer);
+});
+
+var _Regex_splitAtMost = F3(function(n, re, str)
+{
+	var string = str;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		var result = re.exec(string);
+		if (!result) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _List_fromArray(out);
+});
+
+var _Regex_infinity = Infinity;
+
+
 
 
 // ELEMENT
@@ -7293,6 +7394,7 @@ var author$project$Main$UrlChanged = function (a) {
 };
 var author$project$Route$About = {$: 'About'};
 var author$project$Route$Landing = {$: 'Landing'};
+var author$project$Route$Login = {$: 'Login'};
 var author$project$Route$PaintApp = {$: 'PaintApp'};
 var elm$url$Url$Parser$Parser = function (a) {
 	return {$: 'Parser', a: a};
@@ -7387,7 +7489,11 @@ var author$project$Route$parser = elm$url$Url$Parser$oneOf(
 			A2(
 			elm$url$Url$Parser$map,
 			author$project$Route$About,
-			elm$url$Url$Parser$s('about'))
+			elm$url$Url$Parser$s('about')),
+			A2(
+			elm$url$Url$Parser$map,
+			author$project$Route$Login,
+			elm$url$Url$Parser$s('login'))
 		]));
 var elm$url$Url$Parser$getFirstMatch = function (states) {
 	getFirstMatch:
@@ -7923,23 +8029,60 @@ var elm$core$Basics$composeR = F3(
 			f(x));
 	});
 var author$project$Main$onNavigation = A2(elm$core$Basics$composeR, author$project$Route$fromUrl, author$project$Main$UrlChanged);
+var author$project$Main$LoginMsg = function (a) {
+	return {$: 'LoginMsg', a: a};
+};
 var author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
 };
 var author$project$Main$SplashMsg = function (a) {
 	return {$: 'SplashMsg', a: a};
 };
+var author$project$Model$About = function (a) {
+	return {$: 'About', a: a};
+};
+var author$project$Model$Login = function (a) {
+	return {$: 'Login', a: a};
+};
+var author$project$Model$PaintApp = function (a) {
+	return {$: 'PaintApp', a: a};
+};
 var author$project$Model$Splash = function (a) {
 	return {$: 'Splash', a: a};
 };
+var author$project$Page$Login$getSession = function ($) {
+	return $.session;
+};
+var author$project$Page$PaintApp$getSession = function ($) {
+	return $.session;
+};
 var author$project$Model$getSession = function (model) {
-	if (model.$ === 'Blank') {
-		var session = model.a;
-		return session;
-	} else {
-		var session = model.a;
-		return session;
+	switch (model.$) {
+		case 'Blank':
+			var session = model.a;
+			return session;
+		case 'PaintApp':
+			var subModel = model.a;
+			return author$project$Page$PaintApp$getSession(subModel);
+		case 'Splash':
+			var session = model.a;
+			return session;
+		case 'About':
+			var session = model.a;
+			return session;
+		default:
+			var subModel = model.a;
+			return author$project$Page$Login$getSession(subModel);
 	}
+};
+var author$project$Ui$LoginCard$Ready = {$: 'Ready'};
+var author$project$Ui$LoginCard$Field$init = {error: elm$core$Maybe$Nothing, value: ''};
+var author$project$Ui$LoginCard$init = {email: author$project$Ui$LoginCard$Field$init, httpStatus: author$project$Ui$LoginCard$Ready, password: author$project$Ui$LoginCard$Field$init};
+var author$project$Page$Login$init = function (session) {
+	return {loginCard: author$project$Ui$LoginCard$init, session: session};
+};
+var author$project$Page$PaintApp$init = function (session) {
+	return {session: session};
 };
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
@@ -7949,11 +8092,21 @@ var author$project$Util$Cmd$withNoCmd = function (model) {
 var author$project$Main$handleRouteFromOk = F2(
 	function (route, model) {
 		var session = author$project$Model$getSession(model);
-		if (route.$ === 'Landing') {
-			return author$project$Util$Cmd$withNoCmd(
-				author$project$Model$Splash(session));
-		} else {
-			return author$project$Util$Cmd$withNoCmd(model);
+		switch (route.$) {
+			case 'PaintApp':
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Model$PaintApp(
+						author$project$Page$PaintApp$init(session)));
+			case 'Landing':
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Model$Splash(session));
+			case 'About':
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Model$About(session));
+			default:
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Model$Login(
+						author$project$Page$Login$init(session)));
 		}
 	});
 var author$project$Main$handleRoute = F2(
@@ -7965,6 +8118,142 @@ var author$project$Main$handleRoute = F2(
 			var isntValidUrl = routeResult.a;
 			return author$project$Util$Cmd$withNoCmd(model);
 		}
+	});
+var author$project$Page$Login$LoginCardMsg = function (a) {
+	return {$: 'LoginCardMsg', a: a};
+};
+var author$project$Page$Login$setLoginCard = F2(
+	function (newLoginCard, model) {
+		return _Utils_update(
+			model,
+			{loginCard: newLoginCard});
+	});
+var author$project$Ui$LoginCard$LoggingIn = {$: 'LoggingIn'};
+var author$project$Ui$LoginCard$loggingIn = function (model) {
+	return _Utils_update(
+		model,
+		{httpStatus: author$project$Ui$LoginCard$LoggingIn});
+};
+var author$project$Ui$LoginCard$requestLogin = function (_n0) {
+	return elm$core$Platform$Cmd$none;
+};
+var author$project$Ui$LoginCard$Field$setError = F2(
+	function (error, field) {
+		return _Utils_update(
+			field,
+			{
+				error: elm$core$Maybe$Just(error)
+			});
+	});
+var author$project$Ui$LoginCard$Field$validate = F2(
+	function (_n0, field) {
+		var valid = _n0.valid;
+		var errorMessage = _n0.errorMessage;
+		return valid(field.value) ? field : A2(author$project$Ui$LoginCard$Field$setError, errorMessage, field);
+	});
+var elm$regex$Regex$Match = F4(
+	function (match, index, number, submatches) {
+		return {index: index, match: match, number: number, submatches: submatches};
+	});
+var elm$regex$Regex$contains = _Regex_contains;
+var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
+var elm$regex$Regex$fromString = function (string) {
+	return A2(
+		elm$regex$Regex$fromStringWith,
+		{caseInsensitive: false, multiline: false},
+		string);
+};
+var elm$regex$Regex$never = _Regex_never;
+var elm_community$string_extra$String$Extra$regexFromString = A2(
+	elm$core$Basics$composeR,
+	elm$regex$Regex$fromString,
+	elm$core$Maybe$withDefault(elm$regex$Regex$never));
+var elm_community$string_extra$String$Extra$isBlank = function (string) {
+	return A2(
+		elm$regex$Regex$contains,
+		elm_community$string_extra$String$Extra$regexFromString('^\\s*$'),
+		string);
+};
+var author$project$Ui$LoginCard$validateEmail = author$project$Ui$LoginCard$Field$validate(
+	{
+		errorMessage: 'email is required',
+		valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, elm_community$string_extra$String$Extra$isBlank)
+	});
+var author$project$Ui$LoginCard$validatePassword = author$project$Ui$LoginCard$Field$validate(
+	{
+		errorMessage: 'password is required',
+		valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, elm_community$string_extra$String$Extra$isBlank)
+	});
+var author$project$Ui$LoginCard$attemptLogin = function (model) {
+	var validatedModel = _Utils_update(
+		model,
+		{
+			email: author$project$Ui$LoginCard$validateEmail(model.email),
+			password: author$project$Ui$LoginCard$validatePassword(model.password)
+		});
+	var _n0 = _Utils_Tuple2(validatedModel.email.error, validatedModel.password.error);
+	if ((_n0.a.$ === 'Nothing') && (_n0.b.$ === 'Nothing')) {
+		var _n1 = _n0.a;
+		var _n2 = _n0.b;
+		return _Utils_Tuple2(
+			author$project$Ui$LoginCard$loggingIn(validatedModel),
+			author$project$Ui$LoginCard$requestLogin(
+				{email: validatedModel.email.value, password: validatedModel.password.value}));
+	} else {
+		return author$project$Util$Cmd$withNoCmd(validatedModel);
+	}
+};
+var author$project$Ui$LoginCard$Field$setValue = F2(
+	function (newValue, field) {
+		return _Utils_update(
+			field,
+			{value: newValue});
+	});
+var author$project$Ui$LoginCard$setEmail = F2(
+	function (str, model) {
+		return _Utils_update(
+			model,
+			{
+				email: A2(author$project$Ui$LoginCard$Field$setValue, str, model.email)
+			});
+	});
+var author$project$Ui$LoginCard$setPassword = F2(
+	function (str, model) {
+		return _Utils_update(
+			model,
+			{
+				password: A2(author$project$Ui$LoginCard$Field$setValue, str, model.password)
+			});
+	});
+var author$project$Ui$LoginCard$update = F3(
+	function (navKey, msg, model) {
+		switch (msg.$) {
+			case 'EmailUpdated':
+				var str = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					A2(author$project$Ui$LoginCard$setEmail, str, model));
+			case 'PasswordUpdated':
+				var str = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					A2(author$project$Ui$LoginCard$setPassword, str, model));
+			case 'LoginClicked':
+				return author$project$Ui$LoginCard$attemptLogin(model);
+			case 'EnterPressed':
+				return author$project$Ui$LoginCard$attemptLogin(model);
+			default:
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+		}
+	});
+var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Page$Login$update = F3(
+	function (navKey, msg, model) {
+		var subMsg = msg.a;
+		var _n1 = A3(author$project$Ui$LoginCard$update, navKey, subMsg, model.loginCard);
+		var newLoginCardModel = _n1.a;
+		var cmd = _n1.b;
+		return _Utils_Tuple2(
+			A2(author$project$Page$Login$setLoginCard, newLoginCardModel, model),
+			A2(elm$core$Platform$Cmd$map, author$project$Page$Login$LoginCardMsg, cmd));
 	});
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
@@ -8206,9 +8495,12 @@ var author$project$Route$toPieces = function (route) {
 		case 'PaintApp':
 			return _List_fromArray(
 				['app']);
-		default:
+		case 'About':
 			return _List_fromArray(
 				['about']);
+		default:
+			return _List_fromArray(
+				['login']);
 	}
 };
 var author$project$Route$toUrl = function (route) {
@@ -8234,11 +8526,43 @@ var author$project$Page$Splash$update = F2(
 var author$project$Session$getNavKey = function ($) {
 	return $.navKey;
 };
-var author$project$Ui$Nav$update = function (msg) {
-	var option = msg.a;
-	return elm$core$Platform$Cmd$none;
+var author$project$Ui$Nav$Option$toRoute = function (option) {
+	switch (option.$) {
+		case 'Draw':
+			return author$project$Route$PaintApp;
+		case 'Title':
+			return author$project$Route$Landing;
+		case 'About':
+			return author$project$Route$About;
+		default:
+			return author$project$Route$Login;
+	}
 };
-var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Ui$Nav$update = F2(
+	function (navKey, msg) {
+		var option = msg.a;
+		return A2(
+			author$project$Route$goTo,
+			navKey,
+			author$project$Ui$Nav$Option$toRoute(option));
+	});
+var author$project$Util$Cmd$mapCmd = F2(
+	function (f, _n0) {
+		var model = _n0.a;
+		var cmd = _n0.b;
+		return _Utils_Tuple2(
+			model,
+			A2(elm$core$Platform$Cmd$map, f, cmd));
+	});
+var elm$core$Tuple$mapFirst = F2(
+	function (func, _n0) {
+		var x = _n0.a;
+		var y = _n0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var author$project$Util$Cmd$mapModel = elm$core$Tuple$mapFirst;
 var author$project$Main$updateFromOk = F2(
 	function (msg, model) {
 		var session = author$project$Model$getSession(model);
@@ -8255,8 +8579,11 @@ var author$project$Main$updateFromOk = F2(
 					A2(
 						elm$core$Platform$Cmd$map,
 						author$project$Main$NavMsg,
-						author$project$Ui$Nav$update(navMsg)));
-			default:
+						A2(
+							author$project$Ui$Nav$update,
+							author$project$Session$getNavKey(session),
+							navMsg)));
+			case 'SplashMsg':
 				var subMsg = msg.a;
 				if (model.$ === 'Splash') {
 					return _Utils_Tuple2(
@@ -8271,15 +8598,25 @@ var author$project$Main$updateFromOk = F2(
 				} else {
 					return author$project$Util$Cmd$withNoCmd(model);
 				}
+			default:
+				var subMsg = msg.a;
+				if (model.$ === 'Login') {
+					var subModel = model.a;
+					return A2(
+						author$project$Util$Cmd$mapCmd,
+						author$project$Main$LoginMsg,
+						A2(
+							author$project$Util$Cmd$mapModel,
+							author$project$Model$Login,
+							A3(
+								author$project$Page$Login$update,
+								author$project$Session$getNavKey(session),
+								subMsg,
+								subModel)));
+				} else {
+					return author$project$Util$Cmd$withNoCmd(model);
+				}
 		}
-	});
-var elm$core$Tuple$mapFirst = F2(
-	function (func, _n0) {
-		var x = _n0.a;
-		var y = _n0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
 	});
 var author$project$Main$update = F2(
 	function (msg, result) {
@@ -8299,14 +8636,19 @@ var author$project$Main$update = F2(
 var author$project$Model$Blank = function (a) {
 	return {$: 'Blank', a: a};
 };
+var author$project$Data$BuildNumber$BuildNumber = function (a) {
+	return {$: 'BuildNumber', a: a};
+};
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var author$project$Data$BuildNumber$decoder = A2(elm$json$Json$Decode$map, author$project$Data$BuildNumber$BuildNumber, elm$json$Json$Decode$int);
 var author$project$Data$MountPath$MountPath = function (a) {
 	return {$: 'MountPath', a: a};
 };
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Data$MountPath$decoder = A2(elm$json$Json$Decode$map, author$project$Data$MountPath$MountPath, elm$json$Json$Decode$string);
-var author$project$Session$Session = F2(
-	function (mountPath, navKey) {
-		return {mountPath: mountPath, navKey: navKey};
+var author$project$Session$Session = F3(
+	function (mountPath, navKey, buildNumber) {
+		return {buildNumber: buildNumber, mountPath: mountPath, navKey: navKey};
 	});
 var author$project$Util$Json$Decode$apply = function () {
 	var applyHelp = F2(
@@ -8322,14 +8664,18 @@ var author$project$Util$Json$Decode$applyField = F2(
 			A2(elm$json$Json$Decode$field, fieldName, decoder));
 	});
 var author$project$Session$decoder = function (navKey) {
-	return A2(
-		author$project$Util$Json$Decode$apply,
-		elm$json$Json$Decode$succeed(navKey),
-		A3(
-			author$project$Util$Json$Decode$applyField,
-			'mountPath',
-			author$project$Data$MountPath$decoder,
-			elm$json$Json$Decode$succeed(author$project$Session$Session)));
+	return A3(
+		author$project$Util$Json$Decode$applyField,
+		'buildNumber',
+		author$project$Data$BuildNumber$decoder,
+		A2(
+			author$project$Util$Json$Decode$apply,
+			elm$json$Json$Decode$succeed(navKey),
+			A3(
+				author$project$Util$Json$Decode$applyField,
+				'mountPath',
+				author$project$Data$MountPath$decoder,
+				elm$json$Json$Decode$succeed(author$project$Session$Session))));
 };
 var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$Main$init = F3(
@@ -9166,11 +9512,6 @@ var Chadtech$elm_vector$Vector11$Index2 = {$: 'Index2'};
 var author$project$Style$i2 = Chadtech$elm_vector$Vector11$Index2;
 var Chadtech$elm_vector$Vector11$Index4 = {$: 'Index4'};
 var author$project$Style$i4 = Chadtech$elm_vector$Vector11$Index4;
-var rtfeldman$elm_css$Css$marginLeft = rtfeldman$elm_css$Css$prop1('margin-left');
-var author$project$Style$marginLeftSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$marginLeft, author$project$Style$pxs);
-var author$project$Style$marginLeft = function (index) {
-	return A2(author$project$Style$getScale, index, author$project$Style$marginLeftSizes);
-};
 var rtfeldman$elm_css$Css$marginRight = rtfeldman$elm_css$Css$prop1('margin-right');
 var author$project$Style$marginRightSizes = A2(
 	author$project$Style$mapScale,
@@ -9181,14 +9522,6 @@ var author$project$Style$marginRightSizes = A2(
 	author$project$Style$sizes);
 var author$project$Style$marginRight = function (index) {
 	return A2(author$project$Style$getScale, index, author$project$Style$marginRightSizes);
-};
-var author$project$Style$marginHorizontal = function (index) {
-	return rtfeldman$elm_css$Css$batch(
-		_List_fromArray(
-			[
-				author$project$Style$marginLeft(index),
-				author$project$Style$marginRight(index)
-			]));
 };
 var rtfeldman$elm_css$Css$padding = rtfeldman$elm_css$Css$prop1('padding');
 var author$project$Style$paddingSizes = A2(
@@ -9207,28 +9540,62 @@ var author$project$Ui$Nav$NavBarOptionClicked = function (a) {
 var author$project$Ui$Nav$optionIsCurrentPage = F2(
 	function (model, option) {
 		var _n0 = _Utils_Tuple2(model, option);
-		if ((_n0.a.$ === 'Splash') && (_n0.b.$ === 'Home')) {
-			var _n1 = _n0.b;
-			return true;
-		} else {
-			return false;
+		_n0$3:
+		while (true) {
+			switch (_n0.a.$) {
+				case 'Splash':
+					if (_n0.b.$ === 'Title') {
+						var _n1 = _n0.b;
+						return true;
+					} else {
+						break _n0$3;
+					}
+				case 'About':
+					if (_n0.b.$ === 'About') {
+						var _n2 = _n0.b;
+						return true;
+					} else {
+						break _n0$3;
+					}
+				case 'Login':
+					if (_n0.b.$ === 'Login') {
+						var _n3 = _n0.b;
+						return true;
+					} else {
+						break _n0$3;
+					}
+				default:
+					break _n0$3;
+			}
 		}
+		return false;
 	});
+var author$project$Ui$Nav$Option$About = {$: 'About'};
 var author$project$Ui$Nav$Option$Draw = {$: 'Draw'};
-var author$project$Ui$Nav$Option$Home = {$: 'Home'};
+var author$project$Ui$Nav$Option$Login = {$: 'Login'};
+var author$project$Ui$Nav$Option$Title = {$: 'Title'};
 var author$project$Ui$Nav$Option$toLabel = function (option) {
-	if (option.$ === 'Draw') {
-		return 'draw';
-	} else {
-		return 'home';
+	switch (option.$) {
+		case 'Draw':
+			return 'draw';
+		case 'Title':
+			return 'title';
+		case 'About':
+			return 'about';
+		default:
+			return 'log in';
 	}
-};
-var author$project$View$Button$HalfWidth = {$: 'HalfWidth'};
-var author$project$View$Button$Width = function (a) {
-	return {$: 'Width', a: a};
 };
 var author$project$View$Button$Button = function (a) {
 	return {$: 'Button', a: a};
+};
+var author$project$View$Button$config = F2(
+	function (onClick, label) {
+		return author$project$View$Button$Button(
+			{label: label, onClick: onClick, options: _List_Nil});
+	});
+var author$project$View$Button$Indent = function (a) {
+	return {$: 'Indent', a: a};
 };
 var author$project$View$Button$addOption = F2(
 	function (option, _n0) {
@@ -9240,16 +9607,6 @@ var author$project$View$Button$addOption = F2(
 					options: A2(elm$core$List$cons, option, model.options)
 				}));
 	});
-var author$project$View$Button$withWidth = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Width);
-var author$project$View$Button$asHalfWidth = author$project$View$Button$withWidth(author$project$View$Button$HalfWidth);
-var author$project$View$Button$config = F2(
-	function (onClick, label) {
-		return author$project$View$Button$Button(
-			{label: label, onClick: onClick, options: _List_Nil});
-	});
-var author$project$View$Button$Indent = function (a) {
-	return {$: 'Indent', a: a};
-};
 var author$project$View$Button$indent = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Indent);
 var Chadtech$ct_colors$Chadtech$Colors$content4 = rtfeldman$elm_css$Css$hex('#B0A69A');
 var Chadtech$ct_colors$Chadtech$Colors$content5 = rtfeldman$elm_css$Css$hex('#E0D6CA');
@@ -9500,24 +9857,28 @@ var author$project$View$Button$toHtml = function (_n0) {
 			]));
 };
 var author$project$Ui$Nav$view = function (model) {
-	var optionView = function (option) {
-		return A2(
-			Chadtech$elm_css_grid$Html$Grid$column,
-			_List_fromArray(
-				[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
-			_List_fromArray(
-				[
-					author$project$View$Button$toHtml(
-					author$project$View$Button$asHalfWidth(
+	var optionView = F2(
+		function (extraStyles, option) {
+			return A2(
+				Chadtech$elm_css_grid$Html$Grid$column,
+				_List_fromArray(
+					[
+						Chadtech$elm_css_grid$Html$Grid$columnShrink,
+						author$project$Style$marginRight(author$project$Style$i1),
+						rtfeldman$elm_css$Css$batch(extraStyles)
+					]),
+				_List_fromArray(
+					[
+						author$project$View$Button$toHtml(
 						A2(
 							author$project$View$Button$indent,
 							A2(author$project$Ui$Nav$optionIsCurrentPage, model, option),
 							A2(
 								author$project$View$Button$config,
 								author$project$Ui$Nav$NavBarOptionClicked(option),
-								author$project$Ui$Nav$Option$toLabel(option)))))
-				]));
-	};
+								author$project$Ui$Nav$Option$toLabel(option))))
+					]));
+		});
 	return A2(
 		Chadtech$elm_css_grid$Html$Grid$row,
 		_List_fromArray(
@@ -9529,18 +9890,27 @@ var author$project$Ui$Nav$view = function (model) {
 			]),
 		_List_fromArray(
 			[
-				optionView(author$project$Ui$Nav$Option$Draw),
+				A2(
+				optionView,
+				_List_fromArray(
+					[
+						author$project$Style$marginRight(author$project$Style$i2)
+					]),
+				author$project$Ui$Nav$Option$Draw),
 				A2(
 				Chadtech$elm_css_grid$Html$Grid$column,
 				_List_fromArray(
 					[
 						author$project$Style$divider,
 						Chadtech$elm_css_grid$Html$Grid$columnShrink,
-						author$project$Style$marginHorizontal(author$project$Style$i2),
+						author$project$Style$marginRight(author$project$Style$i2),
 						author$project$Style$height(author$project$Style$i4)
 					]),
 				_List_Nil),
-				optionView(author$project$Ui$Nav$Option$Home)
+				A2(optionView, _List_Nil, author$project$Ui$Nav$Option$Title),
+				A2(optionView, _List_Nil, author$project$Ui$Nav$Option$About),
+				A2(Chadtech$elm_css_grid$Html$Grid$column, _List_Nil, _List_Nil),
+				A2(optionView, _List_Nil, author$project$Ui$Nav$Option$Login)
 			]));
 };
 var author$project$Main$viewInFrame = F2(
@@ -9558,35 +9928,85 @@ var author$project$Main$viewInFrame = F2(
 			title: title
 		};
 	});
-var author$project$Page$Splash$DrawClicked = {$: 'DrawClicked'};
-var author$project$Page$Splash$LearnMoreClicked = {$: 'LearnMoreClicked'};
-var author$project$View$Button$DoubleWidth = {$: 'DoubleWidth'};
-var author$project$View$Button$asDoubleWidth = author$project$View$Button$withWidth(author$project$View$Button$DoubleWidth);
-var author$project$View$Button$Tall = function (a) {
-	return {$: 'Tall', a: a};
+var author$project$Data$BuildNumber$toString = function (_n0) {
+	var _int = _n0.a;
+	return elm$core$String$fromInt(_int);
 };
-var author$project$View$Button$makeTaller = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Tall);
-var author$project$Page$Splash$button = F2(
-	function (msg, label) {
-		return A2(
-			Chadtech$elm_css_grid$Html$Grid$column,
-			_List_fromArray(
-				[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
-			_List_fromArray(
-				[
-					author$project$View$Button$toHtml(
-					A2(
-						author$project$View$Button$makeTaller,
-						true,
-						author$project$View$Button$asDoubleWidth(
-							A2(author$project$View$Button$config, msg, label))))
-				]));
-	});
-var author$project$Page$Splash$splashMsg = '\n    CtPaint is good pixel art software that runs in your internet browser.\n    It has all the functionality of a classic paint program with cloud storage\n    and a seamless connection to all the internets images. Its free and\n    requires no installation.\n    ';
+var author$project$Page$About$intro = '\n    CtPaint is good paint software that runs in your web browser.\n    Its broadly suited for drawing pixel art, drawing memes, or just\n    making a quick practical drawings like diagrams or maps. Its also\n    embedded in the internet, so its super easy to edit any image\n    already on the internet, or share your drawings via a url.\n    ';
+var author$project$Page$About$personal = '\n    It was made by one guy named "Chadtech" over the course of two years\n    in his free time.\n    ';
+var author$project$Page$About$tech = '\n    It was made with the following technology: Elm, Elm-Css, Elm-Canvas,\n    Browserify, Amazon Web Services, and Gulp.\n    ';
+var author$project$Page$About$thanks = '\n    Ive worked on this project for a long time, and so I have worked with\n    a lot of different people during the course of this project. In chronological\n    order, here are my thank yous. Thanks to Funkytek who caused me to get into\n    JavaScript whereafter I began working on CtPaint. Thanks to Jack Hou, a contributor\n    to Chromium, who added \'image rendering : pixelated\' to Google Chromium,\n    a development I followed closely and has been essential to the technology\n    behind CtPaint. Thanks to the meet ups NodeAZ, VegasJS, QueensJS, and\n    Elm Berlin for letting me talk about CtPaint. Thanks to my friend Jacob\n    Rosenthal who was always there to talk to me about code, and initially proposed\n    the idea of doing a kickstarter. Thanks to Ethan Hartman, Taylor Alexander, and\n    Alex Rees, all of whom were marketers who had great feedback about kickstarter campaigns.\n    Thanks to Patrick Gram, Bob Laudner, and David Urbanic, who  did a really good job\n    helping me put together my kickstarter video. Thanks to everyone who contributed to\n    the original kick starter even tho it wasnt successful. Thanks Sascha Naderer,\n    Andreas Kullenberg, Jun, Bo, and Erik \'Kasumi\' from the pixelation community,\n    for either their thorough and knowledgeable opinions on pixel art software, as\n    well as their time using the CtPaint alpha to provide feedback, or the pixel art\n    they have contributed to this project.\n    ';
+var Chadtech$elm_vector$Vector11$Index3 = {$: 'Index3'};
+var author$project$Style$i3 = Chadtech$elm_vector$Vector11$Index3;
 var rtfeldman$elm_css$Css$marginBottom = rtfeldman$elm_css$Css$prop1('margin-bottom');
 var author$project$Style$marginBottomSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$marginBottom, author$project$Style$pxs);
 var author$project$Style$marginBottom = function (index) {
 	return A2(author$project$Style$getScale, index, author$project$Style$marginBottomSizes);
+};
+var author$project$View$Text$unwrapOption = function (_n0) {
+	var attr = _n0.a;
+	return attr;
+};
+var rtfeldman$elm_css$Html$Styled$p = rtfeldman$elm_css$Html$Styled$node('p');
+var author$project$View$Text$config = function (_n0) {
+	var styles = _n0.styles;
+	var options = _n0.options;
+	var value = _n0.value;
+	return A2(
+		rtfeldman$elm_css$Html$Styled$p,
+		A2(
+			elm$core$List$cons,
+			rtfeldman$elm_css$Html$Styled$Attributes$css(styles),
+			A2(elm$core$List$map, author$project$View$Text$unwrapOption, options)),
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$text(value)
+			]));
+};
+var author$project$View$Text$withStyles = F2(
+	function (styles, str) {
+		return author$project$View$Text$config(
+			{options: _List_Nil, styles: styles, value: str});
+	});
+var author$project$View$Text$fromString = author$project$View$Text$withStyles(_List_Nil);
+var author$project$Page$About$textRows = function (buildNumber) {
+	var paragraphView = function (str) {
+		return A2(
+			Chadtech$elm_css_grid$Html$Grid$row,
+			_List_fromArray(
+				[
+					author$project$Style$marginBottom(author$project$Style$i3)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					Chadtech$elm_css_grid$Html$Grid$column,
+					_List_Nil,
+					_List_fromArray(
+						[
+							author$project$View$Text$fromString(str)
+						]))
+				]));
+	};
+	return A2(
+		elm$core$List$map,
+		paragraphView,
+		_List_fromArray(
+			[
+				author$project$Page$About$intro,
+				author$project$Page$About$personal,
+				author$project$Page$About$tech,
+				author$project$Page$About$thanks,
+				A2(
+				elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						'This is build number',
+						author$project$Data$BuildNumber$toString(buildNumber),
+						'of this software'
+					]))
+			]));
 };
 var rtfeldman$elm_css$Css$marginTop = rtfeldman$elm_css$Css$prop1('margin-top');
 var author$project$Style$marginTopSizes = A2(author$project$Style$mapScale, rtfeldman$elm_css$Css$marginTop, author$project$Style$pxs);
@@ -9601,13 +10021,151 @@ var author$project$Style$marginVertical = function (index) {
 				author$project$Style$marginBottom(index)
 			]));
 };
-var Chadtech$ct_colors$Chadtech$Colors$background2 = rtfeldman$elm_css$Css$hex('#082208');
+var Chadtech$ct_colors$Chadtech$Colors$background1 = rtfeldman$elm_css$Css$hex('#071D10');
 var author$project$Style$pit = rtfeldman$elm_css$Css$batch(
 	_List_fromArray(
 		[
 			author$project$Style$indent,
-			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$background2)
+			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$background1)
 		]));
+var author$project$View$Image$Image = F2(
+	function (a, b) {
+		return {$: 'Image', a: a, b: b};
+	});
+var author$project$View$Image$config = function (src) {
+	return A2(author$project$View$Image$Image, src, _List_Nil);
+};
+var author$project$View$Image$Asset = F2(
+	function (a, b) {
+		return {$: 'Asset', a: a, b: b};
+	});
+var author$project$View$Image$Logo = {$: 'Logo'};
+var author$project$View$Image$logo = author$project$View$Image$Asset(author$project$View$Image$Logo);
+var author$project$Style$exactWidth = function (flWidth) {
+	return rtfeldman$elm_css$Css$width(
+		rtfeldman$elm_css$Css$px(flWidth));
+};
+var author$project$Util$Css$styleMaybe = function (f) {
+	return A2(
+		elm$core$Basics$composeR,
+		elm$core$Maybe$map(f),
+		elm$core$Maybe$withDefault(author$project$Util$Css$noStyle));
+};
+var author$project$View$Image$optionsToSummary = function () {
+	var modifySummary = F2(
+		function (option, summary) {
+			var width = option.a;
+			return _Utils_update(
+				summary,
+				{
+					width: elm$core$Maybe$Just(width)
+				});
+		});
+	return A2(
+		elm$core$List$foldr,
+		modifySummary,
+		{width: elm$core$Maybe$Nothing});
+}();
+var author$project$Data$MountPath$path = F2(
+	function (_n0, extra) {
+		var mountpath = _n0.a;
+		return A2(
+			elm$core$String$join,
+			'/',
+			A2(elm$core$List$cons, mountpath, extra));
+	});
+var author$project$View$Image$sourceToString = function (source) {
+	var assetSource = source.a;
+	var mountPath = source.b;
+	var mount = function (path) {
+		return A2(
+			author$project$Data$MountPath$path,
+			mountPath,
+			_List_fromArray(
+				[path]));
+	};
+	return mount('splash-image.png');
+};
+var rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, cursor: rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible, overflow: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: rtfeldman$elm_css$Css$Structure$Compatible, textRendering: rtfeldman$elm_css$Css$Structure$Compatible, touchAction: rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
+var rtfeldman$elm_css$Css$margin = rtfeldman$elm_css$Css$prop1('margin');
+var rtfeldman$elm_css$Html$Styled$img = rtfeldman$elm_css$Html$Styled$node('img');
+var rtfeldman$elm_css$VirtualDom$Styled$property = F2(
+	function (key, value) {
+		return A3(
+			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2(elm$virtual_dom$VirtualDom$property, key, value),
+			_List_Nil,
+			'');
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			rtfeldman$elm_css$VirtualDom$Styled$property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
+	return A2(rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'src', url);
+};
+var author$project$View$Image$toHtml = function (_n0) {
+	var src = _n0.a;
+	var options = _n0.b;
+	var summary = author$project$View$Image$optionsToSummary(options);
+	return A2(
+		rtfeldman$elm_css$Html$Styled$img,
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$Attributes$src(
+				author$project$View$Image$sourceToString(src)),
+				rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						A2(author$project$Util$Css$styleMaybe, author$project$Style$exactWidth, summary.width),
+						rtfeldman$elm_css$Css$margin(rtfeldman$elm_css$Css$auto)
+					]))
+			]),
+		_List_Nil);
+};
+var author$project$View$Image$Width = function (a) {
+	return {$: 'Width', a: a};
+};
+var author$project$View$Image$addOption = F2(
+	function (option, _n0) {
+		var params = _n0.a;
+		var options = _n0.b;
+		return A2(
+			author$project$View$Image$Image,
+			params,
+			A2(elm$core$List$cons, option, options));
+	});
+var author$project$View$Image$withWidth = function (width) {
+	return author$project$View$Image$addOption(
+		author$project$View$Image$Width(width));
+};
+var author$project$View$BannerLogo$view = function (mountPath) {
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$row,
+		_List_fromArray(
+			[
+				author$project$Style$pit,
+				author$project$Style$marginVertical(author$project$Style$i2)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				Chadtech$elm_css_grid$Html$Grid$column,
+				_List_Nil,
+				_List_fromArray(
+					[
+						author$project$View$Image$toHtml(
+						A2(
+							author$project$View$Image$withWidth,
+							429,
+							author$project$View$Image$config(
+								author$project$View$Image$logo(mountPath))))
+					]))
+			]));
+};
 var author$project$View$Body$Body = F2(
 	function (a, b) {
 		return {$: 'Body', a: a, b: b};
@@ -9736,146 +10294,367 @@ var author$project$View$Body$toHtml = function (_n0) {
 				children)
 			]));
 };
-var author$project$View$Image$Image = F2(
-	function (a, b) {
-		return {$: 'Image', a: a, b: b};
+var author$project$Page$About$view = F2(
+	function (buildNumber, mountPath) {
+		return {
+			body: _List_fromArray(
+				[
+					author$project$View$Body$toHtml(
+					author$project$View$Body$singleColumnWidth(
+						author$project$View$Body$config(
+							A2(
+								elm$core$List$cons,
+								author$project$View$BannerLogo$view(mountPath),
+								author$project$Page$About$textRows(buildNumber)))))
+				]),
+			title: elm$core$Maybe$Just('about')
+		};
 	});
-var author$project$View$Image$config = function (src) {
-	return A2(author$project$View$Image$Image, src, _List_Nil);
-};
-var author$project$View$Image$Asset = F2(
+var author$project$View$CardHeader$CardHeader = F2(
 	function (a, b) {
-		return {$: 'Asset', a: a, b: b};
+		return {$: 'CardHeader', a: a, b: b};
 	});
-var author$project$View$Image$Logo = {$: 'Logo'};
-var author$project$View$Image$logo = author$project$View$Image$Asset(author$project$View$Image$Logo);
-var author$project$Style$exactWidth = function (flWidth) {
-	return rtfeldman$elm_css$Css$width(
-		rtfeldman$elm_css$Css$px(flWidth));
+var author$project$View$CardHeader$config = function (model) {
+	return A2(author$project$View$CardHeader$CardHeader, model, _List_Nil);
 };
-var author$project$Util$Css$styleMaybe = function (f) {
+var author$project$Ui$LoginCard$header = author$project$View$CardHeader$config(
+	{title: 'log in'});
+var Chadtech$elm_vector$Vector11$Index8 = {$: 'Index8'};
+var author$project$Style$i8 = Chadtech$elm_vector$Vector11$Index8;
+var Chadtech$elm_css_grid$Html$Grid$box = function (styles) {
 	return A2(
-		elm$core$Basics$composeR,
-		elm$core$Maybe$map(f),
-		elm$core$Maybe$withDefault(author$project$Util$Css$noStyle));
+		rtfeldman$elm_css$Html$Styled$node,
+		'box',
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$Attributes$css(styles)
+			]));
 };
-var author$project$View$Image$optionsToSummary = function () {
+var author$project$View$Card$cardStyles = rtfeldman$elm_css$Css$batch(
+	_List_fromArray(
+		[
+			author$project$Style$outdent,
+			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content1),
+			author$project$Style$padding(author$project$Style$i0)
+		]));
+var author$project$View$Card$view = function (styles) {
+	return Chadtech$elm_css_grid$Html$Grid$box(
+		A2(elm$core$List$cons, author$project$View$Card$cardStyles, styles));
+};
+var author$project$Ui$LoginCard$view = author$project$View$Card$view(
+	_List_fromArray(
+		[
+			author$project$Style$width(author$project$Style$i8),
+			author$project$Style$padding(author$project$Style$i0),
+			rtfeldman$elm_css$Css$flex(
+			rtfeldman$elm_css$Css$int(0))
+		]));
+var Chadtech$elm_css_grid$Html$Grid$exactWidthColumn = function (width_) {
+	return rtfeldman$elm_css$Css$batch(
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$flex(rtfeldman$elm_css$Css$none),
+				rtfeldman$elm_css$Css$width(width_)
+			]));
+};
+var rtfeldman$elm_css$Css$paddingLeft = rtfeldman$elm_css$Css$prop1('padding-left');
+var author$project$Style$paddingLeftSizes = A2(
+	author$project$Style$mapScale,
+	A2(
+		elm$core$Basics$composeR,
+		elm$core$Basics$toFloat,
+		A2(elm$core$Basics$composeR, rtfeldman$elm_css$Css$px, rtfeldman$elm_css$Css$paddingLeft)),
+	author$project$Style$sizes);
+var author$project$Style$paddingLeft = function (index) {
+	return A2(author$project$Style$getScale, index, author$project$Style$paddingLeftSizes);
+};
+var author$project$Ui$LoginCard$EmailUpdated = function (a) {
+	return {$: 'EmailUpdated', a: a};
+};
+var author$project$Ui$LoginCard$PasswordUpdated = function (a) {
+	return {$: 'PasswordUpdated', a: a};
+};
+var author$project$Ui$LoginCard$Field$getValue = function ($) {
+	return $.value;
+};
+var author$project$View$Input$Input = F2(
+	function (a, b) {
+		return {$: 'Input', a: a, b: b};
+	});
+var author$project$View$Input$config = F2(
+	function (msgCtor, value) {
+		return A2(
+			author$project$View$Input$Input,
+			{onInput: msgCtor, value: value},
+			_List_Nil);
+	});
+var author$project$View$Input$optionsToSummary = function () {
 	var modifySummary = F2(
 		function (option, summary) {
-			var width = option.a;
+			return summary;
+		});
+	return A2(
+		elm$core$List$foldr,
+		modifySummary,
+		{unit: elm$core$Maybe$Nothing});
+}();
+var rtfeldman$elm_css$Html$Styled$input = rtfeldman$elm_css$Html$Styled$node('input');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			rtfeldman$elm_css$VirtualDom$Styled$property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$spellcheck = rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('spellcheck');
+var rtfeldman$elm_css$Html$Styled$Attributes$value = rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
+var rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			rtfeldman$elm_css$VirtualDom$Styled$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	elm$json$Json$Decode$string);
+var rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
+	return A2(
+		rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
+		'input',
+		A2(
+			elm$json$Json$Decode$map,
+			rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
+			A2(elm$json$Json$Decode$map, tagger, rtfeldman$elm_css$Html$Styled$Events$targetValue)));
+};
+var author$project$View$Input$toHtml = function (_n0) {
+	var value = _n0.a.value;
+	var onInput = _n0.a.onInput;
+	var options = _n0.b;
+	var summary = author$project$View$Input$optionsToSummary(options);
+	return A2(
+		rtfeldman$elm_css$Html$Styled$input,
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						author$project$Style$pit,
+						author$project$Style$height(author$project$Style$i4),
+						author$project$Style$font,
+						author$project$Style$noOutline,
+						rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content4),
+						author$project$Style$fontSmoothingNone,
+						author$project$Style$padding(author$project$Style$i1),
+						author$project$Style$fullWidth
+					])),
+				rtfeldman$elm_css$Html$Styled$Attributes$value(value),
+				rtfeldman$elm_css$Html$Styled$Attributes$spellcheck(false),
+				rtfeldman$elm_css$Html$Styled$Events$onInput(onInput)
+			]),
+		_List_Nil);
+};
+var author$project$View$Label$view = F2(
+	function (label, styles) {
+		return A2(
+			Chadtech$elm_css_grid$Html$Grid$column,
+			_List_fromArray(
+				[
+					rtfeldman$elm_css$Css$batch(styles),
+					rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column),
+					author$project$Style$centerContent
+				]),
+			_List_fromArray(
+				[
+					author$project$View$Text$fromString(label)
+				]));
+	});
+var author$project$Ui$LoginCard$viewBody = function (model) {
+	var labelView = F2(
+		function (label, input) {
+			return A2(
+				Chadtech$elm_css_grid$Html$Grid$row,
+				_List_fromArray(
+					[
+						author$project$Style$marginBottom(author$project$Style$i0)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						author$project$View$Label$view,
+						label,
+						_List_fromArray(
+							[
+								author$project$Style$width(author$project$Style$i6),
+								author$project$Style$paddingLeft(author$project$Style$i0),
+								Chadtech$elm_css_grid$Html$Grid$exactWidthColumn(
+								rtfeldman$elm_css$Css$px(128))
+							])),
+						A2(
+						Chadtech$elm_css_grid$Html$Grid$column,
+						_List_Nil,
+						_List_fromArray(
+							[
+								author$project$View$Input$toHtml(input)
+							]))
+					]));
+		});
+	return _List_fromArray(
+		[
+			A2(
+			labelView,
+			'email',
+			A2(
+				author$project$View$Input$config,
+				author$project$Ui$LoginCard$EmailUpdated,
+				author$project$Ui$LoginCard$Field$getValue(model.email))),
+			A2(
+			labelView,
+			'password',
+			A2(
+				author$project$View$Input$config,
+				author$project$Ui$LoginCard$PasswordUpdated,
+				author$project$Ui$LoginCard$Field$getValue(model.password)))
+		]);
+};
+var author$project$Util$Html$mapList = function (f) {
+	return elm$core$List$map(
+		rtfeldman$elm_css$Html$Styled$map(f));
+};
+var author$project$View$CardHeader$optionsToSummary = function () {
+	var modifySummary = F2(
+		function (option, summary) {
+			var msg = option.a;
 			return _Utils_update(
 				summary,
 				{
-					width: elm$core$Maybe$Just(width)
+					closeButton: elm$core$Maybe$Just(msg)
 				});
 		});
 	return A2(
 		elm$core$List$foldr,
 		modifySummary,
-		{width: elm$core$Maybe$Nothing});
+		{closeButton: elm$core$Maybe$Nothing});
 }();
-var author$project$Data$MountPath$path = F2(
-	function (_n0, extra) {
-		var mountpath = _n0.a;
-		return A2(
-			elm$core$String$join,
-			'/',
-			A2(elm$core$List$cons, mountpath, extra));
-	});
-var author$project$View$Image$sourceToString = function (source) {
-	var assetSource = source.a;
-	var mountPath = source.b;
-	var mount = function (path) {
-		return A2(
-			author$project$Data$MountPath$path,
-			mountPath,
-			_List_fromArray(
-				[path]));
-	};
-	return mount('splash-image.png');
-};
-var rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, cursor: rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible, overflow: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: rtfeldman$elm_css$Css$Structure$Compatible, textRendering: rtfeldman$elm_css$Css$Structure$Compatible, touchAction: rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
-var rtfeldman$elm_css$Css$margin = rtfeldman$elm_css$Css$prop1('margin');
-var rtfeldman$elm_css$Html$Styled$img = rtfeldman$elm_css$Html$Styled$node('img');
-var rtfeldman$elm_css$VirtualDom$Styled$property = F2(
-	function (key, value) {
-		return A3(
-			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2(elm$virtual_dom$VirtualDom$property, key, value),
-			_List_Nil,
-			'');
-	});
-var rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			rtfeldman$elm_css$VirtualDom$Styled$property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
-	return A2(rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'src', url);
-};
-var author$project$View$Image$toHtml = function (_n0) {
-	var src = _n0.a;
+var author$project$View$CardHeader$toHtml = function (_n0) {
+	var model = _n0.a;
 	var options = _n0.b;
-	var summary = author$project$View$Image$optionsToSummary(options);
+	var summary = author$project$View$CardHeader$optionsToSummary(options);
 	return A2(
-		rtfeldman$elm_css$Html$Styled$img,
+		Chadtech$elm_css_grid$Html$Grid$row,
 		_List_fromArray(
 			[
-				rtfeldman$elm_css$Html$Styled$Attributes$src(
-				author$project$View$Image$sourceToString(src)),
-				rtfeldman$elm_css$Html$Styled$Attributes$css(
+				rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4),
+				author$project$Style$marginBottom(author$project$Style$i1)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				Chadtech$elm_css_grid$Html$Grid$column,
 				_List_fromArray(
 					[
-						A2(author$project$Util$Css$styleMaybe, author$project$Style$exactWidth, summary.width),
-						rtfeldman$elm_css$Css$margin(rtfeldman$elm_css$Css$auto)
+						author$project$Style$padding(author$project$Style$i1)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						author$project$View$Text$withStyles,
+						_List_fromArray(
+							[
+								rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content1)
+							]),
+						model.title)
 					]))
-			]),
-		_List_Nil);
-};
-var author$project$View$Image$Width = function (a) {
-	return {$: 'Width', a: a};
-};
-var author$project$View$Image$addOption = F2(
-	function (option, _n0) {
-		var params = _n0.a;
-		var options = _n0.b;
-		return A2(
-			author$project$View$Image$Image,
-			params,
-			A2(elm$core$List$cons, option, options));
-	});
-var author$project$View$Image$withWidth = function (width) {
-	return author$project$View$Image$addOption(
-		author$project$View$Image$Width(width));
-};
-var author$project$View$Text$unwrapOption = function (_n0) {
-	var attr = _n0.a;
-	return attr;
-};
-var rtfeldman$elm_css$Html$Styled$p = rtfeldman$elm_css$Html$Styled$node('p');
-var author$project$View$Text$config = function (_n0) {
-	var styles = _n0.styles;
-	var options = _n0.options;
-	var value = _n0.value;
-	return A2(
-		rtfeldman$elm_css$Html$Styled$p,
-		A2(
-			elm$core$List$cons,
-			rtfeldman$elm_css$Html$Styled$Attributes$css(styles),
-			A2(elm$core$List$map, author$project$View$Text$unwrapOption, options)),
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Html$Styled$text(value)
 			]));
 };
-var author$project$View$Text$withStyles = F2(
-	function (styles, str) {
-		return author$project$View$Text$config(
-			{options: _List_Nil, styles: styles, value: str});
+var author$project$Page$Login$view = function (model) {
+	var header = author$project$View$CardHeader$toHtml(author$project$Ui$LoginCard$header);
+	var body = A2(
+		author$project$Util$Html$mapList,
+		author$project$Page$Login$LoginCardMsg,
+		author$project$Ui$LoginCard$viewBody(model.loginCard));
+	return {
+		body: _List_fromArray(
+			[
+				A2(
+				Chadtech$elm_css_grid$Html$Grid$row,
+				_List_fromArray(
+					[
+						rtfeldman$elm_css$Css$flex(
+						rtfeldman$elm_css$Css$int(1)),
+						author$project$Style$centerContent
+					]),
+				_List_fromArray(
+					[
+						A2(
+						Chadtech$elm_css_grid$Html$Grid$column,
+						_List_fromArray(
+							[
+								Chadtech$elm_css_grid$Html$Grid$columnShrink,
+								author$project$Style$centerContent,
+								rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
+							]),
+						_List_fromArray(
+							[
+								author$project$Ui$LoginCard$view(
+								A2(elm$core$List$cons, header, body))
+							]))
+					]))
+			]),
+		title: elm$core$Maybe$Just('login')
+	};
+};
+var author$project$Page$PaintApp$view = function (model) {
+	return {
+		body: _List_fromArray(
+			[
+				author$project$View$Text$fromString('Paint App!!')
+			]),
+		title: elm$core$Maybe$Nothing
+	};
+};
+var author$project$Page$Splash$DrawClicked = {$: 'DrawClicked'};
+var author$project$Page$Splash$LearnMoreClicked = {$: 'LearnMoreClicked'};
+var author$project$View$Button$DoubleWidth = {$: 'DoubleWidth'};
+var author$project$View$Button$Width = function (a) {
+	return {$: 'Width', a: a};
+};
+var author$project$View$Button$withWidth = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Width);
+var author$project$View$Button$asDoubleWidth = author$project$View$Button$withWidth(author$project$View$Button$DoubleWidth);
+var author$project$View$Button$Tall = function (a) {
+	return {$: 'Tall', a: a};
+};
+var author$project$View$Button$makeTaller = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Tall);
+var author$project$Page$Splash$button = F2(
+	function (msg, label) {
+		return A2(
+			Chadtech$elm_css_grid$Html$Grid$column,
+			_List_fromArray(
+				[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
+			_List_fromArray(
+				[
+					author$project$View$Button$toHtml(
+					A2(
+						author$project$View$Button$makeTaller,
+						true,
+						author$project$View$Button$asDoubleWidth(
+							A2(author$project$View$Button$config, msg, label))))
+				]));
 	});
-var author$project$View$Text$fromString = author$project$View$Text$withStyles(_List_Nil);
+var author$project$Page$Splash$splashMsg = '\n    CtPaint is good pixel art software that runs in your internet browser.\n    It has all the functionality of a classic paint program with cloud storage\n    and a seamless connection to all the internets images. Its free and\n    requires no installation.\n    ';
 var author$project$View$Video$FullWidth = {$: 'FullWidth'};
 var author$project$View$Video$Video = F2(
 	function (a, b) {
@@ -9907,14 +10686,6 @@ var author$project$View$Video$sourceToString = function (source) {
 			['splash-video.mp4']));
 };
 var rtfeldman$elm_css$Html$Styled$video = rtfeldman$elm_css$Html$Styled$node('video');
-var elm$json$Json$Encode$bool = _Json_wrap;
-var rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			rtfeldman$elm_css$VirtualDom$Styled$property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
 var rtfeldman$elm_css$Html$Styled$Attributes$autoplay = rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('autoplay');
 var rtfeldman$elm_css$Html$Styled$Attributes$loop = rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('loop');
 var author$project$View$Video$toHtml = function (_n0) {
@@ -9944,28 +10715,7 @@ var author$project$Page$Splash$viewBody = function (mountPath) {
 				author$project$View$Body$config(
 					_List_fromArray(
 						[
-							A2(
-							Chadtech$elm_css_grid$Html$Grid$row,
-							_List_fromArray(
-								[
-									author$project$Style$pit,
-									author$project$Style$marginVertical(author$project$Style$i2)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									Chadtech$elm_css_grid$Html$Grid$column,
-									_List_Nil,
-									_List_fromArray(
-										[
-											author$project$View$Image$toHtml(
-											A2(
-												author$project$View$Image$withWidth,
-												429,
-												author$project$View$Image$config(
-													author$project$View$Image$logo(mountPath))))
-										]))
-								])),
+							author$project$View$BannerLogo$view(mountPath),
 							A2(
 							Chadtech$elm_css_grid$Html$Grid$row,
 							_List_fromArray(
@@ -10022,22 +10772,47 @@ var author$project$Page$Splash$view = function (mountPath) {
 		title: elm$core$Maybe$Nothing
 	};
 };
+var author$project$Session$getBuildNumber = function ($) {
+	return $.buildNumber;
+};
 var author$project$Session$getMountPath = function ($) {
 	return $.mountPath;
 };
 var author$project$Main$viewPage = function (model) {
-	if (model.$ === 'Blank') {
-		return {body: _List_Nil, title: elm$core$Maybe$Nothing};
-	} else {
-		var session = model.a;
-		return A2(
-			author$project$Main$viewInFrame,
-			model,
-			A2(
-				author$project$Data$Document$map,
-				author$project$Main$SplashMsg,
-				author$project$Page$Splash$view(
-					author$project$Session$getMountPath(session))));
+	switch (model.$) {
+		case 'Blank':
+			return {body: _List_Nil, title: elm$core$Maybe$Nothing};
+		case 'PaintApp':
+			var subModel = model.a;
+			return author$project$Page$PaintApp$view(subModel);
+		case 'Splash':
+			var session = model.a;
+			return A2(
+				author$project$Main$viewInFrame,
+				model,
+				A2(
+					author$project$Data$Document$map,
+					author$project$Main$SplashMsg,
+					author$project$Page$Splash$view(
+						author$project$Session$getMountPath(session))));
+		case 'About':
+			var session = model.a;
+			return A2(
+				author$project$Main$viewInFrame,
+				model,
+				A2(
+					author$project$Page$About$view,
+					author$project$Session$getBuildNumber(session),
+					author$project$Session$getMountPath(session)));
+		default:
+			var subModel = model.a;
+			return A2(
+				author$project$Main$viewInFrame,
+				model,
+				A2(
+					author$project$Data$Document$map,
+					author$project$Main$LoginMsg,
+					author$project$Page$Login$view(subModel)));
 	}
 };
 var author$project$Main$view = function (result) {

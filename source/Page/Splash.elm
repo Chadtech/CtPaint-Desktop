@@ -14,9 +14,9 @@ import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Route
 import Style
+import View.BannerLogo as BannerLogo
 import View.Body as Body
 import View.Button as Button
-import View.Image as Image
 import View.Text as Text
 import View.Video as Video
 
@@ -48,18 +48,7 @@ view mountPath =
 viewBody : MountPath -> List (Html Msg)
 viewBody mountPath =
     [ Body.config
-        [ Grid.row
-            [ Style.pit
-            , Style.marginVertical Style.i2
-            ]
-            [ Grid.column
-                []
-                [ Image.config
-                    (Image.logo mountPath)
-                    |> Image.withWidth 429
-                    |> Image.toHtml
-                ]
-            ]
+        [ BannerLogo.view mountPath
         , Grid.row
             [ Style.marginBottom Style.i2 ]
             [ Grid.column

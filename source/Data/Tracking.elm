@@ -3,12 +3,11 @@ module Data.Tracking exposing
     , Payload
     , encode
     , event
-    , namespace
+    , tag
     , withProp
     )
 
 import Data.SessionId as SesionId exposing (SessionId)
-import Id exposing (Id)
 import Json.Encode as Encode exposing (Value)
 import Util.Json.Encode as EncodeUtil
 
@@ -62,6 +61,11 @@ event name =
     Just { name = name, props = [] }
 
 
+tag : String -> Maybe Event -> Maybe Event
+tag propName =
+    withProp propName Encode.null
+
+
 withProp : String -> Encode.Value -> Maybe Event -> Maybe Event
 withProp propName value maybeEvent =
     case maybeEvent of
@@ -70,21 +74,6 @@ withProp propName value maybeEvent =
                 { event_
                     | props =
                         ( propName, value ) :: event_.props
-                }
-
-        Nothing ->
-            Nothing
-
-
-namespace : String -> Maybe Event -> Maybe Event
-namespace name maybeEvent =
-    case maybeEvent of
-        Just event_ ->
-            Just
-                { event_
-                    | name =
-                        [ name, event_.name ]
-                            |> String.join " "
                 }
 
         Nothing ->

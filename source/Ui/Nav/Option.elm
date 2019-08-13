@@ -2,9 +2,11 @@ module Ui.Nav.Option exposing
     ( Option(..)
     , encode
     , toLabel
+    , toRoute
     )
 
 import Json.Encode as Encode
+import Route exposing (Route)
 
 
 
@@ -15,7 +17,9 @@ import Json.Encode as Encode
 
 type Option
     = Draw
-    | Home
+    | Title
+    | About
+    | Login
 
 
 
@@ -30,8 +34,30 @@ toLabel option =
         Draw ->
             "draw"
 
-        Home ->
-            "home"
+        Title ->
+            "title"
+
+        About ->
+            "about"
+
+        Login ->
+            "log in"
+
+
+toRoute : Option -> Route
+toRoute option =
+    case option of
+        Draw ->
+            Route.PaintApp
+
+        Title ->
+            Route.Landing
+
+        About ->
+            Route.About
+
+        Login ->
+            Route.Login
 
 
 encode : Option -> Encode.Value

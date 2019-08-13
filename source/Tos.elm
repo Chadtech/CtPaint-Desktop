@@ -43,7 +43,7 @@ sectionView index { title, content, list } =
         listView : String -> Html msg
         listView listItem =
             Grid.row
-                [ Style.leftPadding ]
+                [ Style.paddingLeft ]
                 [ Grid.column
                     []
                     [ Text.fromString ("* " ++ listItem) ]

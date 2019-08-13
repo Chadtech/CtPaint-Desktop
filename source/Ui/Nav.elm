@@ -6,11 +6,13 @@ module Ui.Nav exposing
     )
 
 import Chadtech.Colors as Colors
-import Css
+import Css exposing (Style)
+import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Model exposing (Model)
+import Route
 import Style
 import Ui.Nav.Option as Option exposing (Option)
 import View.Button as Button
@@ -35,16 +37,18 @@ type Msg
 view : Model -> Html Msg
 view model =
     let
-        optionView : Option -> Grid.Column Msg
-        optionView option =
+        optionView : List Style -> Option -> Grid.Column Msg
+        optionView extraStyles option =
             Grid.column
-                [ Grid.columnShrink ]
+                [ Grid.columnShrink
+                , Style.marginRight Style.i1
+                , Css.batch extraStyles
+                ]
                 [ Button.config
                     (NavBarOptionClicked option)
                     (Option.toLabel option)
                     |> Button.indent
                         (optionIsCurrentPage model option)
-                    |> Button.asHalfWidth
                     |> Button.toHtml
                 ]
     in
@@ -54,22 +58,33 @@ view model =
         , Style.padding Style.i1
         , Style.borderBottom Colors.content0
         ]
-        [ optionView Option.Draw
+        [ optionView
+            [ Style.marginRight Style.i2 ]
+            Option.Draw
         , Grid.column
             [ Style.divider
             , Grid.columnShrink
-            , Style.marginHorizontal Style.i2
+            , Style.marginRight Style.i2
             , Style.height Style.i4
             ]
             []
-        , optionView Option.Home
+        , optionView [] Option.Title
+        , optionView [] Option.About
+        , Grid.column [] []
+        , optionView [] Option.Login
         ]
 
 
 optionIsCurrentPage : Model -> Option -> Bool
 optionIsCurrentPage model option =
     case ( model, option ) of
-        ( Model.Splash _, Option.Home ) ->
+        ( Model.Splash _, Option.Title ) ->
+            True
+
+        ( Model.About _, Option.About ) ->
+            True
+
+        ( Model.Login _, Option.Login ) ->
             True
 
         _ ->
@@ -82,11 +97,11 @@ optionIsCurrentPage model option =
 -------------------------------------------------------------------------------
 
 
-update : Msg -> Cmd Msg
-update msg =
+update : NavKey -> Msg -> Cmd Msg
+update navKey msg =
     case msg of
         NavBarOptionClicked option ->
-            Cmd.none
+            Route.goTo navKey (Option.toRoute option)
 
 
 track : Msg -> Maybe Tracking.Event

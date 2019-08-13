@@ -3,6 +3,8 @@ module Model exposing
     , getSession
     )
 
+import Page.Login as Login
+import Page.PaintApp as PaintApp
 import Session exposing (Session)
 
 
@@ -14,7 +16,10 @@ import Session exposing (Session)
 
 type Model
     = Blank Session
+    | PaintApp PaintApp.Model
     | Splash Session
+    | About Session
+    | Login Login.Model
 
 
 
@@ -29,5 +34,14 @@ getSession model =
         Blank session ->
             session
 
+        PaintApp subModel ->
+            PaintApp.getSession subModel
+
         Splash session ->
             session
+
+        About session ->
+            session
+
+        Login subModel ->
+            Login.getSession subModel

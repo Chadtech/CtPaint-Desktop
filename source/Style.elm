@@ -12,6 +12,7 @@ module Style exposing
     , getScale
     , globals
     , height
+    , i0
     , i1
     , i10
     , i2
@@ -20,9 +21,10 @@ module Style exposing
     , i5
     , i6
     , i7
+    , i8
     , i9
     , indent
-    , leftPadding
+    , margin
     , marginBottom
     , marginHorizontal
     , marginLeft
@@ -33,6 +35,7 @@ module Style exposing
     , noOutline
     , outdent
     , padding
+    , paddingLeft
     , pit
     , pointer
     , width
@@ -71,9 +74,24 @@ paddingSizes =
     mapScale (toFloat >> px >> Css.padding) sizes
 
 
-leftPadding : Style
-leftPadding =
-    Css.paddingLeft (px unit)
+paddingLeft : Index -> Style
+paddingLeft index =
+    getScale index paddingLeftSizes
+
+
+paddingLeftSizes : Scale Style
+paddingLeftSizes =
+    mapScale (toFloat >> px >> Css.paddingLeft) sizes
+
+
+margin : Index -> Style
+margin index =
+    [ marginBottom index
+    , marginTop index
+    , marginLeft index
+    , marginRight index
+    ]
+        |> Css.batch
 
 
 bottomMargin : Style
@@ -150,7 +168,7 @@ font =
 pit : Style
 pit =
     [ indent
-    , Css.backgroundColor Colors.background2
+    , Css.backgroundColor Colors.background1
     ]
         |> Css.batch
 
@@ -290,6 +308,11 @@ i6 =
 i7 : Index
 i7 =
     Index7
+
+
+i8 : Index
+i8 =
+    Index8
 
 
 i9 : Index

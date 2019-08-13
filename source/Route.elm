@@ -34,18 +34,17 @@ type Route
     = Landing
     | PaintApp
     | About
+    | Login
 
 
 
 --    | InitDrawing
---    | About
 --    | Documentation
 --    | Contact
 --    | Pricing
 --    | RoadMap
 --    | Settings
 --    | Login
---    | ForgotPassword
 --    | ResetPassword
 --    | Logout
 --    | Register
@@ -70,14 +69,13 @@ parser =
     [ Url.map Landing Url.top
     , Url.map PaintApp (Url.s "app")
     , Url.map About (Url.s "about")
+    , Url.map Login (Url.s "login")
 
     --    , Url.map InitDrawing (s "init")
     --    , Url.map Documentation (s "documentation")
     --    , Url.map Contact (s "contact")
     --    , Url.map Pricing (s "pricing")
     --    , Url.map RoadMap (s "roadmap")
-    --    , Url.map Login (s "login")
-    --    , Url.map ForgotPassword (s "forgotpassword")
     --    , Url.map ResetPassword (s "resetpassword")
     --    , Url.map Logout (s "logout")
     --    , Url.map Register (s "register")
@@ -104,6 +102,9 @@ toPieces route =
         About ->
             [ "about" ]
 
+        Login ->
+            [ "login" ]
+
 
 
 --        InitDrawing ->
@@ -128,11 +129,6 @@ toPieces route =
 --        Register ->
 --            [ "register" ]
 --
---        Login ->
---            [ "login" ]
---
---        ForgotPassword ->
---            [ "forgotpassword" ]
 --
 --        ResetPassword ->
 --            [ "resetpassword" ]

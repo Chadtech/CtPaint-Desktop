@@ -7,7 +7,10 @@ import Data.NavKey as NavKey
 import Data.Tracking as Tracking
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode
-import Model exposing (Model(..))
+import Model exposing (Model)
+import Page.About as About
+import Page.Login as Login
+import Page.PaintApp as PaintApp
 import Page.Splash as Splash
 import Route exposing (Route)
 import Session exposing (Session)
@@ -48,6 +51,7 @@ type Msg
     | UrlRequested UrlRequest
     | NavMsg Nav.Msg
     | SplashMsg Splash.Msg
+    | LoginMsg Login.Msg
 
 
 
@@ -70,7 +74,7 @@ init json url key =
         Ok session ->
             update
                 (onNavigation url)
-                (Ok <| Blank session)
+                (Ok <| Model.Blank session)
 
         Err decodeError ->
             Err decodeError
@@ -98,16 +102,30 @@ view result =
 viewPage : Model -> Document Msg
 viewPage model =
     case model of
-        Blank _ ->
+        Model.Blank _ ->
             { title = Nothing
             , body = []
             }
 
-        Splash session ->
+        Model.PaintApp subModel ->
+            PaintApp.view subModel
+
+        Model.Splash session ->
             session
                 |> Session.getMountPath
                 |> Splash.view
                 |> Document.map SplashMsg
+                |> viewInFrame model
+
+        Model.About session ->
+            About.view
+                (Session.getBuildNumber session)
+                (Session.getMountPath session)
+                |> viewInFrame model
+
+        Model.Login subModel ->
+            Login.view subModel
+                |> Document.map LoginMsg
                 |> viewInFrame model
 
 
@@ -153,18 +171,35 @@ updateFromOk msg model =
 
         NavMsg navMsg ->
             ( model
-            , Cmd.map NavMsg (Nav.update navMsg)
+            , Nav.update
+                (Session.getNavKey session)
+                navMsg
+                |> Cmd.map NavMsg
             )
 
         SplashMsg subMsg ->
             case model of
-                Splash _ ->
+                Model.Splash _ ->
                     ( model
                     , Splash.update
                         (Session.getNavKey session)
                         subMsg
                         |> Cmd.map SplashMsg
                     )
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        LoginMsg subMsg ->
+            case model of
+                Model.Login subModel ->
+                    Login.update
+                        (Session.getNavKey session)
+                        subMsg
+                        subModel
+                        |> CmdUtil.mapModel Model.Login
+                        |> CmdUtil.mapCmd LoginMsg
 
                 _ ->
                     model
@@ -190,12 +225,22 @@ handleRouteFromOk route model =
             Model.getSession model
     in
     case route of
-        Route.Landing ->
-            Splash session
+        Route.PaintApp ->
+            Model.PaintApp
+                (PaintApp.init session)
                 |> CmdUtil.withNoCmd
 
-        _ ->
-            model
+        Route.Landing ->
+            Model.Splash session
+                |> CmdUtil.withNoCmd
+
+        Route.About ->
+            Model.About session
+                |> CmdUtil.withNoCmd
+
+        Route.Login ->
+            Model.Login
+                (Login.init session)
                 |> CmdUtil.withNoCmd
 
 
@@ -213,6 +258,9 @@ track msg =
 
         SplashMsg subMsg ->
             Splash.track subMsg
+
+        LoginMsg subMsg ->
+            Login.track subMsg
 
 
 

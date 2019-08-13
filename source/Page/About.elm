@@ -1,105 +1,57 @@
-module Page.About exposing
-    ( css
-    , view
-    )
+module Page.About exposing (view)
 
-import Chadtech.Colors as Ct
-import Css exposing (..)
-import Data.Config as Config exposing (Config)
-import Data.Taco exposing (Taco)
-import Html exposing (Html, br, div, img)
-import Html.Attributes as Attrs
-
-
-
--- STYLES --
-
-
-type Class
-    = TextContainer
-    | Logo
-    | LogoContainer
-    | Divider
-
-
-css : Stylesheet
-css =
-    [ Css.class TextContainer
-        [ width (px 800)
-        , display block
-        , margin auto
-        , marginBottom (px 8)
-        ]
-    , Css.class Logo
-        [ margin auto
-        , display block
-        , width (px 429)
-        ]
-    , (Css.class LogoContainer << List.append Html.Custom.indent)
-        [ margin auto
-        , display block
-        , width (px 800)
-        , backgroundColor Ct.background2
-        , marginBottom (px 8)
-        ]
-    , (Css.class Divider << List.append Html.Custom.indent)
-        [ width (px 800)
-        , margin auto
-        , display block
-        , marginBottom (px 8)
-        ]
-    ]
-        |> namespace aboutNamespace
-        |> stylesheet
-
-
-aboutNamespace : String
-aboutNamespace =
-    Html.Custom.makeNamespace "About"
+import Data.BuildNumber as BuildNumber exposing (BuildNumber)
+import Data.Document exposing (Document)
+import Data.MountPath exposing (MountPath)
+import Html.Grid as Grid
+import Html.Styled exposing (Html)
+import Style
+import View.BannerLogo as BannerLogo
+import View.Body as Body
+import View.Text as Text
 
 
 
+-------------------------------------------------------------------------------
 -- VIEW --
+-------------------------------------------------------------------------------
 
 
-{ class } =
-    Html.CssHelpers.withNamespace aboutNamespace
-
-
-view : Taco -> List (Html msg)
-view { config } =
-    [ div
-        [ class [ LogoContainer ] ]
-        [ img
-            [ class [ Logo ]
-            , Attrs.src (Config.assetSrc config .logoSrc)
-            ]
-            []
+view : BuildNumber -> MountPath -> Document msg
+view buildNumber mountPath =
+    { title = Just "about"
+    , body =
+        [ Body.config
+            (BannerLogo.view mountPath :: textRows buildNumber)
+            |> Body.singleColumnWidth
+            |> Body.toHtml
         ]
-    , textContent config
-    ]
+    }
 
 
-textContent : Config -> Html msg
-textContent { buildNumber } =
+textRows : BuildNumber -> List (Html msg)
+textRows buildNumber =
+    let
+        paragraphView : String -> Html msg
+        paragraphView str =
+            Grid.row
+                [ Style.marginBottom Style.i3 ]
+                [ Grid.column
+                    []
+                    [ Text.fromString str ]
+                ]
+    in
     [ intro
     , personal
     , tech
     , thanks
     , String.join " "
         [ "This is build number"
-        , toString buildNumber
+        , BuildNumber.toString buildNumber
         , "of this software"
         ]
     ]
-        |> List.map p_
-        |> List.intersperse break
-        |> div [ class [ TextContainer ] ]
-
-
-break : Html msg
-break =
-    br [] []
+        |> List.map paragraphView
 
 
 intro : String
@@ -144,7 +96,7 @@ thanks =
     the idea of doing a kickstarter. Thanks to Ethan Hartman, Taylor Alexander, and
     Alex Rees, all of whom were marketers who had great feedback about kickstarter campaigns.
     Thanks to Patrick Gram, Bob Laudner, and David Urbanic, who  did a really good job
-    helping me put together my kickstarter video.Thanks to everyone who contributed to
+    helping me put together my kickstarter video. Thanks to everyone who contributed to
     the original kick starter even tho it wasnt successful. Thanks Sascha Naderer,
     Andreas Kullenberg, Jun, Bo, and Erik 'Kasumi' from the pixelation community,
     for either their thorough and knowledgeable opinions on pixel art software, as
