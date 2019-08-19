@@ -11,7 +11,6 @@
     </style>
     <link rel="stylesheet" type="text/css" href="http://localhost:2956/fonts.css"/>
     <link rel="icon" href="http://localhost:2956/ct-icon.png">
-    <script type="text/javascript" src="http://localhost:2956/client.js"></script>
     <script type="text/javascript" src="http://localhost:2956/app.js"></script>
     <script type="text/javascript" src="http://localhost:2956/elm.js"></script>
   </head>
@@ -19,7 +18,6 @@
   </body>
   <script type="text/javascript">
     StartCtPaint({
-      Client: Client,
       mountPath: "http://localhost:2956",
       track: function(msg) {
         console.log("-- TRACKING --", msg);

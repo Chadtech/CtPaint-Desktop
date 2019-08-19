@@ -16,7 +16,7 @@ var paths = {
   mainElm: sourceDir("Main.elm"),
   elm: sourceDir("**/*.elm"),
   mainJs: sourceDir("app.js"),
-  js: sourceDir("*.js"),
+  js: sourceDir("**/*.js"),
 };
 
 gulp.task("js", function () {

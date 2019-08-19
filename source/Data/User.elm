@@ -1,22 +1,18 @@
 module Data.User exposing
-    ( Model(..)
-    , User
+    ( User
     , decoder
-    , getEmail
-    , isLoggedIn
-    , userDecoder
+    , getName
+    , getProfilePic
     )
 
-import Data.Browser exposing (Browser)
 import Json.Decode as Decode exposing (Decoder)
 import Util.Json.Decode as DecodeUtil
 
 
-type Model
-    = Offline
-    | LoggedOut
-    | LoggingIn
-    | LoggedIn User
+
+-------------------------------------------------------------------------------
+-- TYPES --
+-------------------------------------------------------------------------------
 
 
 type alias User =
@@ -27,33 +23,33 @@ type alias User =
 
 
 
--- DECODER --
+-------------------------------------------------------------------------------
+-- PUBLIC HELPERS --
+-------------------------------------------------------------------------------
 
 
-decoder : Browser -> Decoder Model
-decoder browser =
-    [ Decode.null LoggedOut
-    , Decode.string |> Decode.andThen offlineDecoder
-    , Decode.map LoggedIn userDecoder
-    ]
-        |> Decode.oneOf
-
-
-offlineDecoder : String -> Decoder Model
-offlineDecoder str =
-    if str == "offline" then
-        Decode.succeed Offline
-
-    else
-        Decode.fail "not offline"
-
-
-userDecoder : Decoder User
-userDecoder =
+decoder : Decoder User
+decoder =
     Decode.succeed User
         |> DecodeUtil.apply (Decode.field "email" Decode.string)
         |> DecodeUtil.apply (Decode.field "name" Decode.string)
         |> DecodeUtil.apply profilePicDecoder
+
+
+getName : User -> String
+getName =
+    .name
+
+
+getProfilePic : User -> Maybe String
+getProfilePic =
+    .profilePic
+
+
+
+-------------------------------------------------------------------------------
+-- PRIVATE HELPERS --
+-------------------------------------------------------------------------------
 
 
 profilePicDecoder : Decoder (Maybe String)
@@ -77,27 +73,3 @@ profilePicDecoder =
     , Decode.succeed Nothing
     ]
         |> Decode.oneOf
-
-
-
--- Helpers --
-
-
-getEmail : Model -> Maybe String
-getEmail model =
-    case model of
-        LoggedIn user ->
-            Just user.email
-
-        _ ->
-            Nothing
-
-
-isLoggedIn : Model -> Bool
-isLoggedIn model =
-    case model of
-        LoggedIn _ ->
-            True
-
-        _ ->
-            False

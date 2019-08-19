@@ -3,22 +3,24 @@ module Page.Login exposing
     , Msg
     , getSession
     , init
+    , listeners
     , track
     , update
     , view
     )
 
-import Css
 import Data.Document exposing (Document)
-import Data.NavKey exposing (NavKey)
+import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Html.Grid as Grid
+import Data.Viewer exposing (Viewer)
 import Html.Styled exposing (Html)
+import Route
 import Session exposing (Session)
-import Style
 import Ui.LoginCard as LoginCard
 import Util.Html as HtmlUtil
+import Util.Tuple3 as Tuple3
 import View.CardHeader as CardHeader exposing (CardHeader)
+import View.SingleCardPage as SingleCardPage
 
 
 
@@ -28,7 +30,7 @@ import View.CardHeader as CardHeader exposing (CardHeader)
 
 
 type alias Model =
-    { session : Session
+    { session : Session Viewer
     , loginCard : LoginCard.Model
     }
 
@@ -43,7 +45,7 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session -> Model
+init : Session Viewer -> Model
 init session =
     { session = session
     , loginCard = LoginCard.init
@@ -61,13 +63,18 @@ setLoginCard newLoginCard model =
     { model | loginCard = newLoginCard }
 
 
+mapSession : (Session Viewer -> Session Viewer) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
+
+
 
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session
+getSession : Model -> Session Viewer
 getSession =
     .session
 
@@ -84,6 +91,7 @@ view model =
         header : Html Msg
         header =
             LoginCard.header
+                model.loginCard
                 |> CardHeader.toHtml
 
         body : List (Html Msg)
@@ -92,22 +100,10 @@ view model =
                 model.loginCard
                 |> HtmlUtil.mapList LoginCardMsg
     in
-    { title = Just "login"
+    { title = Just "log in"
     , body =
-        [ Grid.row
-            [ Css.flex (Css.int 1)
-            , Style.centerContent
-            ]
-            [ Grid.column
-                [ Grid.columnShrink
-                , Style.centerContent
-                , Css.flexDirection Css.column
-                ]
-                [ LoginCard.view
-                    (header :: body)
-                ]
-            ]
-        ]
+        SingleCardPage.view
+            (LoginCard.view (header :: body))
     }
 
 
@@ -117,20 +113,41 @@ view model =
 -------------------------------------------------------------------------------
 
 
-update : NavKey -> Msg -> Model -> ( Model, Cmd Msg )
-update navKey msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         LoginCardMsg subMsg ->
             let
-                ( newLoginCardModel, cmd ) =
+                ( newLoginCardModel, cmd, maybeUser ) =
                     LoginCard.update
-                        navKey
                         subMsg
                         model.loginCard
+                        |> Tuple3.mapSecond
+                            (Cmd.map LoginCardMsg)
+
+                modelWithCard : Model
+                modelWithCard =
+                    setLoginCard
+                        newLoginCardModel
+                        model
             in
-            ( setLoginCard newLoginCardModel model
-            , Cmd.map LoginCardMsg cmd
-            )
+            case maybeUser of
+                Just newUser ->
+                    ( mapSession
+                        (Session.userLoggedIn newUser)
+                        modelWithCard
+                    , Cmd.batch
+                        [ Route.goTo
+                            (Session.getNavKey model.session)
+                            Route.Landing
+                        , cmd
+                        ]
+                    )
+
+                Nothing ->
+                    ( modelWithCard
+                    , cmd
+                    )
 
 
 track : Msg -> Maybe Tracking.Event
@@ -138,3 +155,15 @@ track msg =
     case msg of
         LoginCardMsg subMsg ->
             LoginCard.track subMsg
+
+
+
+-------------------------------------------------------------------------------
+-- PORTS --
+-------------------------------------------------------------------------------
+
+
+listeners : List (Listener Msg)
+listeners =
+    LoginCard.listeners
+        |> Listener.mapMany LoginCardMsg

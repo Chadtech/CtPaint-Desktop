@@ -1,4 +1,8 @@
-module Util.Maybe exposing (fromBool)
+module Util.Maybe exposing
+    ( cons
+    , firstValue
+    , fromBool
+    )
 
 
 fromBool : Bool -> a -> Maybe a

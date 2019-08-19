@@ -29,18 +29,21 @@ function logout(Client, toElm) {
 }
 
 function login(Client, toElm, payload) {
+    function sendLogin(v) {
+        toElm("login", v);
+    }
     Client.login(payload, {
         onSuccess: function(user) {
             user.getUserAttributes(function(err, attrs) {
                 if (err) {
-                    toElm("login failed", String(err));
+                    sendLogin(err);
                 } else {
-                    toElm("login succeeded", fromAttributes(attrs));
+                    sendLogin(fromAttributes(attrs));
                 }
             });
         },
         onFailure: function(err) {
-            toElm("login failed", String(err));
+            sendLogin(err);
         }
     });
 }
@@ -105,23 +108,31 @@ function update(Client, toElm, payload) {
 }
 
 function forgotPassword(Client, toElm, payload) {
-    Client.forgotPassword(payload, {
+    function sendForgotPassword(result) {
+        toElm("forgot password", result)
+    };
+    console.log(payload);
+    Client.forgotPassword(payload.email, {
         onSuccess: function(data) {
-            toElm("forgot password sent", null);
+            sendForgotPassword(null);
         },
         onFailure: function(err) {
-            toElm("forgot password failed", String(err));
+            sendForgotPassword(err);
         }
     });
 }
 
 function resetPassword(Client, toElm, payload) {
+    function sendResetPassword(result) {
+        toElm("reset password", result)
+    }
     Client.resetPassword(payload, {
         onSuccess: function(data) {
-            toElm("reset password succeeded", null);
+            sendResetPassword(null);
         },
         onFailure: function(err) {
-            toElm("reset password failed", String(err));
+            console.log(err.message)
+            sendResetPassword(err);
         }
     });
 }

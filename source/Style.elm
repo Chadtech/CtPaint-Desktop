@@ -16,12 +16,20 @@ module Style exposing
     , marginRight
     , marginTop
     , marginVertical
+    , noBackground
+    , noBorder
     , noOutline
+    , noOverflow
     , outdent
     , padding
+    , paddingHorizontal
     , paddingLeft
+    , paddingRight
     , pit
     , pointer
+    , problemBackground
+    , pxStr
+    , relative
     , sizePx
     , width
     )
@@ -30,7 +38,6 @@ import Chadtech.Colors as Colors
 import Css exposing (..)
 import Css.Global exposing (global)
 import Html.Styled exposing (Html)
-import Vector11 exposing (Index(..), Vector11)
 
 
 globals : Html msg
@@ -39,6 +46,12 @@ globals =
         [ Css.color Colors.content4
         , fontSmoothingNone
         , font
+        ]
+    , Css.Global.button
+        [ font
+        , noOutline
+        , pointer
+        , fontSmoothingNone
         ]
     , Css.Global.everything
         [ Css.boxSizing Css.borderBox
@@ -57,6 +70,11 @@ padding =
 paddingLeft : Int -> Style
 paddingLeft =
     Css.paddingLeft << sizePx
+
+
+paddingRight : Int -> Style
+paddingRight =
+    Css.paddingRight << sizePx
 
 
 margin : Int -> Style
@@ -92,10 +110,18 @@ marginHorizontal size =
         |> Css.batch
 
 
+paddingHorizontal : Int -> Style
+paddingHorizontal size =
+    [ paddingLeft size
+    , paddingRight size
+    ]
+        |> Css.batch
+
+
 marginVertical : Int -> Style
-marginVertical index =
-    [ marginTop index
-    , marginBottom index
+marginVertical size =
+    [ marginTop size
+    , marginBottom size
     ]
         |> Css.batch
 
@@ -126,7 +152,7 @@ pit =
 hfnss : Style
 hfnss =
     [ Css.fontFamilies [ "HFNSS" ]
-    , Css.fontSize (Css.px 32)
+    , Css.fontSize (sizePx 5)
     ]
         |> Css.batch
 
@@ -166,6 +192,11 @@ sizePx =
     scale >> toFloat >> Css.px
 
 
+pxStr : Int -> String
+pxStr i =
+    String.fromInt (scale i) ++ "px"
+
+
 height : Int -> Style
 height =
     Css.height << sizePx
@@ -198,8 +229,8 @@ noOutline =
 
 divider : Style
 divider =
-    [ borderLeft3 (sizePx 2) solid Colors.content0
-    , borderRight3 (sizePx 2) solid Colors.content2
+    [ borderLeft3 (sizePx 1) solid Colors.content0
+    , borderRight3 (sizePx 1) solid Colors.content2
     , Css.width Css.zero
     , display inline
     ]
@@ -214,3 +245,28 @@ centerContent =
 scale : Int -> Int
 scale degree =
     2 ^ degree
+
+
+noBorder : Style
+noBorder =
+    Css.property "border" "none"
+
+
+noBackground : Style
+noBackground =
+    Css.property "background" "none"
+
+
+relative : Style
+relative =
+    Css.position Css.relative
+
+
+noOverflow : Style
+noOverflow =
+    Css.overflow Css.hidden
+
+
+problemBackground : Style
+problemBackground =
+    Css.backgroundColor Colors.problem0

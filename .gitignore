@@ -1,7 +1,7 @@
 public/desktop.js
 public/desktop-elm.js
-public/client.js
 node_modules
 elm-stuff
 client
 .idea
+./source/Js/Client/config.js

@@ -11,7 +11,6 @@ import Json.Decode as Decode exposing (Decoder)
 import Nav
 import Page.Contact as Contact
 import Page.Error as Error
-import Page.ForgotPassword as ForgotPassword
 import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout

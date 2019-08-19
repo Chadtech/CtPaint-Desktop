@@ -1,5 +1,5 @@
 module.exports = {
-    make: function(user, manifest) {
+    make: function(viewer, manifest) {
         var localWork = localStorage.getItem("local work");
 
         var buf = new Uint32Array(1);
@@ -13,7 +13,7 @@ module.exports = {
             seed: seed,
             isMac: window.navigator.userAgent.indexOf("Mac") !== -1,
             browser: getBrowser(),
-            user: user,
+            viewer: viewer,
             mountPath: manifest.mountPath,
             buildNumber: manifest.buildNumber
         }; 

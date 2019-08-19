@@ -1,482 +1,501 @@
 module Page.ResetPassword exposing
     ( Model
     , Msg
-    , css
-    , failed
     , init
-    , succeeded
+    , listener
     , track
     , update
     , view
     )
 
-import Css exposing (..)
+import Data.Document exposing (Document)
+import Data.Field as Field exposing (Field)
+import Data.Listener as Listener exposing (Listener)
+import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
-import Helpers.Password
-import Html exposing (Attribute, Html, a, form, input, p)
-import Html.Attributes as Attrs
-import Html.Events exposing (onClick, onInput, onSubmit)
-import Ports exposing (JsMsg)
+import Html.Grid as Grid
+import Html.Styled as Html exposing (Html)
+import Json.Decode as Decode
+import Ports
 import Route
-import Util
+import Style
+import Util.Cmd as CmdUtil
+import Util.Function as FunctionUtil
+import Util.Html as HtmlUtil
+import Util.Json.Decode as DecodeUtil
+import Util.Maybe as MaybeUtil
+import Util.String as StringUtil
+import View.Button as Button
+import View.ButtonRow as ButtonRow
+import View.Card as Card
+import View.CardHeader as CardHeader
+import View.Input as Input exposing (Input)
+import View.InputGroup as InputGroup
+import View.SingleCardPage as SingleCardPage
+import View.Spinner as Spinner
+import View.TextArea as TextArea
 
 
 
+-------------------------------------------------------------------------------
 -- TYPES --
+-------------------------------------------------------------------------------
 
 
 type Model
     = Ready ReadyModel
-    | Sending
+    | Waiting
     | Success
-    | Fail Problem
+    | Fail (Listener.Error Error)
 
 
-type Problem
+type Error
     = InvalidCode
     | Other String
 
 
 type alias ReadyModel =
-    { email : String
-    , code : String
-    , password : String
-    , passwordConfirm : String
+    { email : Field
+    , code : Field
+    , password : Field
+    , passwordConfirm : Field
     , error : Maybe String
-    , show : Bool
     }
 
 
-type Field
-    = Email
-    | Code
-    | Password
-    | PasswordConfirm
-
-
 type Msg
-    = GoHomeClicked
-    | FieldUpdated Field String
-    | Submitted
-    | SubmitClicked
-    | Succeeded
-    | Failed String
-    | TryAgainClicked
+    = ReadyMsg ReadyMsg
+    | GotResetPasswordResponse (Listener.Response Error ())
     | LoginClicked
+    | TryAgainClicked
 
 
-succeeded : Msg
-succeeded =
-    Succeeded
+type ReadyMsg
+    = EmailUpdated String
+    | CodeUpdated String
+    | PasswordUpdated String
+    | PasswordConfirmUpdated String
+    | ResetPasswordClicked
+    | EnterPressed
 
 
-failed : String -> Msg
-failed =
-    Failed
+
+-------------------------------------------------------------------------------
+-- INIT --
+-------------------------------------------------------------------------------
 
 
 init : Model
 init =
-    { email = ""
-    , code = ""
-    , password = ""
-    , passwordConfirm = ""
-    , error = Nothing
-    , show = True
+    Ready
+        { email = Field.init
+        , code = Field.init
+        , password = Field.init
+        , passwordConfirm = Field.init
+        , error = Nothing
+        }
+
+
+
+-------------------------------------------------------------------------------
+-- PRIVATE HELPERS --
+-------------------------------------------------------------------------------
+
+
+errorToString : Error -> String
+errorToString error =
+    case error of
+        InvalidCode ->
+            "invalid code"
+
+        Other str ->
+            str
+
+
+setEmail : String -> ReadyModel -> ReadyModel
+setEmail newEmail model =
+    { model | email = Field.setValue newEmail model.email }
+
+
+setCode : String -> ReadyModel -> ReadyModel
+setCode newCode model =
+    { model | code = Field.setValue newCode model.code }
+
+
+setPassword : String -> ReadyModel -> ReadyModel
+setPassword newPassword model =
+    { model
+        | password =
+            Field.setValue newPassword model.password
     }
-        |> Ready
+
+
+setPasswordConfirm : String -> ReadyModel -> ReadyModel
+setPasswordConfirm newPasswordConfirm model =
+    { model
+        | passwordConfirm =
+            Field.setValue newPasswordConfirm model.passwordConfirm
+    }
+
+
+validate :
+    ReadyModel
+    ->
+        Result ReadyModel
+            { email : String
+            , code : String
+            , newPassword : String
+            }
+validate model =
+    let
+        validatedModel : ReadyModel
+        validatedModel =
+            { model
+                | email = Field.validateEmail model.email
+                , code =
+                    Field.validate
+                        { valid = not << StringUtil.isBlank
+                        , errorMessage = "you must enter your reset code"
+                        }
+                        model.code
+                , password = Field.validatePassword model.password
+                , passwordConfirm =
+                    Field.validate
+                        { valid = (==) (Field.getValue model.password)
+                        , errorMessage = "the passwords you entered do not match"
+                        }
+                        model.passwordConfirm
+            }
+    in
+    case
+        MaybeUtil.firstValue
+            [ Field.getError validatedModel.email
+            , Field.getError validatedModel.code
+            , Field.getError validatedModel.password
+            , Field.getError validatedModel.passwordConfirm
+            ]
+    of
+        Just _ ->
+            Err validatedModel
+
+        Nothing ->
+            { code = Field.getValue validatedModel.code
+            , newPassword = Field.getValue validatedModel.password
+            , email = Field.getValue validatedModel.email
+            }
+                |> Ok
 
 
 
+-------------------------------------------------------------------------------
 -- UPDATE --
+-------------------------------------------------------------------------------
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : NavKey -> Msg -> Model -> ( Model, Cmd Msg )
+update navKey msg model =
     case msg of
-        GoHomeClicked ->
-            Route.goTo Route.Landing
-                |> R2.withModel model
+        ReadyMsg readyMsg ->
+            case model of
+                Ready readyModel ->
+                    updateReady readyMsg readyModel
 
-        FieldUpdated Email str ->
-            ifReady model (updateEmail str)
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
 
-        FieldUpdated Code str ->
-            ifReady model (updateCode str)
+        GotResetPasswordResponse result ->
+            case model of
+                Waiting ->
+                    case result of
+                        Ok () ->
+                            Success
+                                |> CmdUtil.withNoCmd
 
-        FieldUpdated Password str ->
-            ifReady model (updatePassword str)
+                        Err error ->
+                            error
+                                |> Fail
+                                |> CmdUtil.withNoCmd
 
-        FieldUpdated PasswordConfirm str ->
-            ifReady model (updatePasswordConfirm str)
-
-        Submitted ->
-            submit model
-
-        SubmitClicked ->
-            submit model
-
-        Succeeded ->
-            Success
-                |> R2.withNoCmd
-
-        Failed err ->
-            handleError model err
-
-        TryAgainClicked ->
-            Route.goTo Route.ForgotPassword
-                |> R2.withModel model
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
 
         LoginClicked ->
-            Route.goTo Route.Login
-                |> R2.withModel model
+            ( model
+            , Route.goTo navKey Route.Login
+            )
+
+        TryAgainClicked ->
+            init
+                |> CmdUtil.withNoCmd
 
 
-handleError : Model -> String -> ( Model, Cmd Msg )
-handleError model err =
-    case err of
-        "ExpiredCodeException: Invalid code provided, please request a code again." ->
-            InvalidCode
-                |> Fail
-                |> R2.withNoCmd
-
-        _ ->
-            err
-                |> Other
-                |> Fail
-                |> R2.withNoCmd
-
-
-ifReady : Model -> (ReadyModel -> ( ReadyModel, Cmd Msg )) -> ( Model, Cmd Msg )
-ifReady model f =
-    case model of
-        Ready readyModel ->
-            f readyModel
-                |> Tuple.mapFirst Ready
-
-        _ ->
-            model
-                |> R2.withNoCmd
-
-
-updateEmail : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
-updateEmail str model =
-    { model | email = str }
-        |> R2.withNoCmd
-
-
-updateCode : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
-updateCode str model =
-    { model | code = str }
-        |> R2.withNoCmd
-
-
-updatePassword : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
-updatePassword str model =
-    { model | password = str }
-        |> R2.withNoCmd
-
-
-updatePasswordConfirm : String -> ReadyModel -> ( ReadyModel, Cmd Msg )
-updatePasswordConfirm str model =
-    { model | passwordConfirm = str }
-        |> R2.withNoCmd
-
-
-submit : Model -> ( Model, Cmd Msg )
-submit model =
-    case model of
-        Ready readyModel ->
-            resetPassword readyModel
-
-        _ ->
-            model
-                |> R2.withNoCmd
-
-
-resetPassword : ReadyModel -> ( Model, Cmd Msg )
-resetPassword readyModel =
-    case validatePassword readyModel of
-        Nothing ->
-            ResetPassword
-                readyModel.email
-                readyModel.code
-                readyModel.password
-                |> Ports.send
-                |> R2.withModel Sending
-
-        Just error ->
-            { readyModel | error = Just error }
+updateReady : ReadyMsg -> ReadyModel -> ( Model, Cmd Msg )
+updateReady msg model =
+    case msg of
+        EmailUpdated newEmail ->
+            setEmail newEmail model
                 |> Ready
-                |> R2.withNoCmd
+                |> CmdUtil.withNoCmd
+
+        CodeUpdated newCode ->
+            setCode newCode model
+                |> Ready
+                |> CmdUtil.withNoCmd
+
+        PasswordUpdated newPassword ->
+            setPassword newPassword model
+                |> Ready
+                |> CmdUtil.withNoCmd
+
+        PasswordConfirmUpdated newPasswordConfirm ->
+            setPasswordConfirm newPasswordConfirm model
+                |> Ready
+                |> CmdUtil.withNoCmd
+
+        ResetPasswordClicked ->
+            attemptSubmission model
+
+        EnterPressed ->
+            attemptSubmission model
 
 
-validatePassword : ReadyModel -> Maybe String
-validatePassword { password, passwordConfirm } =
-    Helpers.Password.validate password passwordConfirm
+attemptSubmission : ReadyModel -> ( Model, Cmd msg )
+attemptSubmission model =
+    case validate model of
+        Ok { newPassword, email, code } ->
+            ( Waiting
+            , Ports.payload "reset password"
+                |> Ports.withString "email" email
+                |> Ports.withString "code" code
+                |> Ports.withString "password" newPassword
+                |> Ports.send
+            )
 
-
-
--- TRACKING --
+        Err validatedModel ->
+            Ready validatedModel
+                |> CmdUtil.withNoCmd
 
 
 track : Msg -> Maybe Tracking.Event
 track msg =
     case msg of
-        GoHomeClicked ->
-            Tracking.noProps "go-home click"
+        ReadyMsg readyMsg ->
+            trackReady readyMsg
 
-        FieldUpdated _ _ ->
-            Nothing
-
-        Submitted ->
-            Tracking.noProps "submit enter press"
-
-        SubmitClicked ->
-            Tracking.noProps "submit click"
-
-        Succeeded ->
-            Tracking.response Nothing
-
-        Failed err ->
-            Tracking.response (Just err)
-
-        TryAgainClicked ->
-            Tracking.noProps "try-again click"
+        GotResetPasswordResponse response ->
+            Tracking.event "got reset password response"
+                |> Tracking.withListenerResponse
+                    (Listener.mapError errorToString response)
 
         LoginClicked ->
-            Tracking.noProps "login click"
+            Tracking.event "login clicked"
+
+        TryAgainClicked ->
+            Tracking.event "try again clicked"
+
+
+trackReady : ReadyMsg -> Maybe Tracking.Event
+trackReady msg =
+    case msg of
+        EmailUpdated _ ->
+            Nothing
+
+        CodeUpdated _ ->
+            Nothing
+
+        PasswordUpdated _ ->
+            Nothing
+
+        PasswordConfirmUpdated _ ->
+            Nothing
+
+        EnterPressed ->
+            Tracking.event "enter pressed"
+
+        ResetPasswordClicked ->
+            Tracking.event "reset password clicked"
 
 
 
--- STYLES --
-
-
-type Class
-    = Long
-    | Main
-    | Error
-    | Button
-    | MarginTop
-
-
-fieldTextWidth : Float
-fieldTextWidth =
-    180
-
-
-cardWidth : Float
-cardWidth =
-    410
-
-
-css : Stylesheet
-css =
-    [ Css.Elements.p
-        [ Css.withClass Long
-            [ width (px fieldTextWidth) ]
-        ]
-    , Css.Elements.input
-        [ Css.withClass Long
-            [ width (px (cardWidth - fieldTextWidth)) ]
-        ]
-    , Css.class Main
-        [ width (px cardWidth) ]
-    , Css.class Button
-        [ margin auto
-        , display table
-        , withClass MarginTop
-            [ marginTop (px 8) ]
-        ]
-    , Css.class Error
-        [ marginBottom (px 8) ]
-    ]
-        |> namespace resetNamespace
-        |> stylesheet
-
-
-resetNamespace : String
-resetNamespace =
-    Html.Custom.makeNamespace "ResetPassword"
-
-
-
+-------------------------------------------------------------------------------
 -- VIEW --
+-------------------------------------------------------------------------------
 
 
-{ class } =
-    Html.CssHelpers.withNamespace resetNamespace
-
-
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    [ Html.Custom.header
-        { text = "reset password"
-        , closability = Html.Custom.NotClosable
-        }
-    , Html.Custom.cardBody [] (body model)
-    ]
-        |> Html.Custom.cardSolitary []
-        |> List.singleton
-        |> Html.Custom.background []
+    let
+        title : String
+        title =
+            "reset password"
+
+        header : Html Msg
+        header =
+            CardHeader.config
+                { title = title }
+                |> CardHeader.toHtml
+    in
+    { title = Just title
+    , body =
+        Card.view
+            [ Style.width 9 ]
+            (header :: viewBody model)
+            |> SingleCardPage.view
+    }
 
 
-body : Model -> List (Html Msg)
-body model =
+viewBody : Model -> List (Html Msg)
+viewBody model =
     case model of
         Ready readyModel ->
-            readyBody readyModel
+            [ Html.form
+                []
+                [ inputGroupView
+                    { label = "email"
+                    , onInput = EmailUpdated
+                    , options = [ Input.withAutocomplete "email" ]
+                    , field = readyModel.email
+                    }
+                , inputGroupView
+                    { label = "code"
+                    , onInput = CodeUpdated
+                    , options = []
+                    , field = readyModel.code
+                    }
+                , inputGroupView
+                    { label = "new password"
+                    , onInput = PasswordUpdated
+                    , options =
+                        [ Input.isPassword
+                        , Input.withAutocomplete "new-password"
+                        ]
+                    , field = readyModel.password
+                    }
+                , inputGroupView
+                    { label = "confirm new password"
+                    , onInput = PasswordConfirmUpdated
+                    , options =
+                        [ Input.isPassword
+                        , Input.withAutocomplete "new-password"
+                        ]
+                    , field = readyModel.passwordConfirm
+                    }
+                ]
+            , ButtonRow.view
+                [ Button.config
+                    ResetPasswordClicked
+                    "reset password"
+                    |> Button.asDoubleWidth
+                ]
+            ]
+                |> HtmlUtil.mapList ReadyMsg
 
-        Sending ->
-            sendingBody
+        Waiting ->
+            [ Spinner.row ]
 
         Success ->
-            successBody
-
-        Fail problem ->
-            failBody problem
-
-
-readyBody : ReadyModel -> List (Html Msg)
-readyBody model =
-    let
-        value_ : String -> Attribute Msg
-        value_ =
-            Attrs.value << Util.showIf model.show
-    in
-    [ form
-        [ class [ Main ]
-        , onSubmit Submitted
-        ]
-        [ field
-            "email"
-            [ value_ model.email
-            , onInput_ Email
-            ]
-        , field
-            "code"
-            [ value_ model.code
-            , onInput_ Code
-            ]
-        , field
-            "password"
-            [ value_ model.password
-            , Attrs.type_ "password"
-            , onInput_ Password
-            ]
-        , field
-            "type it again"
-            [ value_ model.passwordConfirm
-            , Attrs.type_ "password"
-            , onInput_ PasswordConfirm
-            ]
-        , input
-            [ Attrs.type_ "submit"
-            , Attrs.hidden True
-            ]
-            []
-        , errorView model.error
-        , a
-            [ class [ Button ]
-            , onClick SubmitClicked
-            ]
-            [ Html.text "reset" ]
-        ]
-    ]
-
-
-sendingBody : List (Html Msg)
-sendingBody =
-    [ Html.Custom.spinner ]
-
-
-successBody : List (Html Msg)
-successBody =
-    [ p
-        []
-        [ Html.text successText ]
-    , a
-        [ class [ Button, MarginTop ]
-        , onClick LoginClicked
-        ]
-        [ Html.text "go to login" ]
-    ]
-
-
-successText : String
-successText =
-    """
-    Great. It worked. Your password has been reset.
-    Now go back to the login in page and use your
-    new password.
-    """
-
-
-failBody : Problem -> List (Html Msg)
-failBody problem =
-    [ p
-        []
-        [ Html.text (failMsg problem) ]
-    , failButton problem
-    ]
-
-
-failButton : Problem -> Html Msg
-failButton problem =
-    case problem of
-        InvalidCode ->
-            a
-                [ class [ Button, MarginTop ]
-                , onClick TryAgainClicked
+            [ Card.textRow
+                []
+                """
+                    Great. It worked. Your password has been reset.
+                    Now go back to the login in page and use your
+                    new password.
+                    """
+            , ButtonRow.view
+                [ Button.config
+                    LoginClicked
+                    "go to login"
                 ]
-                [ Html.text "try again" ]
+            ]
 
-        Other _ ->
-            Html.text ""
-
-
-failMsg : Problem -> String
-failMsg problem =
-    case problem of
-        InvalidCode ->
-            "The reset code was invalid. Sorry. Please try again."
-
-        Other _ ->
-            "Something went wrong, I dont know what. Sorry. Please try again."
+        Fail error ->
+            errorView error
 
 
-field : String -> List (Attribute Msg) -> Html Msg
-field name attributes =
-    Html.Custom.field
-        [ class [ Long ] ]
-        [ p
-            [ class [ Long ] ]
-            [ Html.text name ]
-        , input
-            (baseAttrs ++ attributes)
-            []
-        ]
+errorView : Listener.Error Error -> List (Html msg)
+errorView error =
+    let
+        problemRow : String -> Html msg
+        problemRow =
+            Card.textRow
+                [ Style.problemBackground ]
+    in
+    case error of
+        Listener.DecodeError decodeError ->
+            [ problemRow
+                """
+                Im really sorry. Something really broke.
+                Please let me know that you had this problem
+                by emailing me at chadtech0@gmail.com. Below
+                is the error that occurred:
+                """
+            , Card.errorDisplay
+                (Decode.errorToString decodeError)
+            ]
+
+        Listener.Error InvalidCode ->
+            [ problemRow
+                """
+                The reset code was invalid. 
+                If you requested this code a while ago, 
+                then its probably expired. 
+                Sorry. Please try again."
+                """
+            ]
+
+        Listener.Error (Other str) ->
+            [ problemRow
+                """
+                Sorry, something unexpected happened. 
+                Please let me know that you had this problem
+                by emailing me at chadtech0@gmail.com. Below
+                is the error that occurred:
+                """
+            , Card.errorDisplay str
+            ]
 
 
-baseAttrs : List (Attribute Msg)
-baseAttrs =
-    [ class [ Long ]
-    , Attrs.spellcheck False
-    ]
+inputGroupView :
+    { label : String
+    , onInput : String -> ReadyMsg
+    , options : List (Input ReadyMsg -> Input ReadyMsg)
+    , field : Field
+    }
+    -> Html ReadyMsg
+inputGroupView { label, options, onInput, field } =
+    InputGroup.text
+        { label = label
+        , input =
+            Input.config
+                onInput
+                (Field.getValue field)
+                |> FunctionUtil.composeMany options
+                |> Input.onEnter EnterPressed
+        }
+        |> InputGroup.withStyles [ Style.marginBottom 1 ]
+        |> InputGroup.withError (Field.getError field)
+        |> InputGroup.withDoubleWidth
+        |> InputGroup.toHtml
 
 
-errorView : Maybe String -> Html Msg
-errorView maybeError =
-    case maybeError of
-        Just error ->
-            Html.Custom.error
-                [ class [ Error ] ]
-                error
 
-        Nothing ->
-            Html.text ""
+-------------------------------------------------------------------------------
+-- PORTS --
+-------------------------------------------------------------------------------
 
 
-onInput_ : Field -> Attribute Msg
-onInput_ =
-    FieldUpdated >> onInput
+listener : Listener Msg
+listener =
+    Listener.for
+        { name = "reset password"
+        , decoder =
+            [ Decode.map Ok (Decode.null ())
+            , DecodeUtil.matchString "ExpiredCodeException" InvalidCode
+                |> Decode.field "name"
+                |> Decode.map Err
+            ]
+                |> Decode.oneOf
+        , handler = GotResetPasswordResponse
+        }

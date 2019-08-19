@@ -11,34 +11,41 @@
 var Flags = require("./Js/Flags");
 
 StartCtPaint = function(manifest) {
-    var Client = manifest.Client;
+    var Client = require("./Js/Client")();
     var track = manifest.track;
     var app = { elm: null };
 
-    function toElm(type, payload) {
+    function toElm(name, props) {
         app.elm.ports.fromJs.send({
-            type: type,
-            payload: payload
+            name: name,
+            props: props
         });
     }
 
     var User = require("./Js/User")(Client, toElm);
 
+    var actions = {
+        log_in: User.login,
+        track: track,
+        forgot_password: User.forgotPassword,
+        reset_password: User.resetPassword
+    };
+
     function jsMsgHandler(msg) {
-        var action = actions[msg.type];
+        var action = actions[msg.name];
         if (typeof action === "undefined") {
             if (!manifest.production) {
-                console.log("Unrecognized JsMsg type ->", msg.type);
+                console.log("Unrecognized JsMsg type ->", msg.name);
             }
             return;
         }
-        action(msg.payload);
+        action(msg.props);
     }
 
     User.get(function(user) {
         app.elm = Elm.Main.init({
             flags: Flags.make(user, manifest)
         })
-//        app.elm.ports.toJs.subscribe(jsMsgHandler);
+        app.elm.ports.toJs.subscribe(jsMsgHandler);
     });
 }

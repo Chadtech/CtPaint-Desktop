@@ -3,7 +3,9 @@ module View.Input exposing
     , Option
     , config
     , isPassword
+    , onEnter
     , toHtml
+    , withAutocomplete
     )
 
 import Chadtech.Colors as Colors
@@ -12,6 +14,7 @@ import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
 import Html.Styled.Events as Events
 import Style
+import Util.Html as HtmlUtil
 import Util.Maybe as MaybeUtil
 
 
@@ -31,11 +34,14 @@ type Input msg
 
 type Option msg
     = Password
+    | OnEnter msg
+    | Autocomplete String
 
 
 type alias Summary msg =
     { password : Bool
-    , unit : Maybe msg
+    , onEnter : Maybe msg
+    , autocomplete : Maybe String
     }
 
 
@@ -48,6 +54,16 @@ type alias Summary msg =
 isPassword : Input msg -> Input msg
 isPassword =
     addOption Password
+
+
+onEnter : msg -> Input msg -> Input msg
+onEnter =
+    addOption << OnEnter
+
+
+withAutocomplete : String -> Input msg -> Input msg
+withAutocomplete =
+    addOption << Autocomplete
 
 
 
@@ -69,11 +85,18 @@ optionsToSummary =
             case option of
                 Password ->
                     { summary | password = True }
+
+                OnEnter msg ->
+                    { summary | onEnter = Just msg }
+
+                Autocomplete autocomplete ->
+                    { summary | autocomplete = Just autocomplete }
     in
     List.foldr
         modifySummary
-        { unit = Nothing
+        { onEnter = Nothing
         , password = False
+        , autocomplete = Nothing
         }
 
 
@@ -115,6 +138,12 @@ toHtml (Input { value, onInput } options) =
             [ MaybeUtil.fromBool
                 summary.password
                 (Attrs.type_ "password")
+            , Maybe.map
+                HtmlUtil.onEnter
+                summary.onEnter
+            , Maybe.map
+                (Attrs.attribute "autocomplete")
+                summary.autocomplete
             ]
                 |> List.filterMap identity
     in

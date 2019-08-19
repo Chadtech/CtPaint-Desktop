@@ -14,6 +14,9 @@
   },
   "devDependencies": {},
   "dependencies": {
+    "amazon-cognito-identity-js": "^1.21.0",
+    "aws-api-gateway-client": "^0.2.10",
+    "aws-sdk": "^2.192.0",
     "body-parser": "^1.18.3",
     "browserify": "^16.2.2",
     "express": "^4.17.1",

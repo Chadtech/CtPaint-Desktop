@@ -26,13 +26,12 @@ import Util.Css as CssUtil
 
 
 type Button msg
-    = Button (Model msg)
+    = Button (Model msg) (List Option)
 
 
 type alias Model msg =
     { onClick : msg
     , label : String
-    , options : List Option
     }
 
 
@@ -60,7 +59,7 @@ type alias Summary =
 
 
 -------------------------------------------------------------------------------
--- OPTIONS --
+-- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
 
 
@@ -99,11 +98,6 @@ asHalfWidth =
     withWidth HalfWidth
 
 
-addOption : Option -> Button msg -> Button msg
-addOption option (Button model) =
-    Button { model | options = option :: model.options }
-
-
 indent : Bool -> Button msg -> Button msg
 indent =
     addOption << Indent
@@ -111,8 +105,13 @@ indent =
 
 
 -------------------------------------------------------------------------------
--- SUMMARY --
+-- PRIVATE HELPERS --
 -------------------------------------------------------------------------------
+
+
+addOption : Option -> Button msg -> Button msg
+addOption option (Button model options) =
+    Button model (option :: options)
 
 
 optionsToSummary : List Option -> Summary
@@ -152,12 +151,12 @@ config onClick label =
     Button
         { onClick = onClick
         , label = label
-        , options = []
         }
+        []
 
 
 toHtml : Button msg -> Html msg
-toHtml (Button { onClick, label, options }) =
+toHtml (Button { onClick, label } options) =
     let
         summary : Summary
         summary =
@@ -166,15 +165,11 @@ toHtml (Button { onClick, label, options }) =
     Html.button
         [ Attrs.css
             [ indentStyle summary.indent
-            , Style.font
             , buttonHeight summary.tall
             , Css.backgroundColor Colors.content1
             , Css.color Colors.content4
-            , Style.fontSmoothingNone
-            , Style.noOutline
             , Css.active [ Style.indent ]
             , Css.hover [ Css.color Colors.content5 ]
-            , Style.pointer
             , buttonWidth summary
             , disabledStyle summary.disabled
             ]

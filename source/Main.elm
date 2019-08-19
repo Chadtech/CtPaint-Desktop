@@ -2,22 +2,32 @@ module Main exposing (main)
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation
+import Data.BuildNumber as BuildNumber
 import Data.Document as Document exposing (Document)
+import Data.Listener as Listener exposing (Listener)
 import Data.NavKey as NavKey
+import Data.SessionId as SessionId
 import Data.Tracking as Tracking
+import Data.Viewer exposing (Viewer)
 import Html.Styled as Html exposing (Html)
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Model exposing (Model)
 import Page.About as About
 import Page.Login as Login
+import Page.PageNotFound as PageNotFound
 import Page.PaintApp as PaintApp
+import Page.ResetPassword as ResetPassword
 import Page.Splash as Splash
+import Ports
 import Route exposing (Route)
 import Session exposing (Session)
 import Style
 import Ui.Nav as Nav
 import Url exposing (Url)
 import Util.Cmd as CmdUtil
+import View.Card as Card
+import View.CardHeader as CardHeader
+import View.SingleCardPage as SingleCardPage
 
 
 
@@ -49,9 +59,13 @@ onNavigation =
 type Msg
     = UrlChanged (Result String Route)
     | UrlRequested UrlRequest
+    | ListenerNotFound String
+    | FailedToDecodeJsMsg
     | NavMsg Nav.Msg
+    | PageNotFoundMsg PageNotFound.Msg
     | SplashMsg Splash.Msg
     | LoginMsg Login.Msg
+    | ResetPasswordMsg ResetPassword.Msg
 
 
 
@@ -77,8 +91,13 @@ init json url key =
                 (Ok <| Model.Blank session)
 
         Err decodeError ->
-            Err decodeError
-                |> CmdUtil.withNoCmd
+            ( Err decodeError
+            , Tracking.event "init failed"
+                |> Tracking.withString
+                    "error"
+                    (Decode.errorToString decodeError)
+                |> Tracking.send
+            )
 
 
 
@@ -94,9 +113,40 @@ view result =
             viewPage page
 
         Err error ->
-            { title = Nothing
-            , body = [ Html.text <| Decode.errorToString error ]
-            }
+            viewError error
+
+
+viewError : Decode.Error -> Document msg
+viewError decodeError =
+    let
+        header : Html msg
+        header =
+            CardHeader.config
+                { title = "error" }
+                |> CardHeader.toHtml
+
+        errorBody : List (Html msg)
+        errorBody =
+            [ Card.textRow
+                []
+                """
+                Something went really wrong. Sorry.
+                Please report this error if you can.
+                You can copy and paste the error below,
+                and send it to my email at
+                chadtech0@gmail.com
+                """
+            , Card.errorDisplay
+                (Decode.errorToString decodeError)
+            ]
+    in
+    { title = Nothing
+    , body =
+        Card.view
+            [ Style.width 10 ]
+            (header :: errorBody)
+            |> SingleCardPage.view
+    }
 
 
 viewPage : Model -> Document Msg
@@ -106,6 +156,10 @@ viewPage model =
             { title = Nothing
             , body = []
             }
+
+        Model.PageNotFound _ ->
+            PageNotFound.view
+                |> Document.map PageNotFoundMsg
 
         Model.PaintApp subModel ->
             PaintApp.view subModel
@@ -126,7 +180,10 @@ viewPage model =
         Model.Login subModel ->
             Login.view subModel
                 |> Document.map LoginMsg
-                |> viewInFrame model
+
+        Model.ResetPassword _ subModel ->
+            ResetPassword.view subModel
+                |> Document.map ResetPasswordMsg
 
 
 viewInFrame : Model -> Document Msg -> Document Msg
@@ -149,6 +206,7 @@ update msg result =
         Ok model ->
             updateFromOk msg model
                 |> Tuple.mapFirst Ok
+                |> CmdUtil.addCmd (track msg model)
 
         Err err ->
             ( Err err, Cmd.none )
@@ -157,7 +215,7 @@ update msg result =
 updateFromOk : Msg -> Model -> ( Model, Cmd Msg )
 updateFromOk msg model =
     let
-        session : Session
+        session : Session Viewer
         session =
             Model.getSession model
     in
@@ -194,16 +252,49 @@ updateFromOk msg model =
         LoginMsg subMsg ->
             case model of
                 Model.Login subModel ->
-                    Login.update
-                        (Session.getNavKey session)
-                        subMsg
-                        subModel
+                    Login.update subMsg subModel
                         |> CmdUtil.mapModel Model.Login
                         |> CmdUtil.mapCmd LoginMsg
 
                 _ ->
                     model
                         |> CmdUtil.withNoCmd
+
+        ResetPasswordMsg subMsg ->
+            case model of
+                Model.ResetPassword _ subModel ->
+                    ResetPassword.update
+                        (Session.getNavKey session)
+                        subMsg
+                        subModel
+                        |> CmdUtil.mapModel (Model.ResetPassword session)
+                        |> CmdUtil.mapCmd ResetPasswordMsg
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        PageNotFoundMsg subMsg ->
+            case model of
+                Model.PageNotFound _ ->
+                    ( model
+                    , PageNotFound.update
+                        (Session.getNavKey session)
+                        subMsg
+                        |> Cmd.map PageNotFoundMsg
+                    )
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        ListenerNotFound _ ->
+            model
+                |> CmdUtil.withNoCmd
+
+        FailedToDecodeJsMsg ->
+            model
+                |> CmdUtil.withNoCmd
 
 
 handleRoute : Result String Route -> Model -> ( Model, Cmd Msg )
@@ -212,15 +303,15 @@ handleRoute routeResult model =
         Ok route ->
             handleRouteFromOk route model
 
-        Err isntValidUrl ->
-            model
+        Err _ ->
+            Model.PageNotFound (Model.getSession model)
                 |> CmdUtil.withNoCmd
 
 
 handleRouteFromOk : Route -> Model -> ( Model, Cmd Msg )
 handleRouteFromOk route model =
     let
-        session : Session
+        session : Session Viewer
         session =
             Model.getSession model
     in
@@ -231,6 +322,10 @@ handleRouteFromOk route model =
                 |> CmdUtil.withNoCmd
 
         Route.Landing ->
+            case Session.getViewer session of
+
+
+
             Model.Splash session
                 |> CmdUtil.withNoCmd
 
@@ -243,15 +338,47 @@ handleRouteFromOk route model =
                 (Login.init session)
                 |> CmdUtil.withNoCmd
 
+        Route.ResetPassword ->
+            Model.ResetPassword
+                session
+                ResetPassword.init
+                |> CmdUtil.withNoCmd
 
-track : Msg -> Maybe Tracking.Event
-track msg =
+
+track : Msg -> Model -> Cmd Msg
+track msg model =
+    let
+        session : Session Viewer
+        session =
+            Model.getSession model
+    in
+    msg
+        |> trackPage
+        |> Tracking.withString "page" (Model.pageId model)
+        |> Tracking.withProp
+            "sessionId"
+            (SessionId.encode <| Session.getSessionId session)
+        |> Tracking.withString
+            "buildNumber"
+            (BuildNumber.toString <| Session.getBuildNumber session)
+        |> Tracking.send
+
+
+trackPage : Msg -> Maybe Tracking.Event
+trackPage msg =
     case msg of
         UrlChanged _ ->
             Nothing
 
         UrlRequested _ ->
             Nothing
+
+        ListenerNotFound listener ->
+            Tracking.event "listener not found"
+                |> Tracking.withString "listener" listener
+
+        FailedToDecodeJsMsg ->
+            Tracking.event "failed to decode js msg"
 
         NavMsg subMsg ->
             Nav.track subMsg
@@ -261,6 +388,12 @@ track msg =
 
         LoginMsg subMsg ->
             Login.track subMsg
+
+        ResetPasswordMsg subMsg ->
+            ResetPassword.track subMsg
+
+        PageNotFoundMsg subMsg ->
+            PageNotFound.track subMsg
 
 
 
@@ -277,45 +410,51 @@ subscriptions =
 
 subscriptionsFromOk : Model -> Sub Msg
 subscriptionsFromOk model =
-    Sub.none
+    Ports.fromJs (decodeMsg model)
 
 
+decodeMsg : Model -> Decode.Value -> Msg
+decodeMsg model json =
+    let
+        incomingMsgDecoder : Decoder ( String, Decode.Value )
+        incomingMsgDecoder =
+            Decode.map2 Tuple.pair
+                (Decode.field "name" Decode.string)
+                (Decode.field "props" Decode.value)
+    in
+    case Decode.decodeValue incomingMsgDecoder json of
+        Ok ( name, props ) ->
+            let
+                checkListeners : List (Listener Msg) -> Msg
+                checkListeners remainingListeners =
+                    case remainingListeners of
+                        [] ->
+                            ListenerNotFound name
 
---    case Decode.decodeValue Flags.decoder json of
---        Ok flags ->
---            let
---                taco : Taco
---                taco =
---                    Taco.fromFlags flags
---
---                initTrack : Cmd Msg
---                initTrack =
---                    [ Tuple.pair "is-mac" <| Encode.bool flags.isMac
---                    , Tuple.pair "browser" <| Browser.encode flags.browser
---                    , Tuple.pair "build-number" <| Encode.int flags.buildNumber
---                    ]
---                        |> Tuple.pair "app init"
---                        |> Just
---                        |> Ports.sendTracking taco
---            in
---            { page = Blank
---            , taco = taco
---            }
---                |> Update.update (onNavigation location)
---                |> Tuple.mapFirst Ok
---                |> CmdUtil.addCmd initTrack
---
---        Err err ->
---            ( Err err
---            , { sessionId = SessionId.error
---              , email = Nothing
---              , name = "desktop app init fail"
---              , properties =
---                    err
---                        |> Encode.string
---                        |> Tuple.pair "error"
---                        |> List.singleton
---              }
---                |> Ports.Track
---                |> Ports.send
---            )
+                        first :: rest ->
+                            if Listener.getName first == name then
+                                Listener.handle first props
+
+                            else
+                                checkListeners rest
+            in
+            checkListeners
+                (listeners model)
+
+        Err _ ->
+            FailedToDecodeJsMsg
+
+
+listeners : Model -> List (Listener Msg)
+listeners model =
+    case model of
+        Model.Login _ ->
+            Listener.mapMany LoginMsg Login.listeners
+
+        Model.ResetPassword _ _ ->
+            [ ResetPassword.listener
+                |> Listener.map ResetPasswordMsg
+            ]
+
+        _ ->
+            []

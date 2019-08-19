@@ -3,6 +3,7 @@ module Ui.LoginCard exposing
     , Msg
     , header
     , init
+    , listeners
     , track
     , update
     , view
@@ -10,18 +11,20 @@ module Ui.LoginCard exposing
     )
 
 import Css exposing (Style)
-import Data.NavKey exposing (NavKey)
+import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Html.Grid as Grid
+import Data.User exposing (User)
 import Html.Styled exposing (Html)
-import String.Extra as StringUtil
+import Ports
 import Style
-import Ui.LoginCard.Field as LoginField exposing (Field)
+import Ui.LoginCard.ForgotPassword as ForgotPassword
+import Ui.LoginCard.Login as Login
 import Util.Cmd as CmdUtil
+import Util.Html as HtmlUtil
+import Util.Tuple as TupleUtil
+import Util.Tuple3 as Tuple3
 import View.Card as Card
 import View.CardHeader as CardHeader exposing (CardHeader)
-import View.Input as Input exposing (Input)
-import View.Label as Label
 
 
 
@@ -30,25 +33,14 @@ import View.Label as Label
 -------------------------------------------------------------------------------
 
 
-type alias Model =
-    { email : Field
-    , password : Field
-    , httpStatus : Status
-    }
-
-
-type Status
-    = Ready
-    | LoggingIn
-    | Failed String
+type Model
+    = Login Login.Model
+    | ForgotPassword ForgotPassword.Model
 
 
 type Msg
-    = EmailUpdated String
-    | PasswordUpdated String
-    | EnterPressed
-    | LoginClicked
-    | ForgotPasswordClicked
+    = LoginMsg Login.Msg
+    | ForgotPasswordMsg ForgotPassword.Msg
 
 
 
@@ -59,37 +51,7 @@ type Msg
 
 init : Model
 init =
-    { email = LoginField.init
-    , password = LoginField.init
-    , httpStatus = Ready
-    }
-
-
-
--------------------------------------------------------------------------------
--- PRIVATE HELPERS --
--------------------------------------------------------------------------------
-
-
-setEmail : String -> Model -> Model
-setEmail str model =
-    { model
-        | email =
-            LoginField.setValue str model.email
-    }
-
-
-setPassword : String -> Model -> Model
-setPassword str model =
-    { model
-        | password =
-            LoginField.setValue str model.password
-    }
-
-
-loggingIn : Model -> Model
-loggingIn model =
-    { model | httpStatus = LoggingIn }
+    Login Login.init
 
 
 
@@ -98,50 +60,34 @@ loggingIn model =
 -------------------------------------------------------------------------------
 
 
-header : CardHeader msg
-header =
+header : Model -> CardHeader msg
+header model =
     CardHeader.config
-        { title = "log in" }
+        { title =
+            case model of
+                Login _ ->
+                    "log in"
+
+                ForgotPassword _ ->
+                    "forgot password"
+        }
 
 
 view : List (Html msg) -> Html msg
 view =
-    Card.view
-        [ Style.width 9
-        , Style.padding 1
-        , Css.flex (Css.int 0)
-        ]
+    Card.view [ Style.width 9 ]
 
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
-    let
-        labelView : String -> Input Msg -> Html Msg
-        labelView label input =
-            Grid.row
-                [ Style.marginBottom 1 ]
-                [ Label.view
-                    label
-                    [ Style.width 7
-                    , Style.paddingLeft 1
-                    , Grid.exactWidthColumn
-                        (Style.sizePx 7)
-                    ]
-                , Grid.column
-                    []
-                    [ Input.toHtml input ]
-                ]
-    in
-    [ Input.config
-        EmailUpdated
-        (LoginField.getValue model.email)
-        |> labelView "email"
-    , Input.config
-        PasswordUpdated
-        (LoginField.getValue model.password)
-        |> Input.isPassword
-        |> labelView "password"
-    ]
+    case model of
+        Login subModel ->
+            Login.view subModel
+                |> HtmlUtil.mapList LoginMsg
+
+        ForgotPassword subModel ->
+            ForgotPassword.view subModel
+                |> HtmlUtil.mapList ForgotPasswordMsg
 
 
 
@@ -150,101 +96,113 @@ viewBody model =
 -------------------------------------------------------------------------------
 
 
-update : NavKey -> Msg -> Model -> ( Model, Cmd Msg )
-update navKey msg model =
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe User )
+update msg model =
     case msg of
-        EmailUpdated str ->
-            setEmail str model
-                |> CmdUtil.withNoCmd
+        LoginMsg subMsg ->
+            case model of
+                Login subModel ->
+                    updateLogin subMsg subModel
 
-        PasswordUpdated str ->
-            setPassword str model
-                |> CmdUtil.withNoCmd
+                ForgotPassword _ ->
+                    model
+                        |> CmdUtil.justModel
 
-        LoginClicked ->
+        ForgotPasswordMsg subMsg ->
+            case model of
+                ForgotPassword subModel ->
+                    ForgotPassword.update subMsg subModel
+                        |> CmdUtil.mapModel ForgotPassword
+                        |> CmdUtil.mapCmd ForgotPasswordMsg
+                        |> TupleUtil.append Nothing
+
+                Login _ ->
+                    model
+                        |> CmdUtil.justModel
+
+
+updateLogin : Login.Msg -> Login.Model -> ( Model, Cmd Msg, Maybe User )
+updateLogin msg model =
+    case msg of
+        Login.EmailUpdated str ->
+            Login.setEmail str model
+                |> Login
+                |> CmdUtil.justModel
+
+        Login.PasswordUpdated str ->
+            Login.setPassword str model
+                |> Login
+                |> CmdUtil.justModel
+
+        Login.LoginClicked ->
             attemptLogin model
 
-        EnterPressed ->
+        Login.EnterPressed ->
             attemptLogin model
 
-        ForgotPasswordClicked ->
-            ( model
-            , Cmd.none
-              -- TODO , make the login card
-              -- go into a forgot password state
-            )
+        Login.ForgotPasswordClicked ->
+            ForgotPassword ForgotPassword.init
+                |> CmdUtil.justModel
+
+        Login.GotLoginResponse response ->
+            case response of
+                Ok user ->
+                    ( Login model
+                    , Cmd.none
+                    , Just user
+                    )
+
+                Err error ->
+                    model
+                        |> Login.fail error
+                        |> Login
+                        |> CmdUtil.justModel
+
+        Login.TryAgainClicked ->
+            Login Login.init
+                |> CmdUtil.justModel
 
 
-attemptLogin : Model -> ( Model, Cmd Msg )
+attemptLogin : Login.Model -> ( Model, Cmd Msg, Maybe effect )
 attemptLogin model =
-    let
-        validatedModel : Model
-        validatedModel =
-            { model
-                | email = validateEmail model.email
-                , password = validatePassword model.password
-            }
-    in
-    case
-        ( validatedModel.email.error
-        , validatedModel.password.error
-        )
-    of
-        ( Nothing, Nothing ) ->
-            ( validatedModel
-                |> loggingIn
-            , requestLogin
-                { email = validatedModel.email.value
-                , password = validatedModel.password.value
-                }
-            )
+    Tuple3.mapFirst Login <|
+        case Login.validate model of
+            Ok { email, password } ->
+                ( Login.loggingIn model
+                , Ports.payload "log in"
+                    |> Ports.withString "email" email
+                    |> Ports.withString "password" password
+                    |> Ports.send
+                , Nothing
+                )
 
-        _ ->
-            validatedModel
-                |> CmdUtil.withNoCmd
-
-
-requestLogin : { email : String, password : String } -> Cmd Msg
-requestLogin _ =
-    Cmd.none
-
-
-validateEmail : Field -> Field
-validateEmail =
-    LoginField.validate
-        { valid = not << StringUtil.isBlank
-        , errorMessage = "email is required"
-        }
-
-
-validatePassword : Field -> Field
-validatePassword =
-    LoginField.validate
-        { valid = not << StringUtil.isBlank
-        , errorMessage = "password is required"
-        }
+            Err newModel ->
+                newModel
+                    |> CmdUtil.justModel
 
 
 track : Msg -> Maybe Tracking.Event
-track =
-    trackUnnamespaced
-        >> Tracking.tag "login-card"
+track msg =
+    Tracking.tag "login-card" <|
+        case msg of
+            LoginMsg subMsg ->
+                Login.track subMsg
+
+            ForgotPasswordMsg subMsg ->
+                ForgotPassword.track subMsg
+                    |> Tracking.tag "forgot-password"
 
 
-trackUnnamespaced : Msg -> Maybe Tracking.Event
-trackUnnamespaced msg =
-    case msg of
-        EmailUpdated _ ->
-            Nothing
 
-        PasswordUpdated _ ->
-            Nothing
+-------------------------------------------------------------------------------
+-- PORTS --
+-------------------------------------------------------------------------------
 
-        EnterPressed ->
-            Tracking.event "enter press"
 
-        LoginClicked ->
-            Tracking.event "login click"
-
-        ForgotPasswordClicked ->
-            Tracking.event "forgot password click"
+listeners : List (Listener Msg)
+listeners =
+    [ Login.listener
+        |> Listener.map LoginMsg
+    , ForgotPassword.listener
+        |> Listener.map ForgotPasswordMsg
+    ]

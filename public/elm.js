@@ -3925,107 +3925,6 @@ function _Url_percentDecode(string)
 	}
 }
 
-// CREATE
-
-var _Regex_never = /.^/;
-
-var _Regex_fromStringWith = F2(function(options, string)
-{
-	var flags = 'g';
-	if (options.multiline) { flags += 'm'; }
-	if (options.caseInsensitive) { flags += 'i'; }
-
-	try
-	{
-		return elm$core$Maybe$Just(new RegExp(string, flags));
-	}
-	catch(error)
-	{
-		return elm$core$Maybe$Nothing;
-	}
-});
-
-
-// USE
-
-var _Regex_contains = F2(function(re, string)
-{
-	return string.match(re) !== null;
-});
-
-
-var _Regex_findAtMost = F3(function(n, re, str)
-{
-	var out = [];
-	var number = 0;
-	var string = str;
-	var lastIndex = re.lastIndex;
-	var prevLastIndex = -1;
-	var result;
-	while (number++ < n && (result = re.exec(string)))
-	{
-		if (prevLastIndex == re.lastIndex) break;
-		var i = result.length - 1;
-		var subs = new Array(i);
-		while (i > 0)
-		{
-			var submatch = result[i];
-			subs[--i] = submatch
-				? elm$core$Maybe$Just(submatch)
-				: elm$core$Maybe$Nothing;
-		}
-		out.push(A4(elm$regex$Regex$Match, result[0], result.index, number, _List_fromArray(subs)));
-		prevLastIndex = re.lastIndex;
-	}
-	re.lastIndex = lastIndex;
-	return _List_fromArray(out);
-});
-
-
-var _Regex_replaceAtMost = F4(function(n, re, replacer, string)
-{
-	var count = 0;
-	function jsReplacer(match)
-	{
-		if (count++ >= n)
-		{
-			return match;
-		}
-		var i = arguments.length - 3;
-		var submatches = new Array(i);
-		while (i > 0)
-		{
-			var submatch = arguments[i];
-			submatches[--i] = submatch
-				? elm$core$Maybe$Just(submatch)
-				: elm$core$Maybe$Nothing;
-		}
-		return replacer(A4(elm$regex$Regex$Match, match, arguments[arguments.length - 2], count, _List_fromArray(submatches)));
-	}
-	return string.replace(re, jsReplacer);
-});
-
-var _Regex_splitAtMost = F3(function(n, re, str)
-{
-	var string = str;
-	var out = [];
-	var start = re.lastIndex;
-	var restoreLastIndex = re.lastIndex;
-	while (n--)
-	{
-		var result = re.exec(string);
-		if (!result) break;
-		out.push(string.slice(start, result.index));
-		start = re.lastIndex;
-	}
-	out.push(string.slice(start));
-	re.lastIndex = restoreLastIndex;
-	return _List_fromArray(out);
-});
-
-var _Regex_infinity = Infinity;
-
-
 
 
 // ELEMENT
@@ -4465,6 +4364,107 @@ function _Browser_load(url)
 		}
 	}));
 }
+
+
+// CREATE
+
+var _Regex_never = /.^/;
+
+var _Regex_fromStringWith = F2(function(options, string)
+{
+	var flags = 'g';
+	if (options.multiline) { flags += 'm'; }
+	if (options.caseInsensitive) { flags += 'i'; }
+
+	try
+	{
+		return elm$core$Maybe$Just(new RegExp(string, flags));
+	}
+	catch(error)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+});
+
+
+// USE
+
+var _Regex_contains = F2(function(re, string)
+{
+	return string.match(re) !== null;
+});
+
+
+var _Regex_findAtMost = F3(function(n, re, str)
+{
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex == re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch
+				? elm$core$Maybe$Just(submatch)
+				: elm$core$Maybe$Nothing;
+		}
+		out.push(A4(elm$regex$Regex$Match, result[0], result.index, number, _List_fromArray(subs)));
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _List_fromArray(out);
+});
+
+
+var _Regex_replaceAtMost = F4(function(n, re, replacer, string)
+{
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch
+				? elm$core$Maybe$Just(submatch)
+				: elm$core$Maybe$Nothing;
+		}
+		return replacer(A4(elm$regex$Regex$Match, match, arguments[arguments.length - 2], count, _List_fromArray(submatches)));
+	}
+	return string.replace(re, jsReplacer);
+});
+
+var _Regex_splitAtMost = F3(function(n, re, str)
+{
+	var string = str;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		var result = re.exec(string);
+		if (!result) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _List_fromArray(out);
+});
+
+var _Regex_infinity = Infinity;
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
@@ -7389,6 +7389,145 @@ var author$project$Data$NavKey$NavKey = function (a) {
 	return {$: 'NavKey', a: a};
 };
 var author$project$Data$NavKey$fromNativeKey = author$project$Data$NavKey$NavKey;
+var author$project$Data$Tracking$event = function (name) {
+	return elm$core$Maybe$Just(
+		{name: name, props: _List_Nil});
+};
+var elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			elm$core$String$join,
+			after,
+			A2(elm$core$String$split, before, string));
+	});
+var author$project$Data$Tracking$encodeString = A2(elm$core$String$replace, ' ', '_');
+var author$project$Ports$withProp = F3(
+	function (propName, value, _n0) {
+		var name = _n0.name;
+		var props = _n0.props;
+		return {
+			name: name,
+			props: A2(
+				elm$core$List$cons,
+				_Utils_Tuple2(propName, value),
+				props)
+		};
+	});
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var author$project$Data$Tracking$encodeProps = function (remainingProps) {
+	if (!remainingProps.b) {
+		return elm$core$Basics$identity;
+	} else {
+		var _n1 = remainingProps.a;
+		var propName = _n1.a;
+		var propValue = _n1.b;
+		var rest = remainingProps.b;
+		return A2(
+			elm$core$Basics$composeR,
+			A2(
+				author$project$Ports$withProp,
+				author$project$Data$Tracking$encodeString(propName),
+				propValue),
+			author$project$Data$Tracking$encodeProps(rest));
+	}
+};
+var author$project$Ports$payload = function (name) {
+	return {
+		name: A3(elm$core$String$replace, ' ', '_', name),
+		props: _List_Nil
+	};
+};
+var author$project$Ports$toJs = _Platform_outgoingPort('toJs', elm$core$Basics$identity);
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var elm$json$Json$Encode$null = _Json_encodeNull;
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Ports$send = function (_n0) {
+	var name = _n0.name;
+	var props = _n0.props;
+	var encodedProps = elm$core$List$isEmpty(props) ? elm$json$Json$Encode$null : elm$json$Json$Encode$object(props);
+	return author$project$Ports$toJs(
+		elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					A2(
+					elm$core$Tuple$pair,
+					'name',
+					elm$json$Json$Encode$string(name)),
+					A2(elm$core$Tuple$pair, 'props', encodedProps)
+				])));
+};
+var author$project$Ports$withString = F2(
+	function (propName, stringValue) {
+		return A2(
+			author$project$Ports$withProp,
+			propName,
+			elm$json$Json$Encode$string(stringValue));
+	});
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var author$project$Data$Tracking$send = function (maybeEvent) {
+	if (maybeEvent.$ === 'Just') {
+		var name = maybeEvent.a.name;
+		var props = maybeEvent.a.props;
+		return author$project$Ports$send(
+			A2(
+				author$project$Data$Tracking$encodeProps,
+				props,
+				A3(
+					author$project$Ports$withString,
+					'name',
+					name,
+					author$project$Ports$payload('track'))));
+	} else {
+		return elm$core$Platform$Cmd$none;
+	}
+};
+var author$project$Data$Tracking$withProp = F3(
+	function (propName, value, maybeEvent) {
+		if (maybeEvent.$ === 'Just') {
+			var event_ = maybeEvent.a;
+			return elm$core$Maybe$Just(
+				_Utils_update(
+					event_,
+					{
+						props: A2(
+							elm$core$List$cons,
+							_Utils_Tuple2(propName, value),
+							event_.props)
+					}));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var author$project$Data$Tracking$withString = function (propName) {
+	return A2(
+		elm$core$Basics$composeR,
+		author$project$Data$Tracking$encodeString,
+		A2(
+			elm$core$Basics$composeR,
+			elm$json$Json$Encode$string,
+			author$project$Data$Tracking$withProp(propName)));
+};
 var author$project$Main$UrlChanged = function (a) {
 	return {$: 'UrlChanged', a: a};
 };
@@ -7396,6 +7535,7 @@ var author$project$Route$About = {$: 'About'};
 var author$project$Route$Landing = {$: 'Landing'};
 var author$project$Route$Login = {$: 'Login'};
 var author$project$Route$PaintApp = {$: 'PaintApp'};
+var author$project$Route$ResetPassword = {$: 'ResetPassword'};
 var elm$url$Url$Parser$Parser = function (a) {
 	return {$: 'Parser', a: a};
 };
@@ -7493,7 +7633,11 @@ var author$project$Route$parser = elm$url$Url$Parser$oneOf(
 			A2(
 			elm$url$Url$Parser$map,
 			author$project$Route$Login,
-			elm$url$Url$Parser$s('login'))
+			elm$url$Url$Parser$s('login')),
+			A2(
+			elm$url$Url$Parser$map,
+			author$project$Route$ResetPassword,
+			elm$url$Url$Parser$s('resetpassword'))
 		]));
 var elm$url$Url$Parser$getFirstMatch = function (states) {
 	getFirstMatch:
@@ -8023,17 +8167,385 @@ var author$project$Route$fromUrl = function (url) {
 		return elm$core$Result$Err(url.path);
 	}
 };
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var author$project$Main$onNavigation = A2(elm$core$Basics$composeR, author$project$Route$fromUrl, author$project$Main$UrlChanged);
+var author$project$Data$BuildNumber$toString = function (_n0) {
+	var _int = _n0.a;
+	return elm$core$String$fromInt(_int);
+};
+var Chadtech$elm_relational_database$Id$encode = function (_n0) {
+	var str = _n0.a;
+	return elm$json$Json$Encode$string(str);
+};
+var author$project$Data$SessionId$encode = function (_n0) {
+	var sessionId = _n0.a;
+	return Chadtech$elm_relational_database$Id$encode(sessionId);
+};
+var author$project$Data$Tracking$tag = function (propName) {
+	return A2(author$project$Data$Tracking$withProp, propName, elm$json$Json$Encode$null);
+};
+var author$project$Data$Listener$DecodeError = function (a) {
+	return {$: 'DecodeError', a: a};
+};
+var author$project$Data$Listener$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var author$project$Data$Listener$mapError = F2(
+	function (f, response) {
+		if (response.$ === 'Ok') {
+			var value = response.a;
+			return elm$core$Result$Ok(value);
+		} else {
+			var error = response.a;
+			if (error.$ === 'DecodeError') {
+				var decodeError = error.a;
+				return elm$core$Result$Err(
+					author$project$Data$Listener$DecodeError(decodeError));
+			} else {
+				var customError = error.a;
+				return elm$core$Result$Err(
+					author$project$Data$Listener$Error(
+						f(customError)));
+			}
+		}
+	});
+var author$project$Util$Json$Decode$errorToSanitizedString = function (error) {
+	switch (error.$) {
+		case 'Field':
+			var string = error.a;
+			var fieldError = error.b;
+			return A2(
+				elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						'error at field',
+						string,
+						'->',
+						author$project$Util$Json$Decode$errorToSanitizedString(fieldError)
+					]));
+		case 'Index':
+			var index = error.a;
+			var indexError = error.b;
+			return A2(
+				elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						'error at index',
+						elm$core$String$fromInt(index),
+						'->',
+						author$project$Util$Json$Decode$errorToSanitizedString(indexError)
+					]));
+		case 'OneOf':
+			var errors = error.a;
+			return A2(
+				elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						'error in these attempts ->',
+						A2(
+						elm$core$String$join,
+						', ',
+						A2(elm$core$List$map, author$project$Util$Json$Decode$errorToSanitizedString, errors))
+					]));
+		default:
+			var string = error.a;
+			return string;
+	}
+};
+var author$project$Data$Listener$errorToString = F2(
+	function (customToString, error) {
+		if (error.$ === 'DecodeError') {
+			var decodeError = error.a;
+			return author$project$Util$Json$Decode$errorToSanitizedString(decodeError);
+		} else {
+			var customError = error.a;
+			return customToString(customError);
+		}
+	});
+var author$project$Data$Tracking$withResult = F2(
+	function (encodeError, result) {
+		if (result.$ === 'Ok') {
+			return A2(author$project$Data$Tracking$withString, 'response', 'Ok');
+		} else {
+			var error = result.a;
+			return A2(
+				elm$core$Basics$composeR,
+				A2(author$project$Data$Tracking$withString, 'response', 'Error'),
+				A2(
+					author$project$Data$Tracking$withString,
+					'error',
+					encodeError(error)));
+		}
+	});
+var author$project$Data$Tracking$withListenerResponse = author$project$Data$Tracking$withResult(
+	author$project$Data$Listener$errorToString(elm$core$Basics$identity));
+var author$project$Ui$LoginCard$ForgotPassword$errorToId = function (error) {
+	return 'user doesnt exist';
+};
+var author$project$Ui$LoginCard$ForgotPassword$trackReady = function (msg) {
+	switch (msg.$) {
+		case 'EmailUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'ResetPasswordClicked':
+			return author$project$Data$Tracking$event('reset password clicked');
+		default:
+			return author$project$Data$Tracking$event('enter pressed');
+	}
+};
+var author$project$Ui$LoginCard$ForgotPassword$track = function (msg) {
+	if (msg.$ === 'ReadyMsg') {
+		var readyMsg = msg.a;
+		return author$project$Ui$LoginCard$ForgotPassword$trackReady(readyMsg);
+	} else {
+		var response = msg.a;
+		return A2(
+			author$project$Data$Tracking$withListenerResponse,
+			A2(author$project$Data$Listener$mapError, author$project$Ui$LoginCard$ForgotPassword$errorToId, response),
+			author$project$Data$Tracking$event('got forget password response'));
+	}
+};
+var author$project$Ui$LoginCard$Login$errorToId = function (error) {
+	if (error.$ === 'IncorrectCredentials') {
+		return 'incorrect credentials';
+	} else {
+		return 'password reset required';
+	}
+};
+var author$project$Ui$LoginCard$Login$track = function (msg) {
+	switch (msg.$) {
+		case 'EmailUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'PasswordUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'EnterPressed':
+			return author$project$Data$Tracking$event('enter press');
+		case 'LoginClicked':
+			return author$project$Data$Tracking$event('login click');
+		case 'ForgotPasswordClicked':
+			return author$project$Data$Tracking$event('forgot password click');
+		case 'GotLoginResponse':
+			var response = msg.a;
+			return A2(
+				author$project$Data$Tracking$withListenerResponse,
+				A2(author$project$Data$Listener$mapError, author$project$Ui$LoginCard$Login$errorToId, response),
+				author$project$Data$Tracking$event('got login response'));
+		default:
+			return author$project$Data$Tracking$event('try again clicked');
+	}
+};
+var author$project$Ui$LoginCard$track = function (msg) {
+	return A2(
+		author$project$Data$Tracking$tag,
+		'login-card',
+		function () {
+			if (msg.$ === 'LoginMsg') {
+				var subMsg = msg.a;
+				return author$project$Ui$LoginCard$Login$track(subMsg);
+			} else {
+				var subMsg = msg.a;
+				return A2(
+					author$project$Data$Tracking$tag,
+					'forgot-password',
+					author$project$Ui$LoginCard$ForgotPassword$track(subMsg));
+			}
+		}());
+};
+var author$project$Page$Login$track = function (msg) {
+	var subMsg = msg.a;
+	return author$project$Ui$LoginCard$track(subMsg);
+};
+var author$project$Page$PageNotFound$track = function (msg) {
+	return author$project$Data$Tracking$event('go home clicked');
+};
+var author$project$Page$ResetPassword$errorToString = function (error) {
+	if (error.$ === 'InvalidCode') {
+		return 'invalid code';
+	} else {
+		var str = error.a;
+		return str;
+	}
+};
+var author$project$Page$ResetPassword$trackReady = function (msg) {
+	switch (msg.$) {
+		case 'EmailUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'CodeUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'PasswordUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'PasswordConfirmUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'EnterPressed':
+			return author$project$Data$Tracking$event('enter pressed');
+		default:
+			return author$project$Data$Tracking$event('reset password clicked');
+	}
+};
+var author$project$Page$ResetPassword$track = function (msg) {
+	switch (msg.$) {
+		case 'ReadyMsg':
+			var readyMsg = msg.a;
+			return author$project$Page$ResetPassword$trackReady(readyMsg);
+		case 'GotResetPasswordResponse':
+			var response = msg.a;
+			return A2(
+				author$project$Data$Tracking$withListenerResponse,
+				A2(author$project$Data$Listener$mapError, author$project$Page$ResetPassword$errorToString, response),
+				author$project$Data$Tracking$event('got reset password response'));
+		case 'LoginClicked':
+			return author$project$Data$Tracking$event('login clicked');
+		default:
+			return author$project$Data$Tracking$event('try again clicked');
+	}
+};
+var author$project$Page$Splash$track = function (msg) {
+	if (msg.$ === 'LearnMoreClicked') {
+		return author$project$Data$Tracking$event('learn-more click');
+	} else {
+		return author$project$Data$Tracking$event('draw click');
+	}
+};
+var author$project$Ui$Nav$Option$toLabel = function (option) {
+	switch (option.$) {
+		case 'Draw':
+			return 'draw';
+		case 'Title':
+			return 'title';
+		case 'About':
+			return 'about';
+		default:
+			return 'log in';
+	}
+};
+var author$project$Ui$Nav$Option$encode = A2(elm$core$Basics$composeR, author$project$Ui$Nav$Option$toLabel, elm$json$Json$Encode$string);
+var author$project$Ui$Nav$track = function (msg) {
+	var option = msg.a;
+	return A3(
+		author$project$Data$Tracking$withProp,
+		'option',
+		author$project$Ui$Nav$Option$encode(option),
+		author$project$Data$Tracking$event('nav bar option clicked'));
+};
+var author$project$Main$trackPage = function (msg) {
+	switch (msg.$) {
+		case 'UrlChanged':
+			return elm$core$Maybe$Nothing;
+		case 'UrlRequested':
+			return elm$core$Maybe$Nothing;
+		case 'ListenerNotFound':
+			var listener = msg.a;
+			return A3(
+				author$project$Data$Tracking$withString,
+				'listener',
+				listener,
+				author$project$Data$Tracking$event('listener not found'));
+		case 'FailedToDecodeJsMsg':
+			return author$project$Data$Tracking$event('failed to decode js msg');
+		case 'NavMsg':
+			var subMsg = msg.a;
+			return author$project$Ui$Nav$track(subMsg);
+		case 'SplashMsg':
+			var subMsg = msg.a;
+			return author$project$Page$Splash$track(subMsg);
+		case 'LoginMsg':
+			var subMsg = msg.a;
+			return author$project$Page$Login$track(subMsg);
+		case 'ResetPasswordMsg':
+			var subMsg = msg.a;
+			return author$project$Page$ResetPassword$track(subMsg);
+		default:
+			var subMsg = msg.a;
+			return author$project$Page$PageNotFound$track(subMsg);
+	}
+};
+var author$project$Page$Login$getSession = function ($) {
+	return $.session;
+};
+var author$project$Page$PaintApp$getSession = function ($) {
+	return $.session;
+};
+var author$project$Model$getSession = function (model) {
+	switch (model.$) {
+		case 'Blank':
+			var session = model.a;
+			return session;
+		case 'PageNotFound':
+			var session = model.a;
+			return session;
+		case 'PaintApp':
+			var subModel = model.a;
+			return author$project$Page$PaintApp$getSession(subModel);
+		case 'Splash':
+			var session = model.a;
+			return session;
+		case 'About':
+			var session = model.a;
+			return session;
+		case 'Login':
+			var subModel = model.a;
+			return author$project$Page$Login$getSession(subModel);
+		default:
+			var session = model.a;
+			return session;
+	}
+};
+var author$project$Model$pageId = function (model) {
+	switch (model.$) {
+		case 'Blank':
+			return 'blank';
+		case 'PageNotFound':
+			return 'page-not-found';
+		case 'PaintApp':
+			return 'paint-app';
+		case 'Splash':
+			return 'splash';
+		case 'About':
+			return 'about';
+		case 'Login':
+			return 'login';
+		default:
+			return 'reset-password';
+	}
+};
+var author$project$Session$getBuildNumber = function ($) {
+	return $.buildNumber;
+};
+var author$project$Session$getSessionId = function ($) {
+	return $.sessionId;
+};
+var author$project$Main$track = F2(
+	function (msg, model) {
+		var session = author$project$Model$getSession(model);
+		return author$project$Data$Tracking$send(
+			A3(
+				author$project$Data$Tracking$withString,
+				'buildNumber',
+				author$project$Data$BuildNumber$toString(
+					author$project$Session$getBuildNumber(session)),
+				A3(
+					author$project$Data$Tracking$withProp,
+					'sessionId',
+					author$project$Data$SessionId$encode(
+						author$project$Session$getSessionId(session)),
+					A3(
+						author$project$Data$Tracking$withString,
+						'page',
+						author$project$Model$pageId(model),
+						author$project$Main$trackPage(msg)))));
+	});
 var author$project$Main$LoginMsg = function (a) {
 	return {$: 'LoginMsg', a: a};
 };
 var author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
+};
+var author$project$Main$PageNotFoundMsg = function (a) {
+	return {$: 'PageNotFoundMsg', a: a};
+};
+var author$project$Main$ResetPasswordMsg = function (a) {
+	return {$: 'ResetPasswordMsg', a: a};
 };
 var author$project$Main$SplashMsg = function (a) {
 	return {$: 'SplashMsg', a: a};
@@ -8047,45 +8559,31 @@ var author$project$Model$Login = function (a) {
 var author$project$Model$PaintApp = function (a) {
 	return {$: 'PaintApp', a: a};
 };
+var author$project$Model$ResetPassword = F2(
+	function (a, b) {
+		return {$: 'ResetPassword', a: a, b: b};
+	});
 var author$project$Model$Splash = function (a) {
 	return {$: 'Splash', a: a};
 };
-var author$project$Page$Login$getSession = function ($) {
-	return $.session;
+var author$project$Ui$LoginCard$Login = function (a) {
+	return {$: 'Login', a: a};
 };
-var author$project$Page$PaintApp$getSession = function ($) {
-	return $.session;
-};
-var author$project$Model$getSession = function (model) {
-	switch (model.$) {
-		case 'Blank':
-			var session = model.a;
-			return session;
-		case 'PaintApp':
-			var subModel = model.a;
-			return author$project$Page$PaintApp$getSession(subModel);
-		case 'Splash':
-			var session = model.a;
-			return session;
-		case 'About':
-			var session = model.a;
-			return session;
-		default:
-			var subModel = model.a;
-			return author$project$Page$Login$getSession(subModel);
-	}
-};
-var author$project$Ui$LoginCard$Ready = {$: 'Ready'};
-var author$project$Ui$LoginCard$Field$init = {error: elm$core$Maybe$Nothing, value: ''};
-var author$project$Ui$LoginCard$init = {email: author$project$Ui$LoginCard$Field$init, httpStatus: author$project$Ui$LoginCard$Ready, password: author$project$Ui$LoginCard$Field$init};
+var author$project$Data$Field$init = {error: elm$core$Maybe$Nothing, value: ''};
+var author$project$Ui$LoginCard$Login$Ready = {$: 'Ready'};
+var author$project$Ui$LoginCard$Login$init = {email: author$project$Data$Field$init, httpStatus: author$project$Ui$LoginCard$Login$Ready, password: author$project$Data$Field$init};
+var author$project$Ui$LoginCard$init = author$project$Ui$LoginCard$Login(author$project$Ui$LoginCard$Login$init);
 var author$project$Page$Login$init = function (session) {
 	return {loginCard: author$project$Ui$LoginCard$init, session: session};
 };
 var author$project$Page$PaintApp$init = function (session) {
 	return {session: session};
 };
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var author$project$Page$ResetPassword$Ready = function (a) {
+	return {$: 'Ready', a: a};
+};
+var author$project$Page$ResetPassword$init = author$project$Page$ResetPassword$Ready(
+	{code: author$project$Data$Field$init, email: author$project$Data$Field$init, error: elm$core$Maybe$Nothing, password: author$project$Data$Field$init, passwordConfirm: author$project$Data$Field$init});
 var author$project$Util$Cmd$withNoCmd = function (model) {
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
@@ -8103,157 +8601,45 @@ var author$project$Main$handleRouteFromOk = F2(
 			case 'About':
 				return author$project$Util$Cmd$withNoCmd(
 					author$project$Model$About(session));
-			default:
+			case 'Login':
 				return author$project$Util$Cmd$withNoCmd(
 					author$project$Model$Login(
 						author$project$Page$Login$init(session)));
+			default:
+				return author$project$Util$Cmd$withNoCmd(
+					A2(author$project$Model$ResetPassword, session, author$project$Page$ResetPassword$init));
 		}
 	});
+var author$project$Model$PageNotFound = function (a) {
+	return {$: 'PageNotFound', a: a};
+};
 var author$project$Main$handleRoute = F2(
 	function (routeResult, model) {
 		if (routeResult.$ === 'Ok') {
 			var route = routeResult.a;
 			return A2(author$project$Main$handleRouteFromOk, route, model);
 		} else {
-			var isntValidUrl = routeResult.a;
-			return author$project$Util$Cmd$withNoCmd(model);
+			return author$project$Util$Cmd$withNoCmd(
+				author$project$Model$PageNotFound(
+					author$project$Model$getSession(model)));
 		}
 	});
 var author$project$Page$Login$LoginCardMsg = function (a) {
 	return {$: 'LoginCardMsg', a: a};
 };
+var author$project$Page$Login$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
 var author$project$Page$Login$setLoginCard = F2(
 	function (newLoginCard, model) {
 		return _Utils_update(
 			model,
 			{loginCard: newLoginCard});
-	});
-var author$project$Ui$LoginCard$LoggingIn = {$: 'LoggingIn'};
-var author$project$Ui$LoginCard$loggingIn = function (model) {
-	return _Utils_update(
-		model,
-		{httpStatus: author$project$Ui$LoginCard$LoggingIn});
-};
-var author$project$Ui$LoginCard$requestLogin = function (_n0) {
-	return elm$core$Platform$Cmd$none;
-};
-var author$project$Ui$LoginCard$Field$setError = F2(
-	function (error, field) {
-		return _Utils_update(
-			field,
-			{
-				error: elm$core$Maybe$Just(error)
-			});
-	});
-var author$project$Ui$LoginCard$Field$validate = F2(
-	function (_n0, field) {
-		var valid = _n0.valid;
-		var errorMessage = _n0.errorMessage;
-		return valid(field.value) ? field : A2(author$project$Ui$LoginCard$Field$setError, errorMessage, field);
-	});
-var elm$regex$Regex$Match = F4(
-	function (match, index, number, submatches) {
-		return {index: index, match: match, number: number, submatches: submatches};
-	});
-var elm$regex$Regex$contains = _Regex_contains;
-var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
-var elm$regex$Regex$fromString = function (string) {
-	return A2(
-		elm$regex$Regex$fromStringWith,
-		{caseInsensitive: false, multiline: false},
-		string);
-};
-var elm$regex$Regex$never = _Regex_never;
-var elm_community$string_extra$String$Extra$regexFromString = A2(
-	elm$core$Basics$composeR,
-	elm$regex$Regex$fromString,
-	elm$core$Maybe$withDefault(elm$regex$Regex$never));
-var elm_community$string_extra$String$Extra$isBlank = function (string) {
-	return A2(
-		elm$regex$Regex$contains,
-		elm_community$string_extra$String$Extra$regexFromString('^\\s*$'),
-		string);
-};
-var author$project$Ui$LoginCard$validateEmail = author$project$Ui$LoginCard$Field$validate(
-	{
-		errorMessage: 'email is required',
-		valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, elm_community$string_extra$String$Extra$isBlank)
-	});
-var author$project$Ui$LoginCard$validatePassword = author$project$Ui$LoginCard$Field$validate(
-	{
-		errorMessage: 'password is required',
-		valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, elm_community$string_extra$String$Extra$isBlank)
-	});
-var author$project$Ui$LoginCard$attemptLogin = function (model) {
-	var validatedModel = _Utils_update(
-		model,
-		{
-			email: author$project$Ui$LoginCard$validateEmail(model.email),
-			password: author$project$Ui$LoginCard$validatePassword(model.password)
-		});
-	var _n0 = _Utils_Tuple2(validatedModel.email.error, validatedModel.password.error);
-	if ((_n0.a.$ === 'Nothing') && (_n0.b.$ === 'Nothing')) {
-		var _n1 = _n0.a;
-		var _n2 = _n0.b;
-		return _Utils_Tuple2(
-			author$project$Ui$LoginCard$loggingIn(validatedModel),
-			author$project$Ui$LoginCard$requestLogin(
-				{email: validatedModel.email.value, password: validatedModel.password.value}));
-	} else {
-		return author$project$Util$Cmd$withNoCmd(validatedModel);
-	}
-};
-var author$project$Ui$LoginCard$Field$setValue = F2(
-	function (newValue, field) {
-		return _Utils_update(
-			field,
-			{value: newValue});
-	});
-var author$project$Ui$LoginCard$setEmail = F2(
-	function (str, model) {
-		return _Utils_update(
-			model,
-			{
-				email: A2(author$project$Ui$LoginCard$Field$setValue, str, model.email)
-			});
-	});
-var author$project$Ui$LoginCard$setPassword = F2(
-	function (str, model) {
-		return _Utils_update(
-			model,
-			{
-				password: A2(author$project$Ui$LoginCard$Field$setValue, str, model.password)
-			});
-	});
-var author$project$Ui$LoginCard$update = F3(
-	function (navKey, msg, model) {
-		switch (msg.$) {
-			case 'EmailUpdated':
-				var str = msg.a;
-				return author$project$Util$Cmd$withNoCmd(
-					A2(author$project$Ui$LoginCard$setEmail, str, model));
-			case 'PasswordUpdated':
-				var str = msg.a;
-				return author$project$Util$Cmd$withNoCmd(
-					A2(author$project$Ui$LoginCard$setPassword, str, model));
-			case 'LoginClicked':
-				return author$project$Ui$LoginCard$attemptLogin(model);
-			case 'EnterPressed':
-				return author$project$Ui$LoginCard$attemptLogin(model);
-			default:
-				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-		}
-	});
-var elm$core$Platform$Cmd$map = _Platform_map;
-var author$project$Page$Login$update = F3(
-	function (navKey, msg, model) {
-		var subMsg = msg.a;
-		var _n1 = A3(author$project$Ui$LoginCard$update, navKey, subMsg, model.loginCard);
-		var newLoginCardModel = _n1.a;
-		var cmd = _n1.b;
-		return _Utils_Tuple2(
-			A2(author$project$Page$Login$setLoginCard, newLoginCardModel, model),
-			A2(elm$core$Platform$Cmd$map, author$project$Page$Login$LoginCardMsg, cmd));
 	});
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
@@ -8498,9 +8884,12 @@ var author$project$Route$toPieces = function (route) {
 		case 'About':
 			return _List_fromArray(
 				['about']);
-		default:
+		case 'Login':
 			return _List_fromArray(
 				['login']);
+		default:
+			return _List_fromArray(
+				['resetpassword']);
 	}
 };
 var author$project$Route$toUrl = function (route) {
@@ -8515,6 +8904,713 @@ var author$project$Route$goTo = function (key) {
 		author$project$Data$NavKey$goTo(key),
 		author$project$Route$toUrl);
 };
+var author$project$Session$getNavKey = function ($) {
+	return $.navKey;
+};
+var author$project$Data$User$State$LoggedIn = function (a) {
+	return {$: 'LoggedIn', a: a};
+};
+var author$project$Data$User$State$loggedIn = author$project$Data$User$State$LoggedIn;
+var author$project$Session$userLoggedIn = F2(
+	function (user, session) {
+		return _Utils_update(
+			session,
+			{
+				user: author$project$Data$User$State$loggedIn(user)
+			});
+	});
+var author$project$Ui$LoginCard$ForgotPassword = function (a) {
+	return {$: 'ForgotPassword', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPasswordMsg = function (a) {
+	return {$: 'ForgotPasswordMsg', a: a};
+};
+var author$project$Ui$LoginCard$Login$LoggingIn = {$: 'LoggingIn'};
+var author$project$Ui$LoginCard$Login$loggingIn = function (model) {
+	return _Utils_update(
+		model,
+		{httpStatus: author$project$Ui$LoginCard$Login$LoggingIn});
+};
+var author$project$Data$Field$getError = function ($) {
+	return $.error;
+};
+var author$project$Data$Field$getValue = function ($) {
+	return $.value;
+};
+var author$project$Data$Field$batchValidations = F2(
+	function (checks, field) {
+		batchValidations:
+		while (true) {
+			if (checks.b) {
+				var first = checks.a;
+				var rest = checks.b;
+				var checkedField = first(field);
+				if (_Utils_eq(checkedField.error, elm$core$Maybe$Nothing)) {
+					var $temp$checks = rest,
+						$temp$field = field;
+					checks = $temp$checks;
+					field = $temp$field;
+					continue batchValidations;
+				} else {
+					return checkedField;
+				}
+			} else {
+				return field;
+			}
+		}
+	});
+var author$project$Data$Field$clearError = function (field) {
+	return _Utils_update(
+		field,
+		{error: elm$core$Maybe$Nothing});
+};
+var author$project$Data$Field$setError = F2(
+	function (error, field) {
+		return _Utils_update(
+			field,
+			{
+				error: elm$core$Maybe$Just(error)
+			});
+	});
+var author$project$Data$Field$validate = F2(
+	function (_n0, field) {
+		var valid = _n0.valid;
+		var errorMessage = _n0.errorMessage;
+		return valid(field.value) ? author$project$Data$Field$clearError(field) : A2(author$project$Data$Field$setError, errorMessage, field);
+	});
+var author$project$Util$String$isBlank = function (str) {
+	isBlank:
+	while (true) {
+		var isWhitespaceChar = function (_char) {
+			return _Utils_eq(
+				_char,
+				_Utils_chr(' ')) || (_Utils_eq(
+				_char,
+				_Utils_chr('\n')) || (_Utils_eq(
+				_char,
+				_Utils_chr('\t')) || _Utils_eq(
+				_char,
+				_Utils_chr('\u000d'))));
+		};
+		var _n0 = elm$core$String$uncons(str);
+		if (_n0.$ === 'Just') {
+			var _n1 = _n0.a;
+			var _char = _n1.a;
+			var rest = _n1.b;
+			if (isWhitespaceChar(_char)) {
+				var $temp$str = rest;
+				str = $temp$str;
+				continue isBlank;
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+};
+var elm$regex$Regex$Match = F4(
+	function (match, index, number, submatches) {
+		return {index: index, match: match, number: number, submatches: submatches};
+	});
+var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
+var elm$regex$Regex$never = _Regex_never;
+var author$project$Util$String$validEmail = A2(
+	elm$core$Maybe$withDefault,
+	elm$regex$Regex$never,
+	A2(
+		elm$regex$Regex$fromStringWith,
+		{caseInsensitive: true, multiline: false},
+		'^[a-zA-Z0-9.!#$%&\'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'));
+var elm$regex$Regex$contains = _Regex_contains;
+var author$project$Util$String$isValidEmail = function (email) {
+	return A2(elm$regex$Regex$contains, author$project$Util$String$validEmail, email);
+};
+var author$project$Data$Field$validateEmail = author$project$Data$Field$batchValidations(
+	_List_fromArray(
+		[
+			author$project$Data$Field$validate(
+			{
+				errorMessage: 'you must enter your email',
+				valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, author$project$Util$String$isBlank)
+			}),
+			author$project$Data$Field$validate(
+			{errorMessage: 'this is not a valid email address', valid: author$project$Util$String$isValidEmail})
+		]));
+var elm$core$String$toUpper = _String_toUpper;
+var author$project$Util$String$containsLowercase = function (str) {
+	return !_Utils_eq(
+		str,
+		elm$core$String$toUpper(str));
+};
+var elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var elm$core$String$foldr = _String_foldr;
+var elm$core$String$toList = function (string) {
+	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
+};
+var author$project$Util$String$containsSpecialCharacter = function (str) {
+	var specialCharacters = elm$core$String$toList('^$*.[]{}()?-\"!@#%&/\\,><\':;|_~`');
+	var isSpecialCharacter = function (_char) {
+		return A2(elm$core$List$member, _char, specialCharacters);
+	};
+	return A3(
+		elm$core$List$foldr,
+		elm$core$Basics$or,
+		false,
+		A2(
+			elm$core$List$map,
+			isSpecialCharacter,
+			elm$core$String$toList(str)));
+};
+var elm$core$String$toLower = _String_toLower;
+var author$project$Util$String$containsUppercase = function (str) {
+	return !_Utils_eq(
+		str,
+		elm$core$String$toLower(str));
+};
+var elm$core$Basics$ge = _Utils_ge;
+var author$project$Util$String$lengthIsAtLeast = F2(
+	function (length, str) {
+		return _Utils_cmp(
+			elm$core$String$length(str),
+			length) > -1;
+	});
+var author$project$Data$Field$validatePassword = author$project$Data$Field$batchValidations(
+	_List_fromArray(
+		[
+			author$project$Data$Field$validate(
+			{
+				errorMessage: 'you must enter your password',
+				valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, author$project$Util$String$isBlank)
+			}),
+			author$project$Data$Field$validate(
+			{errorMessage: 'password must contain at least one upper case character', valid: author$project$Util$String$containsUppercase}),
+			author$project$Data$Field$validate(
+			{errorMessage: 'password must contain at least one lower case character', valid: author$project$Util$String$containsLowercase}),
+			author$project$Data$Field$validate(
+			{
+				errorMessage: 'password must be at least 8 characters',
+				valid: author$project$Util$String$lengthIsAtLeast(8)
+			}),
+			author$project$Data$Field$validate(
+			{errorMessage: 'password must contain at least one special character', valid: author$project$Util$String$containsSpecialCharacter})
+		]));
+var author$project$Ui$LoginCard$Login$validate = function (model) {
+	var validatedModel = _Utils_update(
+		model,
+		{
+			email: author$project$Data$Field$validateEmail(model.email),
+			password: author$project$Data$Field$validatePassword(model.password)
+		});
+	var _n0 = _Utils_Tuple2(
+		author$project$Data$Field$getError(validatedModel.email),
+		author$project$Data$Field$getError(validatedModel.password));
+	if ((_n0.a.$ === 'Nothing') && (_n0.b.$ === 'Nothing')) {
+		var _n1 = _n0.a;
+		var _n2 = _n0.b;
+		return elm$core$Result$Ok(
+			{
+				email: author$project$Data$Field$getValue(validatedModel.email),
+				password: author$project$Data$Field$getValue(validatedModel.password)
+			});
+	} else {
+		return elm$core$Result$Err(validatedModel);
+	}
+};
+var author$project$Util$Cmd$justModel = function (model) {
+	return _Utils_Tuple3(model, elm$core$Platform$Cmd$none, elm$core$Maybe$Nothing);
+};
+var author$project$Util$Tuple3$mapFirst = F2(
+	function (f, _n0) {
+		var a = _n0.a;
+		var b = _n0.b;
+		var c = _n0.c;
+		return _Utils_Tuple3(
+			f(a),
+			b,
+			c);
+	});
+var author$project$Ui$LoginCard$attemptLogin = function (model) {
+	return A2(
+		author$project$Util$Tuple3$mapFirst,
+		author$project$Ui$LoginCard$Login,
+		function () {
+			var _n0 = author$project$Ui$LoginCard$Login$validate(model);
+			if (_n0.$ === 'Ok') {
+				var email = _n0.a.email;
+				var password = _n0.a.password;
+				return _Utils_Tuple3(
+					author$project$Ui$LoginCard$Login$loggingIn(model),
+					author$project$Ports$send(
+						A3(
+							author$project$Ports$withString,
+							'password',
+							password,
+							A3(
+								author$project$Ports$withString,
+								'email',
+								email,
+								author$project$Ports$payload('log in')))),
+					elm$core$Maybe$Nothing);
+			} else {
+				var newModel = _n0.a;
+				return author$project$Util$Cmd$justModel(newModel);
+			}
+		}());
+};
+var author$project$Ui$LoginCard$ForgotPassword$Ready = function (a) {
+	return {$: 'Ready', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$init = author$project$Ui$LoginCard$ForgotPassword$Ready(author$project$Data$Field$init);
+var author$project$Ui$LoginCard$Login$Failed = function (a) {
+	return {$: 'Failed', a: a};
+};
+var author$project$Ui$LoginCard$Login$fail = F2(
+	function (error, model) {
+		return _Utils_update(
+			model,
+			{
+				httpStatus: author$project$Ui$LoginCard$Login$Failed(error)
+			});
+	});
+var author$project$Data$Field$setValue = F2(
+	function (newValue, field) {
+		return _Utils_update(
+			field,
+			{value: newValue});
+	});
+var author$project$Ui$LoginCard$Login$setEmail = F2(
+	function (str, model) {
+		return _Utils_update(
+			model,
+			{
+				email: A2(author$project$Data$Field$setValue, str, model.email)
+			});
+	});
+var author$project$Ui$LoginCard$Login$setPassword = F2(
+	function (str, model) {
+		return _Utils_update(
+			model,
+			{
+				password: A2(author$project$Data$Field$setValue, str, model.password)
+			});
+	});
+var author$project$Ui$LoginCard$updateLogin = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'EmailUpdated':
+				var str = msg.a;
+				return author$project$Util$Cmd$justModel(
+					author$project$Ui$LoginCard$Login(
+						A2(author$project$Ui$LoginCard$Login$setEmail, str, model)));
+			case 'PasswordUpdated':
+				var str = msg.a;
+				return author$project$Util$Cmd$justModel(
+					author$project$Ui$LoginCard$Login(
+						A2(author$project$Ui$LoginCard$Login$setPassword, str, model)));
+			case 'LoginClicked':
+				return author$project$Ui$LoginCard$attemptLogin(model);
+			case 'EnterPressed':
+				return author$project$Ui$LoginCard$attemptLogin(model);
+			case 'ForgotPasswordClicked':
+				return author$project$Util$Cmd$justModel(
+					author$project$Ui$LoginCard$ForgotPassword(author$project$Ui$LoginCard$ForgotPassword$init));
+			case 'GotLoginResponse':
+				var response = msg.a;
+				if (response.$ === 'Ok') {
+					var user = response.a;
+					return _Utils_Tuple3(
+						author$project$Ui$LoginCard$Login(model),
+						elm$core$Platform$Cmd$none,
+						elm$core$Maybe$Just(user));
+				} else {
+					var error = response.a;
+					return author$project$Util$Cmd$justModel(
+						author$project$Ui$LoginCard$Login(
+							A2(author$project$Ui$LoginCard$Login$fail, error, model)));
+				}
+			default:
+				return author$project$Util$Cmd$justModel(
+					author$project$Ui$LoginCard$Login(author$project$Ui$LoginCard$Login$init));
+		}
+	});
+var author$project$Ui$LoginCard$ForgotPassword$Fail = function (a) {
+	return {$: 'Fail', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$Success = function (a) {
+	return {$: 'Success', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$Waiting = function (a) {
+	return {$: 'Waiting', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$requestReset = function (_n0) {
+	var email = _n0.email;
+	return author$project$Ports$send(
+		A3(
+			author$project$Ports$withString,
+			'email',
+			email,
+			author$project$Ports$payload('forgot password')));
+};
+var author$project$Ui$LoginCard$ForgotPassword$validate = function (model) {
+	var validatedField = author$project$Data$Field$validateEmail(model);
+	var _n0 = author$project$Data$Field$getError(validatedField);
+	if (_n0.$ === 'Just') {
+		return elm$core$Result$Err(validatedField);
+	} else {
+		return elm$core$Result$Ok(
+			{
+				email: author$project$Data$Field$getValue(validatedField)
+			});
+	}
+};
+var author$project$Ui$LoginCard$ForgotPassword$attemptReset = function (field) {
+	var _n0 = author$project$Ui$LoginCard$ForgotPassword$validate(field);
+	if (_n0.$ === 'Ok') {
+		var email = _n0.a;
+		return _Utils_Tuple2(
+			author$project$Ui$LoginCard$ForgotPassword$Waiting(email),
+			author$project$Ui$LoginCard$ForgotPassword$requestReset(email));
+	} else {
+		var newField = _n0.a;
+		return author$project$Util$Cmd$withNoCmd(
+			author$project$Ui$LoginCard$ForgotPassword$Ready(newField));
+	}
+};
+var author$project$Ui$LoginCard$ForgotPassword$updateReady = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'EmailUpdated':
+				var newEmail = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Ui$LoginCard$ForgotPassword$Ready(
+						A2(author$project$Data$Field$setValue, newEmail, model)));
+			case 'ResetPasswordClicked':
+				return author$project$Ui$LoginCard$ForgotPassword$attemptReset(model);
+			default:
+				return author$project$Ui$LoginCard$ForgotPassword$attemptReset(model);
+		}
+	});
+var author$project$Ui$LoginCard$ForgotPassword$update = F2(
+	function (msg, model) {
+		if (msg.$ === 'ReadyMsg') {
+			var subMsg = msg.a;
+			if (model.$ === 'Ready') {
+				var subModel = model.a;
+				return A2(author$project$Ui$LoginCard$ForgotPassword$updateReady, subMsg, subModel);
+			} else {
+				return author$project$Util$Cmd$withNoCmd(model);
+			}
+		} else {
+			var result = msg.a;
+			if (model.$ === 'Waiting') {
+				var email = model.a;
+				if (result.$ === 'Ok') {
+					return author$project$Util$Cmd$withNoCmd(
+						author$project$Ui$LoginCard$ForgotPassword$Success(email));
+				} else {
+					var error = result.a;
+					return author$project$Util$Cmd$withNoCmd(
+						author$project$Ui$LoginCard$ForgotPassword$Fail(
+							{error: error}));
+				}
+			} else {
+				return author$project$Util$Cmd$withNoCmd(model);
+			}
+		}
+	});
+var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Util$Cmd$mapCmd = F2(
+	function (f, _n0) {
+		var model = _n0.a;
+		var cmd = _n0.b;
+		return _Utils_Tuple2(
+			model,
+			A2(elm$core$Platform$Cmd$map, f, cmd));
+	});
+var elm$core$Tuple$mapFirst = F2(
+	function (func, _n0) {
+		var x = _n0.a;
+		var y = _n0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var author$project$Util$Cmd$mapModel = elm$core$Tuple$mapFirst;
+var author$project$Util$Tuple$append = F2(
+	function (c, _n0) {
+		var a = _n0.a;
+		var b = _n0.b;
+		return _Utils_Tuple3(a, b, c);
+	});
+var author$project$Ui$LoginCard$update = F2(
+	function (msg, model) {
+		if (msg.$ === 'LoginMsg') {
+			var subMsg = msg.a;
+			if (model.$ === 'Login') {
+				var subModel = model.a;
+				return A2(author$project$Ui$LoginCard$updateLogin, subMsg, subModel);
+			} else {
+				return author$project$Util$Cmd$justModel(model);
+			}
+		} else {
+			var subMsg = msg.a;
+			if (model.$ === 'ForgotPassword') {
+				var subModel = model.a;
+				return A2(
+					author$project$Util$Tuple$append,
+					elm$core$Maybe$Nothing,
+					A2(
+						author$project$Util$Cmd$mapCmd,
+						author$project$Ui$LoginCard$ForgotPasswordMsg,
+						A2(
+							author$project$Util$Cmd$mapModel,
+							author$project$Ui$LoginCard$ForgotPassword,
+							A2(author$project$Ui$LoginCard$ForgotPassword$update, subMsg, subModel))));
+			} else {
+				return author$project$Util$Cmd$justModel(model);
+			}
+		}
+	});
+var author$project$Util$Tuple3$mapSecond = F2(
+	function (f, _n0) {
+		var a = _n0.a;
+		var b = _n0.b;
+		var c = _n0.c;
+		return _Utils_Tuple3(
+			a,
+			f(b),
+			c);
+	});
+var author$project$Page$Login$update = F2(
+	function (msg, model) {
+		var subMsg = msg.a;
+		var _n1 = A2(
+			author$project$Util$Tuple3$mapSecond,
+			elm$core$Platform$Cmd$map(author$project$Page$Login$LoginCardMsg),
+			A2(author$project$Ui$LoginCard$update, subMsg, model.loginCard));
+		var newLoginCardModel = _n1.a;
+		var cmd = _n1.b;
+		var maybeUser = _n1.c;
+		var modelWithCard = A2(author$project$Page$Login$setLoginCard, newLoginCardModel, model);
+		if (maybeUser.$ === 'Just') {
+			var newUser = maybeUser.a;
+			return _Utils_Tuple2(
+				A2(
+					author$project$Page$Login$mapSession,
+					author$project$Session$userLoggedIn(newUser),
+					modelWithCard),
+				elm$core$Platform$Cmd$batch(
+					_List_fromArray(
+						[
+							A2(
+							author$project$Route$goTo,
+							author$project$Session$getNavKey(model.session),
+							author$project$Route$Landing),
+							cmd
+						])));
+		} else {
+			return _Utils_Tuple2(modelWithCard, cmd);
+		}
+	});
+var author$project$Page$PageNotFound$update = F2(
+	function (navKey, msg) {
+		return A2(author$project$Route$goTo, navKey, author$project$Route$Landing);
+	});
+var author$project$Page$ResetPassword$Fail = function (a) {
+	return {$: 'Fail', a: a};
+};
+var author$project$Page$ResetPassword$Success = {$: 'Success'};
+var author$project$Page$ResetPassword$Waiting = {$: 'Waiting'};
+var author$project$Util$Maybe$firstValue = function (maybes) {
+	firstValue:
+	while (true) {
+		if (maybes.b) {
+			if (maybes.a.$ === 'Just') {
+				var v = maybes.a.a;
+				return elm$core$Maybe$Just(v);
+			} else {
+				var _n1 = maybes.a;
+				var rest = maybes.b;
+				var $temp$maybes = rest;
+				maybes = $temp$maybes;
+				continue firstValue;
+			}
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	}
+};
+var author$project$Page$ResetPassword$validate = function (model) {
+	var validatedModel = _Utils_update(
+		model,
+		{
+			code: A2(
+				author$project$Data$Field$validate,
+				{
+					errorMessage: 'you must enter your reset code',
+					valid: A2(elm$core$Basics$composeL, elm$core$Basics$not, author$project$Util$String$isBlank)
+				},
+				model.code),
+			email: author$project$Data$Field$validateEmail(model.email),
+			password: author$project$Data$Field$validatePassword(model.password),
+			passwordConfirm: A2(
+				author$project$Data$Field$validate,
+				{
+					errorMessage: 'the passwords you entered do not match',
+					valid: elm$core$Basics$eq(
+						author$project$Data$Field$getValue(model.password))
+				},
+				model.passwordConfirm)
+		});
+	var _n0 = author$project$Util$Maybe$firstValue(
+		_List_fromArray(
+			[
+				author$project$Data$Field$getError(validatedModel.email),
+				author$project$Data$Field$getError(validatedModel.code),
+				author$project$Data$Field$getError(validatedModel.password),
+				author$project$Data$Field$getError(validatedModel.passwordConfirm)
+			]));
+	if (_n0.$ === 'Just') {
+		return elm$core$Result$Err(validatedModel);
+	} else {
+		return elm$core$Result$Ok(
+			{
+				code: author$project$Data$Field$getValue(validatedModel.code),
+				email: author$project$Data$Field$getValue(validatedModel.email),
+				newPassword: author$project$Data$Field$getValue(validatedModel.password)
+			});
+	}
+};
+var author$project$Page$ResetPassword$attemptSubmission = function (model) {
+	var _n0 = author$project$Page$ResetPassword$validate(model);
+	if (_n0.$ === 'Ok') {
+		var newPassword = _n0.a.newPassword;
+		var email = _n0.a.email;
+		var code = _n0.a.code;
+		return _Utils_Tuple2(
+			author$project$Page$ResetPassword$Waiting,
+			author$project$Ports$send(
+				A3(
+					author$project$Ports$withString,
+					'password',
+					newPassword,
+					A3(
+						author$project$Ports$withString,
+						'code',
+						code,
+						A3(
+							author$project$Ports$withString,
+							'email',
+							email,
+							author$project$Ports$payload('reset password'))))));
+	} else {
+		var validatedModel = _n0.a;
+		return author$project$Util$Cmd$withNoCmd(
+			author$project$Page$ResetPassword$Ready(validatedModel));
+	}
+};
+var author$project$Page$ResetPassword$setCode = F2(
+	function (newCode, model) {
+		return _Utils_update(
+			model,
+			{
+				code: A2(author$project$Data$Field$setValue, newCode, model.code)
+			});
+	});
+var author$project$Page$ResetPassword$setEmail = F2(
+	function (newEmail, model) {
+		return _Utils_update(
+			model,
+			{
+				email: A2(author$project$Data$Field$setValue, newEmail, model.email)
+			});
+	});
+var author$project$Page$ResetPassword$setPassword = F2(
+	function (newPassword, model) {
+		return _Utils_update(
+			model,
+			{
+				password: A2(author$project$Data$Field$setValue, newPassword, model.password)
+			});
+	});
+var author$project$Page$ResetPassword$setPasswordConfirm = F2(
+	function (newPasswordConfirm, model) {
+		return _Utils_update(
+			model,
+			{
+				passwordConfirm: A2(author$project$Data$Field$setValue, newPasswordConfirm, model.passwordConfirm)
+			});
+	});
+var author$project$Page$ResetPassword$updateReady = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'EmailUpdated':
+				var newEmail = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Page$ResetPassword$Ready(
+						A2(author$project$Page$ResetPassword$setEmail, newEmail, model)));
+			case 'CodeUpdated':
+				var newCode = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Page$ResetPassword$Ready(
+						A2(author$project$Page$ResetPassword$setCode, newCode, model)));
+			case 'PasswordUpdated':
+				var newPassword = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Page$ResetPassword$Ready(
+						A2(author$project$Page$ResetPassword$setPassword, newPassword, model)));
+			case 'PasswordConfirmUpdated':
+				var newPasswordConfirm = msg.a;
+				return author$project$Util$Cmd$withNoCmd(
+					author$project$Page$ResetPassword$Ready(
+						A2(author$project$Page$ResetPassword$setPasswordConfirm, newPasswordConfirm, model)));
+			case 'ResetPasswordClicked':
+				return author$project$Page$ResetPassword$attemptSubmission(model);
+			default:
+				return author$project$Page$ResetPassword$attemptSubmission(model);
+		}
+	});
+var author$project$Page$ResetPassword$update = F3(
+	function (navKey, msg, model) {
+		switch (msg.$) {
+			case 'ReadyMsg':
+				var readyMsg = msg.a;
+				if (model.$ === 'Ready') {
+					var readyModel = model.a;
+					return A2(author$project$Page$ResetPassword$updateReady, readyMsg, readyModel);
+				} else {
+					return author$project$Util$Cmd$withNoCmd(model);
+				}
+			case 'GotResetPasswordResponse':
+				var result = msg.a;
+				if (model.$ === 'Waiting') {
+					if (result.$ === 'Ok') {
+						return author$project$Util$Cmd$withNoCmd(author$project$Page$ResetPassword$Success);
+					} else {
+						var error = result.a;
+						return author$project$Util$Cmd$withNoCmd(
+							author$project$Page$ResetPassword$Fail(error));
+					}
+				} else {
+					return author$project$Util$Cmd$withNoCmd(model);
+				}
+			case 'LoginClicked':
+				return _Utils_Tuple2(
+					model,
+					A2(author$project$Route$goTo, navKey, author$project$Route$Login));
+			default:
+				return author$project$Util$Cmd$withNoCmd(author$project$Page$ResetPassword$init);
+		}
+	});
 var author$project$Page$Splash$update = F2(
 	function (key, msg) {
 		if (msg.$ === 'LearnMoreClicked') {
@@ -8523,9 +9619,6 @@ var author$project$Page$Splash$update = F2(
 			return A2(author$project$Route$goTo, key, author$project$Route$PaintApp);
 		}
 	});
-var author$project$Session$getNavKey = function ($) {
-	return $.navKey;
-};
 var author$project$Ui$Nav$Option$toRoute = function (option) {
 	switch (option.$) {
 		case 'Draw':
@@ -8546,23 +9639,6 @@ var author$project$Ui$Nav$update = F2(
 			navKey,
 			author$project$Ui$Nav$Option$toRoute(option));
 	});
-var author$project$Util$Cmd$mapCmd = F2(
-	function (f, _n0) {
-		var model = _n0.a;
-		var cmd = _n0.b;
-		return _Utils_Tuple2(
-			model,
-			A2(elm$core$Platform$Cmd$map, f, cmd));
-	});
-var elm$core$Tuple$mapFirst = F2(
-	function (func, _n0) {
-		var x = _n0.a;
-		var y = _n0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var author$project$Util$Cmd$mapModel = elm$core$Tuple$mapFirst;
 var author$project$Main$updateFromOk = F2(
 	function (msg, model) {
 		var session = author$project$Model$getSession(model);
@@ -8598,7 +9674,7 @@ var author$project$Main$updateFromOk = F2(
 				} else {
 					return author$project$Util$Cmd$withNoCmd(model);
 				}
-			default:
+			case 'LoginMsg':
 				var subMsg = msg.a;
 				if (model.$ === 'Login') {
 					var subModel = model.a;
@@ -8608,24 +9684,70 @@ var author$project$Main$updateFromOk = F2(
 						A2(
 							author$project$Util$Cmd$mapModel,
 							author$project$Model$Login,
+							A2(author$project$Page$Login$update, subMsg, subModel)));
+				} else {
+					return author$project$Util$Cmd$withNoCmd(model);
+				}
+			case 'ResetPasswordMsg':
+				var subMsg = msg.a;
+				if (model.$ === 'ResetPassword') {
+					var subModel = model.b;
+					return A2(
+						author$project$Util$Cmd$mapCmd,
+						author$project$Main$ResetPasswordMsg,
+						A2(
+							author$project$Util$Cmd$mapModel,
+							author$project$Model$ResetPassword(session),
 							A3(
-								author$project$Page$Login$update,
+								author$project$Page$ResetPassword$update,
 								author$project$Session$getNavKey(session),
 								subMsg,
 								subModel)));
 				} else {
 					return author$project$Util$Cmd$withNoCmd(model);
 				}
+			case 'PageNotFoundMsg':
+				var subMsg = msg.a;
+				if (model.$ === 'PageNotFound') {
+					return _Utils_Tuple2(
+						model,
+						A2(
+							elm$core$Platform$Cmd$map,
+							author$project$Main$PageNotFoundMsg,
+							A2(
+								author$project$Page$PageNotFound$update,
+								author$project$Session$getNavKey(session),
+								subMsg)));
+				} else {
+					return author$project$Util$Cmd$withNoCmd(model);
+				}
+			case 'ListenerNotFound':
+				return author$project$Util$Cmd$withNoCmd(model);
+			default:
+				return author$project$Util$Cmd$withNoCmd(model);
 		}
+	});
+var author$project$Util$Cmd$addCmd = F2(
+	function (extra, _n0) {
+		var model = _n0.a;
+		var cmd = _n0.b;
+		return _Utils_Tuple2(
+			model,
+			elm$core$Platform$Cmd$batch(
+				_List_fromArray(
+					[extra, cmd])));
 	});
 var author$project$Main$update = F2(
 	function (msg, result) {
 		if (result.$ === 'Ok') {
 			var model = result.a;
 			return A2(
-				elm$core$Tuple$mapFirst,
-				elm$core$Result$Ok,
-				A2(author$project$Main$updateFromOk, msg, model));
+				author$project$Util$Cmd$addCmd,
+				A2(author$project$Main$track, msg, model),
+				A2(
+					elm$core$Tuple$mapFirst,
+					elm$core$Result$Ok,
+					A2(author$project$Main$updateFromOk, msg, model)));
 		} else {
 			var err = result.a;
 			return _Utils_Tuple2(
@@ -8646,10 +9768,150 @@ var author$project$Data$MountPath$MountPath = function (a) {
 };
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Data$MountPath$decoder = A2(elm$json$Json$Decode$map, author$project$Data$MountPath$MountPath, elm$json$Json$Decode$string);
-var author$project$Session$Session = F3(
-	function (mountPath, navKey, buildNumber) {
-		return {buildNumber: buildNumber, mountPath: mountPath, navKey: navKey};
+var Chadtech$elm_relational_database$Id$Id = function (a) {
+	return {$: 'Id', a: a};
+};
+var elm$core$Char$fromCode = _Char_fromCode;
+var Chadtech$elm_relational_database$Id$toChar = function (_int) {
+	var code = (_int < 10) ? (_int + 48) : ((_int < 36) ? (_int + 55) : (_int + 61));
+	return elm$core$Char$fromCode(code);
+};
+var Chadtech$elm_relational_database$Id$intsToString = A2(
+	elm$core$Basics$composeR,
+	elm$core$List$map(Chadtech$elm_relational_database$Id$toChar),
+	elm$core$String$fromList);
+var elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
 	});
+var elm$random$Random$next = function (_n0) {
+	var state0 = _n0.a;
+	var incr = _n0.b;
+	return A2(elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var elm$random$Random$peel = function (_n0) {
+	var state = _n0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var elm$random$Random$int = F2(
+	function (a, b) {
+		return elm$random$Random$Generator(
+			function (seed0) {
+				var _n0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _n0.a;
+				var hi = _n0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & elm$random$Random$peel(seed0)) >>> 0) + lo,
+						elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = elm$random$Random$peel(seed);
+							var seedN = elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var elm$random$Random$listHelp = F4(
+	function (revList, n, gen, seed) {
+		listHelp:
+		while (true) {
+			if (n < 1) {
+				return _Utils_Tuple2(revList, seed);
+			} else {
+				var _n0 = gen(seed);
+				var value = _n0.a;
+				var newSeed = _n0.b;
+				var $temp$revList = A2(elm$core$List$cons, value, revList),
+					$temp$n = n - 1,
+					$temp$gen = gen,
+					$temp$seed = newSeed;
+				revList = $temp$revList;
+				n = $temp$n;
+				gen = $temp$gen;
+				seed = $temp$seed;
+				continue listHelp;
+			}
+		}
+	});
+var elm$random$Random$list = F2(
+	function (n, _n0) {
+		var gen = _n0.a;
+		return elm$random$Random$Generator(
+			function (seed) {
+				return A4(elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+			});
+	});
+var elm$random$Random$map = F2(
+	function (func, _n0) {
+		var genA = _n0.a;
+		return elm$random$Random$Generator(
+			function (seed0) {
+				var _n1 = genA(seed0);
+				var a = _n1.a;
+				var seed1 = _n1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var Chadtech$elm_relational_database$Id$generator = A2(
+	elm$random$Random$map,
+	A2(elm$core$Basics$composeR, Chadtech$elm_relational_database$Id$intsToString, Chadtech$elm_relational_database$Id$Id),
+	A2(
+		elm$random$Random$list,
+		64,
+		A2(elm$random$Random$int, 0, 61)));
+var author$project$Data$SessionId$SessionId = function (a) {
+	return {$: 'SessionId', a: a};
+};
+var author$project$Data$SessionId$generator = A2(elm$random$Random$map, author$project$Data$SessionId$SessionId, Chadtech$elm_relational_database$Id$generator);
+var author$project$Data$User$User = F3(
+	function (email, name, profilePic) {
+		return {email: email, name: name, profilePic: profilePic};
+	});
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var author$project$Data$User$profilePicDecoder = function () {
+	var fromString = function (str) {
+		switch (str) {
+			case '':
+				return elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing);
+			case 'NONE':
+				return elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing);
+			default:
+				return elm$json$Json$Decode$succeed(
+					elm$core$Maybe$Just(str));
+		}
+	};
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				elm$json$Json$Decode$andThen,
+				fromString,
+				A2(elm$json$Json$Decode$field, 'picture', elm$json$Json$Decode$string)),
+				elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing)
+			]));
+}();
 var author$project$Util$Json$Decode$apply = function () {
 	var applyHelp = F2(
 		function (v, f) {
@@ -8657,25 +9919,94 @@ var author$project$Util$Json$Decode$apply = function () {
 		});
 	return elm$json$Json$Decode$map2(applyHelp);
 }();
-var elm$json$Json$Decode$field = _Json_decodeField;
+var author$project$Data$User$decoder = A2(
+	author$project$Util$Json$Decode$apply,
+	author$project$Data$User$profilePicDecoder,
+	A2(
+		author$project$Util$Json$Decode$apply,
+		A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+		A2(
+			author$project$Util$Json$Decode$apply,
+			A2(elm$json$Json$Decode$field, 'email', elm$json$Json$Decode$string),
+			elm$json$Json$Decode$succeed(author$project$Data$User$User))));
+var author$project$Data$User$State$LoggedOut = {$: 'LoggedOut'};
+var author$project$Data$User$State$Offline = {$: 'Offline'};
+var elm$json$Json$Decode$fail = _Json_fail;
+var elm$json$Json$Decode$null = _Json_decodeNull;
+var author$project$Data$User$State$decoder = function () {
+	var offlineDecoder = function (str) {
+		return (str === 'offline') ? elm$json$Json$Decode$succeed(author$project$Data$User$State$Offline) : elm$json$Json$Decode$fail('not offline');
+	};
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				elm$json$Json$Decode$null(author$project$Data$User$State$LoggedOut),
+				A2(elm$json$Json$Decode$andThen, offlineDecoder, elm$json$Json$Decode$string),
+				A2(elm$json$Json$Decode$map, author$project$Data$User$State$LoggedIn, author$project$Data$User$decoder)
+			]));
+}();
+var author$project$Session$Session = F6(
+	function (mountPath, navKey, buildNumber, user, sessionId, seed) {
+		return {buildNumber: buildNumber, mountPath: mountPath, navKey: navKey, seed: seed, sessionId: sessionId, user: user};
+	});
 var author$project$Util$Json$Decode$applyField = F2(
 	function (fieldName, decoder) {
 		return author$project$Util$Json$Decode$apply(
 			A2(elm$json$Json$Decode$field, fieldName, decoder));
 	});
+var author$project$Util$Json$Decode$set = function (value) {
+	return author$project$Util$Json$Decode$apply(
+		elm$json$Json$Decode$succeed(value));
+};
+var elm$random$Random$initialSeed = function (x) {
+	var _n0 = elm$random$Random$next(
+		A2(elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _n0.a;
+	var incr = _n0.b;
+	var state2 = (state1 + x) >>> 0;
+	return elm$random$Random$next(
+		A2(elm$random$Random$Seed, state2, incr));
+};
+var elm$random$Random$step = F2(
+	function (_n0, seed) {
+		var generator = _n0.a;
+		return generator(seed);
+	});
 var author$project$Session$decoder = function (navKey) {
-	return A3(
-		author$project$Util$Json$Decode$applyField,
-		'buildNumber',
-		author$project$Data$BuildNumber$decoder,
+	var fromSeed = function (seed0) {
+		var _n0 = A2(elm$random$Random$step, author$project$Data$SessionId$generator, seed0);
+		var sessionId = _n0.a;
+		var seed1 = _n0.b;
+		return A2(
+			author$project$Util$Json$Decode$set,
+			seed1,
+			A2(
+				author$project$Util$Json$Decode$set,
+				sessionId,
+				A3(
+					author$project$Util$Json$Decode$applyField,
+					'user',
+					author$project$Data$User$State$decoder,
+					A3(
+						author$project$Util$Json$Decode$applyField,
+						'buildNumber',
+						author$project$Data$BuildNumber$decoder,
+						A2(
+							author$project$Util$Json$Decode$set,
+							navKey,
+							A3(
+								author$project$Util$Json$Decode$applyField,
+								'mountPath',
+								author$project$Data$MountPath$decoder,
+								elm$json$Json$Decode$succeed(author$project$Session$Session)))))));
+	};
+	return A2(
+		elm$json$Json$Decode$andThen,
+		fromSeed,
 		A2(
-			author$project$Util$Json$Decode$apply,
-			elm$json$Json$Decode$succeed(navKey),
-			A3(
-				author$project$Util$Json$Decode$applyField,
-				'mountPath',
-				author$project$Data$MountPath$decoder,
-				elm$json$Json$Decode$succeed(author$project$Session$Session))));
+			elm$json$Json$Decode$field,
+			'seed',
+			A2(elm$json$Json$Decode$map, elm$random$Random$initialSeed, elm$json$Json$Decode$int)));
 };
 var elm$json$Json$Decode$decodeValue = _Json_run;
 var author$project$Main$init = F3(
@@ -8694,15 +10025,243 @@ var author$project$Main$init = F3(
 					author$project$Model$Blank(session)));
 		} else {
 			var decodeError = _n0.a;
-			return author$project$Util$Cmd$withNoCmd(
-				elm$core$Result$Err(decodeError));
+			return _Utils_Tuple2(
+				elm$core$Result$Err(decodeError),
+				author$project$Data$Tracking$send(
+					A3(
+						author$project$Data$Tracking$withString,
+						'error',
+						elm$json$Json$Decode$errorToString(decodeError),
+						author$project$Data$Tracking$event('init failed'))));
 		}
 	});
+var author$project$Data$Listener$getName = function (_n0) {
+	var name = _n0.a;
+	return name;
+};
+var author$project$Data$Listener$handle = F2(
+	function (_n0, json) {
+		var handler = _n0.b;
+		return handler(json);
+	});
+var author$project$Main$FailedToDecodeJsMsg = {$: 'FailedToDecodeJsMsg'};
+var author$project$Main$ListenerNotFound = function (a) {
+	return {$: 'ListenerNotFound', a: a};
+};
+var author$project$Data$Listener$Listener = F2(
+	function (a, b) {
+		return {$: 'Listener', a: a, b: b};
+	});
+var author$project$Data$Listener$map = F2(
+	function (f, _n0) {
+		var name = _n0.a;
+		var handler = _n0.b;
+		return A2(
+			author$project$Data$Listener$Listener,
+			name,
+			A2(elm$core$Basics$composeL, f, handler));
+	});
+var author$project$Data$Listener$mapMany = function (f) {
+	return elm$core$List$map(
+		author$project$Data$Listener$map(f));
+};
+var author$project$Ui$LoginCard$LoginMsg = function (a) {
+	return {$: 'LoginMsg', a: a};
+};
+var elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return elm$core$Result$Err(
+				f(e));
+		}
+	});
+var author$project$Data$Listener$for = function (_n0) {
+	var name = _n0.name;
+	var decoder = _n0.decoder;
+	var handler = _n0.handler;
+	var fromJson = function (json) {
+		var _n1 = A2(elm$json$Json$Decode$decodeValue, decoder, json);
+		if (_n1.$ === 'Ok') {
+			var v = _n1.a;
+			return A2(elm$core$Result$mapError, author$project$Data$Listener$Error, v);
+		} else {
+			var decodeError = _n1.a;
+			return elm$core$Result$Err(
+				author$project$Data$Listener$DecodeError(decodeError));
+		}
+	};
+	return A2(
+		author$project$Data$Listener$Listener,
+		name,
+		A2(elm$core$Basics$composeR, fromJson, handler));
+};
+var author$project$Ui$LoginCard$ForgotPassword$GotForgetPasswordResponse = function (a) {
+	return {$: 'GotForgetPasswordResponse', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$UserDoesntExist = {$: 'UserDoesntExist'};
+var author$project$Util$Json$Decode$matchString = F2(
+	function (str, value) {
+		var fromString = function (decodedStr) {
+			return _Utils_eq(decodedStr, str) ? elm$json$Json$Decode$succeed(value) : elm$json$Json$Decode$fail('String is not ' + str);
+		};
+		return A2(elm$json$Json$Decode$andThen, fromString, elm$json$Json$Decode$string);
+	});
+var author$project$Util$Json$Decode$matchStringMany = function () {
+	var matchThis = function (_n0) {
+		var str = _n0.a;
+		var value = _n0.b;
+		return A2(author$project$Util$Json$Decode$matchString, str, value);
+	};
+	return A2(
+		elm$core$Basics$composeR,
+		elm$core$List$map(matchThis),
+		elm$json$Json$Decode$oneOf);
+}();
+var author$project$Ui$LoginCard$ForgotPassword$listener = author$project$Data$Listener$for(
+	{
+		decoder: elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Ok,
+					elm$json$Json$Decode$null(_Utils_Tuple0)),
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Err,
+					A2(
+						elm$json$Json$Decode$field,
+						'name',
+						author$project$Util$Json$Decode$matchStringMany(
+							_List_fromArray(
+								[
+									_Utils_Tuple2('UserNotFoundException', author$project$Ui$LoginCard$ForgotPassword$UserDoesntExist)
+								]))))
+				])),
+		handler: author$project$Ui$LoginCard$ForgotPassword$GotForgetPasswordResponse,
+		name: 'forgot password'
+	});
+var author$project$Ui$LoginCard$Login$GotLoginResponse = function (a) {
+	return {$: 'GotLoginResponse', a: a};
+};
+var author$project$Ui$LoginCard$Login$IncorrectCredentials = {$: 'IncorrectCredentials'};
+var author$project$Ui$LoginCard$Login$PasswordResetRequired = {$: 'PasswordResetRequired'};
+var author$project$Ui$LoginCard$Login$listener = author$project$Data$Listener$for(
+	{
+		decoder: elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(elm$json$Json$Decode$map, elm$core$Result$Ok, author$project$Data$User$decoder),
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Err,
+					A2(
+						elm$json$Json$Decode$field,
+						'name',
+						author$project$Util$Json$Decode$matchStringMany(
+							_List_fromArray(
+								[
+									_Utils_Tuple2('UserNotFoundException', author$project$Ui$LoginCard$Login$IncorrectCredentials),
+									_Utils_Tuple2('NotAuthorizedException', author$project$Ui$LoginCard$Login$IncorrectCredentials),
+									_Utils_Tuple2('PasswordResetRequiredException', author$project$Ui$LoginCard$Login$PasswordResetRequired)
+								]))))
+				])),
+		handler: author$project$Ui$LoginCard$Login$GotLoginResponse,
+		name: 'login'
+	});
+var author$project$Ui$LoginCard$listeners = _List_fromArray(
+	[
+		A2(author$project$Data$Listener$map, author$project$Ui$LoginCard$LoginMsg, author$project$Ui$LoginCard$Login$listener),
+		A2(author$project$Data$Listener$map, author$project$Ui$LoginCard$ForgotPasswordMsg, author$project$Ui$LoginCard$ForgotPassword$listener)
+	]);
+var author$project$Page$Login$listeners = A2(author$project$Data$Listener$mapMany, author$project$Page$Login$LoginCardMsg, author$project$Ui$LoginCard$listeners);
+var author$project$Page$ResetPassword$GotResetPasswordResponse = function (a) {
+	return {$: 'GotResetPasswordResponse', a: a};
+};
+var author$project$Page$ResetPassword$InvalidCode = {$: 'InvalidCode'};
+var author$project$Page$ResetPassword$listener = author$project$Data$Listener$for(
+	{
+		decoder: elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Ok,
+					elm$json$Json$Decode$null(_Utils_Tuple0)),
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Err,
+					A2(
+						elm$json$Json$Decode$field,
+						'name',
+						A2(author$project$Util$Json$Decode$matchString, 'ExpiredCodeException', author$project$Page$ResetPassword$InvalidCode)))
+				])),
+		handler: author$project$Page$ResetPassword$GotResetPasswordResponse,
+		name: 'reset password'
+	});
+var author$project$Main$listeners = function (model) {
+	switch (model.$) {
+		case 'Login':
+			return A2(author$project$Data$Listener$mapMany, author$project$Main$LoginMsg, author$project$Page$Login$listeners);
+		case 'ResetPassword':
+			return _List_fromArray(
+				[
+					A2(author$project$Data$Listener$map, author$project$Main$ResetPasswordMsg, author$project$Page$ResetPassword$listener)
+				]);
+		default:
+			return _List_Nil;
+	}
+};
+var elm$json$Json$Decode$value = _Json_decodeValue;
+var author$project$Main$decodeMsg = F2(
+	function (model, json) {
+		var incomingMsgDecoder = A3(
+			elm$json$Json$Decode$map2,
+			elm$core$Tuple$pair,
+			A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+			A2(elm$json$Json$Decode$field, 'props', elm$json$Json$Decode$value));
+		var _n0 = A2(elm$json$Json$Decode$decodeValue, incomingMsgDecoder, json);
+		if (_n0.$ === 'Ok') {
+			var _n1 = _n0.a;
+			var name = _n1.a;
+			var props = _n1.b;
+			var checkListeners = function (remainingListeners) {
+				checkListeners:
+				while (true) {
+					if (!remainingListeners.b) {
+						return author$project$Main$ListenerNotFound(name);
+					} else {
+						var first = remainingListeners.a;
+						var rest = remainingListeners.b;
+						if (_Utils_eq(
+							author$project$Data$Listener$getName(first),
+							name)) {
+							return A2(author$project$Data$Listener$handle, first, props);
+						} else {
+							var $temp$remainingListeners = rest;
+							remainingListeners = $temp$remainingListeners;
+							continue checkListeners;
+						}
+					}
+				}
+			};
+			return checkListeners(
+				author$project$Main$listeners(model));
+		} else {
+			return author$project$Main$FailedToDecodeJsMsg;
+		}
+	});
+var author$project$Ports$fromJs = _Platform_incomingPort('fromJs', elm$json$Json$Decode$value);
+var author$project$Main$subscriptionsFromOk = function (model) {
+	return author$project$Ports$fromJs(
+		author$project$Main$decodeMsg(model));
+};
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var author$project$Main$subscriptionsFromOk = function (model) {
-	return elm$core$Platform$Sub$none;
-};
 var elm$core$Result$map = F2(
 	function (func, ra) {
 		if (ra.$ === 'Ok') {
@@ -8727,141 +10286,185 @@ var author$project$Main$subscriptions = A2(
 	elm$core$Basics$composeR,
 	elm$core$Result$map(author$project$Main$subscriptionsFromOk),
 	elm$core$Result$withDefault(elm$core$Platform$Sub$none));
-var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
-var rtfeldman$elm_css$VirtualDom$Styled$KeyedNode = F3(
-	function (a, b, c) {
-		return {$: 'KeyedNode', a: a, b: b, c: c};
-	});
-var rtfeldman$elm_css$VirtualDom$Styled$KeyedNodeNS = F4(
-	function (a, b, c, d) {
-		return {$: 'KeyedNodeNS', a: a, b: b, c: c, d: d};
-	});
-var rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
-	function (a, b, c) {
-		return {$: 'Node', a: a, b: b, c: c};
-	});
-var rtfeldman$elm_css$VirtualDom$Styled$NodeNS = F4(
-	function (a, b, c, d) {
-		return {$: 'NodeNS', a: a, b: b, c: c, d: d};
-	});
-var rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
-	return {$: 'Unstyled', a: a};
+var elm$core$Basics$pow = _Basics_pow;
+var author$project$Style$scale = function (degree) {
+	return A2(elm$core$Basics$pow, 2, degree);
 };
-var elm$virtual_dom$VirtualDom$mapAttribute = _VirtualDom_mapAttribute;
+var rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
+var elm$core$String$fromFloat = _String_fromNumber;
+var rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
+var rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
+	function (units, unitLabel, numericValue) {
+		return {
+			absoluteLength: rtfeldman$elm_css$Css$Structure$Compatible,
+			calc: rtfeldman$elm_css$Css$Structure$Compatible,
+			flexBasis: rtfeldman$elm_css$Css$Structure$Compatible,
+			fontSize: rtfeldman$elm_css$Css$Structure$Compatible,
+			length: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNone: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNoneOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNumber: rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible,
+			numericValue: numericValue,
+			textIndent: rtfeldman$elm_css$Css$Structure$Compatible,
+			unitLabel: unitLabel,
+			units: units,
+			value: _Utils_ap(
+				elm$core$String$fromFloat(numericValue),
+				unitLabel)
+		};
+	});
+var rtfeldman$elm_css$Css$px = A2(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$PxUnits, 'px');
+var author$project$Style$sizePx = A2(
+	elm$core$Basics$composeR,
+	author$project$Style$scale,
+	A2(elm$core$Basics$composeR, elm$core$Basics$toFloat, rtfeldman$elm_css$Css$px));
+var rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
+	return {$: 'AppendProperty', a: a};
+};
+var rtfeldman$elm_css$Css$property = F2(
+	function (key, value) {
+		return rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
+	});
+var rtfeldman$elm_css$Css$prop1 = F2(
+	function (key, arg) {
+		return A2(rtfeldman$elm_css$Css$property, key, arg.value);
+	});
+var rtfeldman$elm_css$Css$width = rtfeldman$elm_css$Css$prop1('width');
+var author$project$Style$width = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$width, author$project$Style$sizePx);
+var Chadtech$elm_css_grid$Html$Grid$Column = function (a) {
+	return {$: 'Column', a: a};
+};
+var rtfeldman$elm_css$Css$Preprocess$ApplyStyles = function (a) {
+	return {$: 'ApplyStyles', a: a};
+};
+var rtfeldman$elm_css$Css$batch = rtfeldman$elm_css$Css$Preprocess$ApplyStyles;
+var rtfeldman$elm_css$Css$displayFlex = A2(rtfeldman$elm_css$Css$property, 'display', 'flex');
+var rtfeldman$elm_css$Css$flex = rtfeldman$elm_css$Css$prop1('flex');
+var rtfeldman$elm_css$Css$flexBasis = rtfeldman$elm_css$Css$prop1('flex-basis');
+var rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
+var rtfeldman$elm_css$Css$int = function (val) {
+	return {
+		fontWeight: rtfeldman$elm_css$Css$Structure$Compatible,
+		intOrAuto: rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumber: rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible,
+		number: rtfeldman$elm_css$Css$Structure$Compatible,
+		numberOrInfinite: rtfeldman$elm_css$Css$Structure$Compatible,
+		numericValue: val,
+		unitLabel: '',
+		units: rtfeldman$elm_css$Css$UnitlessInteger,
+		value: elm$core$String$fromInt(val)
+	};
+};
+var rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
+var rtfeldman$elm_css$Css$pct = A2(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$PercentageUnits, '%');
+var elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
 var rtfeldman$elm_css$VirtualDom$Styled$Attribute = F3(
 	function (a, b, c) {
 		return {$: 'Attribute', a: a, b: b, c: c};
 	});
-var rtfeldman$elm_css$VirtualDom$Styled$mapAttribute = F2(
-	function (transform, _n0) {
-		var prop = _n0.a;
-		var styles = _n0.b;
-		var classname = _n0.c;
+var rtfeldman$elm_css$VirtualDom$Styled$murmurSeed = 15739;
+var rtfeldman$elm_css$VirtualDom$Styled$getClassname = function (styles) {
+	return elm$core$List$isEmpty(styles) ? 'unstyled' : A2(
+		elm$core$String$cons,
+		_Utils_chr('_'),
+		rtfeldman$elm_hex$Hex$toString(
+			A2(
+				Skinney$murmur3$Murmur3$hashString,
+				rtfeldman$elm_css$VirtualDom$Styled$murmurSeed,
+				rtfeldman$elm_css$Css$Preprocess$Resolve$compile(
+					elm$core$List$singleton(
+						rtfeldman$elm_css$Css$Preprocess$stylesheet(
+							elm$core$List$singleton(
+								A2(
+									rtfeldman$elm_css$VirtualDom$Styled$makeSnippet,
+									styles,
+									rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence(_List_Nil)))))))));
+};
+var rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
+	var classname = rtfeldman$elm_css$VirtualDom$Styled$getClassname(styles);
+	var classProperty = A2(
+		elm$virtual_dom$VirtualDom$property,
+		'className',
+		elm$json$Json$Encode$string(classname));
+	return A3(rtfeldman$elm_css$VirtualDom$Styled$Attribute, classProperty, styles, classname);
+};
+var rtfeldman$elm_css$Html$Styled$Attributes$css = rtfeldman$elm_css$Html$Styled$Internal$css;
+var Chadtech$elm_css_grid$Html$Grid$columnStyles = function (styles) {
+	return rtfeldman$elm_css$Html$Styled$Attributes$css(
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$flexBasis(
+				rtfeldman$elm_css$Css$pct(100)),
+				rtfeldman$elm_css$Css$flex(
+				rtfeldman$elm_css$Css$int(1)),
+				rtfeldman$elm_css$Css$displayFlex,
+				rtfeldman$elm_css$Css$batch(styles)
+			]));
+};
+var rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
+	function (a, b, c) {
+		return {$: 'Node', a: a, b: b, c: c};
+	});
+var rtfeldman$elm_css$VirtualDom$Styled$node = rtfeldman$elm_css$VirtualDom$Styled$Node;
+var rtfeldman$elm_css$Html$Styled$node = rtfeldman$elm_css$VirtualDom$Styled$node;
+var Chadtech$elm_css_grid$Html$Grid$column = F2(
+	function (styles, children) {
+		return Chadtech$elm_css_grid$Html$Grid$Column(
+			A3(
+				rtfeldman$elm_css$Html$Styled$node,
+				'column',
+				_List_fromArray(
+					[
+						Chadtech$elm_css_grid$Html$Grid$columnStyles(styles)
+					]),
+				children));
+	});
+var Chadtech$elm_css_grid$Html$Grid$columnToHtml = function (_n0) {
+	var html = _n0.a;
+	return html;
+};
+var rtfeldman$elm_css$Css$flexDirection = rtfeldman$elm_css$Css$prop1('flex-direction');
+var rtfeldman$elm_css$Css$row = {flexDirection: rtfeldman$elm_css$Css$Structure$Compatible, flexDirectionOrWrap: rtfeldman$elm_css$Css$Structure$Compatible, value: 'row'};
+var Chadtech$elm_css_grid$Html$Grid$rowStyles = function (extraStyles) {
+	return rtfeldman$elm_css$Html$Styled$Attributes$css(
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$displayFlex,
+				rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$row),
+				rtfeldman$elm_css$Css$batch(extraStyles)
+			]));
+};
+var Chadtech$elm_css_grid$Html$Grid$row = F2(
+	function (styles, columns) {
 		return A3(
-			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2(elm$virtual_dom$VirtualDom$mapAttribute, transform, prop),
-			styles,
-			classname);
+			rtfeldman$elm_css$Html$Styled$node,
+			'row',
+			_List_fromArray(
+				[
+					Chadtech$elm_css_grid$Html$Grid$rowStyles(styles)
+				]),
+			A2(elm$core$List$map, Chadtech$elm_css_grid$Html$Grid$columnToHtml, columns));
 	});
-var rtfeldman$elm_css$VirtualDom$Styled$map = F2(
-	function (transform, vdomNode) {
-		switch (vdomNode.$) {
-			case 'Node':
-				var elemType = vdomNode.a;
-				var properties = vdomNode.b;
-				var children = vdomNode.c;
-				return A3(
-					rtfeldman$elm_css$VirtualDom$Styled$Node,
-					elemType,
-					A2(
-						elm$core$List$map,
-						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
-						properties),
-					A2(
-						elm$core$List$map,
-						rtfeldman$elm_css$VirtualDom$Styled$map(transform),
-						children));
-			case 'NodeNS':
-				var ns = vdomNode.a;
-				var elemType = vdomNode.b;
-				var properties = vdomNode.c;
-				var children = vdomNode.d;
-				return A4(
-					rtfeldman$elm_css$VirtualDom$Styled$NodeNS,
-					ns,
-					elemType,
-					A2(
-						elm$core$List$map,
-						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
-						properties),
-					A2(
-						elm$core$List$map,
-						rtfeldman$elm_css$VirtualDom$Styled$map(transform),
-						children));
-			case 'KeyedNode':
-				var elemType = vdomNode.a;
-				var properties = vdomNode.b;
-				var children = vdomNode.c;
-				return A3(
-					rtfeldman$elm_css$VirtualDom$Styled$KeyedNode,
-					elemType,
-					A2(
-						elm$core$List$map,
-						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
-						properties),
-					A2(
-						elm$core$List$map,
-						function (_n1) {
-							var key = _n1.a;
-							var child = _n1.b;
-							return _Utils_Tuple2(
-								key,
-								A2(rtfeldman$elm_css$VirtualDom$Styled$map, transform, child));
-						},
-						children));
-			case 'KeyedNodeNS':
-				var ns = vdomNode.a;
-				var elemType = vdomNode.b;
-				var properties = vdomNode.c;
-				var children = vdomNode.d;
-				return A4(
-					rtfeldman$elm_css$VirtualDom$Styled$KeyedNodeNS,
-					ns,
-					elemType,
-					A2(
-						elm$core$List$map,
-						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
-						properties),
-					A2(
-						elm$core$List$map,
-						function (_n2) {
-							var key = _n2.a;
-							var child = _n2.b;
-							return _Utils_Tuple2(
-								key,
-								A2(rtfeldman$elm_css$VirtualDom$Styled$map, transform, child));
-						},
-						children));
-			default:
-				var vdom = vdomNode.a;
-				return rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
-					A2(elm$virtual_dom$VirtualDom$map, transform, vdom));
-		}
+var author$project$View$TextArea$TextArea = F2(
+	function (a, b) {
+		return {$: 'TextArea', a: a, b: b};
 	});
-var rtfeldman$elm_css$Html$Styled$map = rtfeldman$elm_css$VirtualDom$Styled$map;
-var author$project$Data$Document$map = F2(
-	function (mapper, document) {
-		return {
-			body: A2(
-				elm$core$List$map,
-				rtfeldman$elm_css$Html$Styled$map(mapper),
-				document.body),
-			title: document.title
-		};
-	});
-var elm$core$String$foldr = _String_foldr;
-var elm$core$String$toList = function (string) {
-	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
+var author$project$View$TextArea$readOnly = function (value) {
+	return A2(
+		author$project$View$TextArea$TextArea,
+		{value: value},
+		_List_Nil);
 };
 var rtfeldman$elm_css$Css$withPrecedingHash = function (str) {
 	return A2(elm$core$String$startsWith, '#', str) ? str : A2(
@@ -8869,7 +10472,6 @@ var rtfeldman$elm_css$Css$withPrecedingHash = function (str) {
 		_Utils_chr('#'),
 		str);
 };
-var rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
 var rtfeldman$elm_css$Css$erroneousHex = function (str) {
 	return {
 		alpha: 1,
@@ -8880,19 +10482,6 @@ var rtfeldman$elm_css$Css$erroneousHex = function (str) {
 		value: rtfeldman$elm_css$Css$withPrecedingHash(str)
 	};
 };
-var elm$core$String$toLower = _String_toLower;
-var elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return elm$core$Result$Err(
-				f(e));
-		}
-	});
-var elm$core$Basics$pow = _Basics_pow;
 var elm$core$String$fromChar = function (_char) {
 	return A2(elm$core$String$cons, _char, '');
 };
@@ -9226,169 +10815,48 @@ var rtfeldman$elm_css$Css$hex = function (str) {
 	}
 	return rtfeldman$elm_css$Css$erroneousHex(str);
 };
-var Chadtech$ct_colors$Chadtech$Colors$content0 = rtfeldman$elm_css$Css$hex('#131610');
-var Chadtech$ct_colors$Chadtech$Colors$content1 = rtfeldman$elm_css$Css$hex('#2C2826');
-var Chadtech$elm_css_grid$Html$Grid$Column = function (a) {
-	return {$: 'Column', a: a};
-};
-var rtfeldman$elm_css$Css$Preprocess$ApplyStyles = function (a) {
-	return {$: 'ApplyStyles', a: a};
-};
-var rtfeldman$elm_css$Css$batch = rtfeldman$elm_css$Css$Preprocess$ApplyStyles;
-var rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
-	return {$: 'AppendProperty', a: a};
-};
-var rtfeldman$elm_css$Css$property = F2(
-	function (key, value) {
-		return rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
-	});
-var rtfeldman$elm_css$Css$displayFlex = A2(rtfeldman$elm_css$Css$property, 'display', 'flex');
-var rtfeldman$elm_css$Css$prop1 = F2(
-	function (key, arg) {
-		return A2(rtfeldman$elm_css$Css$property, key, arg.value);
-	});
-var rtfeldman$elm_css$Css$flex = rtfeldman$elm_css$Css$prop1('flex');
-var rtfeldman$elm_css$Css$flexBasis = rtfeldman$elm_css$Css$prop1('flex-basis');
-var rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
-var rtfeldman$elm_css$Css$int = function (val) {
-	return {
-		fontWeight: rtfeldman$elm_css$Css$Structure$Compatible,
-		intOrAuto: rtfeldman$elm_css$Css$Structure$Compatible,
-		lengthOrNumber: rtfeldman$elm_css$Css$Structure$Compatible,
-		lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible,
-		number: rtfeldman$elm_css$Css$Structure$Compatible,
-		numberOrInfinite: rtfeldman$elm_css$Css$Structure$Compatible,
-		numericValue: val,
-		unitLabel: '',
-		units: rtfeldman$elm_css$Css$UnitlessInteger,
-		value: elm$core$String$fromInt(val)
+var Chadtech$ct_colors$Chadtech$Colors$content4 = rtfeldman$elm_css$Css$hex('#B0A69A');
+var rtfeldman$elm_css$Css$stringsToValue = function (list) {
+	return elm$core$List$isEmpty(list) ? {value: 'none'} : {
+		value: A2(
+			elm$core$String$join,
+			', ',
+			A2(
+				elm$core$List$map,
+				function (s) {
+					return s;
+				},
+				list))
 	};
 };
-var rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
-var elm$core$String$fromFloat = _String_fromNumber;
-var rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
-	function (units, unitLabel, numericValue) {
-		return {
-			absoluteLength: rtfeldman$elm_css$Css$Structure$Compatible,
-			calc: rtfeldman$elm_css$Css$Structure$Compatible,
-			flexBasis: rtfeldman$elm_css$Css$Structure$Compatible,
-			fontSize: rtfeldman$elm_css$Css$Structure$Compatible,
-			length: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNone: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNoneOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNumber: rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible,
-			numericValue: numericValue,
-			textIndent: rtfeldman$elm_css$Css$Structure$Compatible,
-			unitLabel: unitLabel,
-			units: units,
-			value: _Utils_ap(
-				elm$core$String$fromFloat(numericValue),
-				unitLabel)
-		};
-	});
-var rtfeldman$elm_css$Css$pct = A2(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$PercentageUnits, '%');
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$virtual_dom$VirtualDom$property = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_property,
-			_VirtualDom_noInnerHtmlOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var rtfeldman$elm_css$VirtualDom$Styled$murmurSeed = 15739;
-var rtfeldman$elm_css$VirtualDom$Styled$getClassname = function (styles) {
-	return elm$core$List$isEmpty(styles) ? 'unstyled' : A2(
-		elm$core$String$cons,
-		_Utils_chr('_'),
-		rtfeldman$elm_hex$Hex$toString(
-			A2(
-				Skinney$murmur3$Murmur3$hashString,
-				rtfeldman$elm_css$VirtualDom$Styled$murmurSeed,
-				rtfeldman$elm_css$Css$Preprocess$Resolve$compile(
-					elm$core$List$singleton(
-						rtfeldman$elm_css$Css$Preprocess$stylesheet(
-							elm$core$List$singleton(
-								A2(
-									rtfeldman$elm_css$VirtualDom$Styled$makeSnippet,
-									styles,
-									rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence(_List_Nil)))))))));
-};
-var rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
-	var classname = rtfeldman$elm_css$VirtualDom$Styled$getClassname(styles);
-	var classProperty = A2(
-		elm$virtual_dom$VirtualDom$property,
-		'className',
-		elm$json$Json$Encode$string(classname));
-	return A3(rtfeldman$elm_css$VirtualDom$Styled$Attribute, classProperty, styles, classname);
-};
-var rtfeldman$elm_css$Html$Styled$Attributes$css = rtfeldman$elm_css$Html$Styled$Internal$css;
-var Chadtech$elm_css_grid$Html$Grid$columnStyles = function (styles) {
-	return rtfeldman$elm_css$Html$Styled$Attributes$css(
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Css$flexBasis(
-				rtfeldman$elm_css$Css$pct(100)),
-				rtfeldman$elm_css$Css$flex(
-				rtfeldman$elm_css$Css$int(1)),
-				rtfeldman$elm_css$Css$displayFlex,
-				rtfeldman$elm_css$Css$batch(styles)
-			]));
-};
-var rtfeldman$elm_css$VirtualDom$Styled$node = rtfeldman$elm_css$VirtualDom$Styled$Node;
-var rtfeldman$elm_css$Html$Styled$node = rtfeldman$elm_css$VirtualDom$Styled$node;
-var Chadtech$elm_css_grid$Html$Grid$column = F2(
-	function (styles, children) {
-		return Chadtech$elm_css_grid$Html$Grid$Column(
-			A3(
-				rtfeldman$elm_css$Html$Styled$node,
-				'column',
-				_List_fromArray(
-					[
-						Chadtech$elm_css_grid$Html$Grid$columnStyles(styles)
-					]),
-				children));
-	});
-var Chadtech$elm_css_grid$Html$Grid$columnShrink = rtfeldman$elm_css$Css$flex(
-	rtfeldman$elm_css$Css$int(0));
-var Chadtech$elm_css_grid$Html$Grid$columnToHtml = function (_n0) {
-	var html = _n0.a;
-	return html;
-};
-var rtfeldman$elm_css$Css$flexDirection = rtfeldman$elm_css$Css$prop1('flex-direction');
-var rtfeldman$elm_css$Css$row = {flexDirection: rtfeldman$elm_css$Css$Structure$Compatible, flexDirectionOrWrap: rtfeldman$elm_css$Css$Structure$Compatible, value: 'row'};
-var Chadtech$elm_css_grid$Html$Grid$rowStyles = function (extraStyles) {
-	return rtfeldman$elm_css$Html$Styled$Attributes$css(
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Css$displayFlex,
-				rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$row),
-				rtfeldman$elm_css$Css$batch(extraStyles)
-			]));
-};
-var Chadtech$elm_css_grid$Html$Grid$row = F2(
-	function (styles, columns) {
-		return A3(
-			rtfeldman$elm_css$Html$Styled$node,
-			'row',
+var rtfeldman$elm_css$Css$fontFamilies = A2(
+	elm$core$Basics$composeL,
+	rtfeldman$elm_css$Css$prop1('font-family'),
+	rtfeldman$elm_css$Css$stringsToValue);
+var rtfeldman$elm_css$Css$fontSize = rtfeldman$elm_css$Css$prop1('font-size');
+var author$project$Style$hfnss = rtfeldman$elm_css$Css$batch(
+	_List_fromArray(
+		[
+			rtfeldman$elm_css$Css$fontFamilies(
 			_List_fromArray(
-				[
-					Chadtech$elm_css_grid$Html$Grid$rowStyles(styles)
-				]),
-			A2(elm$core$List$map, Chadtech$elm_css_grid$Html$Grid$columnToHtml, columns));
-	});
-var author$project$Style$scale = function (degree) {
-	return A2(elm$core$Basics$pow, 2, degree);
-};
-var rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
-var rtfeldman$elm_css$Css$px = A2(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$PxUnits, 'px');
-var author$project$Style$sizePx = A2(
-	elm$core$Basics$composeR,
-	author$project$Style$scale,
-	A2(elm$core$Basics$composeR, elm$core$Basics$toFloat, rtfeldman$elm_css$Css$px));
+				['HFNSS'])),
+			rtfeldman$elm_css$Css$fontSize(
+			author$project$Style$sizePx(5))
+		]));
+var author$project$Style$font = author$project$Style$hfnss;
+var author$project$Style$fontSmoothingNone = A2(rtfeldman$elm_css$Css$property, '-webkit-font-smoothing', 'none');
+var author$project$Style$fullWidth = rtfeldman$elm_css$Css$width(
+	rtfeldman$elm_css$Css$pct(100));
+var rtfeldman$elm_css$Css$height = rtfeldman$elm_css$Css$prop1('height');
+var author$project$Style$height = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$height, author$project$Style$sizePx);
+var rtfeldman$elm_css$Css$none = {backgroundImage: rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: rtfeldman$elm_css$Css$Structure$Compatible, cursor: rtfeldman$elm_css$Css$Structure$Compatible, display: rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: rtfeldman$elm_css$Css$Structure$Compatible, keyframes: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: rtfeldman$elm_css$Css$Structure$Compatible, none: rtfeldman$elm_css$Css$Structure$Compatible, outline: rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, resize: rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: rtfeldman$elm_css$Css$Structure$Compatible, textTransform: rtfeldman$elm_css$Css$Structure$Compatible, touchAction: rtfeldman$elm_css$Css$Structure$Compatible, transform: rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
+var rtfeldman$elm_css$Css$outline = rtfeldman$elm_css$Css$prop1('outline');
+var author$project$Style$noOutline = rtfeldman$elm_css$Css$outline(rtfeldman$elm_css$Css$none);
+var rtfeldman$elm_css$Css$padding = rtfeldman$elm_css$Css$prop1('padding');
+var author$project$Style$padding = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$padding, author$project$Style$sizePx);
+var Chadtech$ct_colors$Chadtech$Colors$background1 = rtfeldman$elm_css$Css$hex('#071D10');
+var Chadtech$ct_colors$Chadtech$Colors$content0 = rtfeldman$elm_css$Css$hex('#131610');
+var Chadtech$ct_colors$Chadtech$Colors$content2 = rtfeldman$elm_css$Css$hex('#57524F');
 var rtfeldman$elm_css$Css$prop3 = F4(
 	function (key, argA, argB, argC) {
 		return A2(
@@ -9406,37 +10874,723 @@ var author$project$Style$borderBottom = A2(
 	rtfeldman$elm_css$Css$borderBottom3,
 	author$project$Style$sizePx(1),
 	rtfeldman$elm_css$Css$solid);
-var Chadtech$ct_colors$Chadtech$Colors$content2 = rtfeldman$elm_css$Css$hex('#57524F');
 var rtfeldman$elm_css$Css$borderLeft3 = rtfeldman$elm_css$Css$prop3('border-left');
 var rtfeldman$elm_css$Css$borderRight3 = rtfeldman$elm_css$Css$prop3('border-right');
+var rtfeldman$elm_css$Css$borderTop3 = rtfeldman$elm_css$Css$prop3('border-top');
+var author$project$Style$indent = rtfeldman$elm_css$Css$batch(
+	_List_fromArray(
+		[
+			A3(
+			rtfeldman$elm_css$Css$borderTop3,
+			author$project$Style$sizePx(1),
+			rtfeldman$elm_css$Css$solid,
+			Chadtech$ct_colors$Chadtech$Colors$content0),
+			A3(
+			rtfeldman$elm_css$Css$borderLeft3,
+			author$project$Style$sizePx(1),
+			rtfeldman$elm_css$Css$solid,
+			Chadtech$ct_colors$Chadtech$Colors$content0),
+			A3(
+			rtfeldman$elm_css$Css$borderRight3,
+			author$project$Style$sizePx(1),
+			rtfeldman$elm_css$Css$solid,
+			Chadtech$ct_colors$Chadtech$Colors$content2),
+			author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content2)
+		]));
+var rtfeldman$elm_css$Css$backgroundColor = function (c) {
+	return A2(rtfeldman$elm_css$Css$property, 'background-color', c.value);
+};
+var author$project$Style$pit = rtfeldman$elm_css$Css$batch(
+	_List_fromArray(
+		[
+			author$project$Style$indent,
+			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$background1)
+		]));
+var author$project$Util$Css$noStyle = rtfeldman$elm_css$Css$batch(_List_Nil);
+var author$project$Util$Css$styleMaybe = function (f) {
+	return A2(
+		elm$core$Basics$composeR,
+		elm$core$Maybe$map(f),
+		elm$core$Maybe$withDefault(author$project$Util$Css$noStyle));
+};
+var author$project$View$TextArea$optionsToSummary = function () {
+	var modifySummary = F2(
+		function (option, summary) {
+			if (option.$ === 'OnInput') {
+				var msg = option.a;
+				return _Utils_update(
+					summary,
+					{
+						onInput: elm$core$Maybe$Just(msg)
+					});
+			} else {
+				var _int = option.a;
+				return _Utils_update(
+					summary,
+					{
+						fixedHeight: elm$core$Maybe$Just(_int)
+					});
+			}
+		});
+	return A2(
+		elm$core$List$foldr,
+		modifySummary,
+		{fixedHeight: elm$core$Maybe$Nothing, onInput: elm$core$Maybe$Nothing});
+}();
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var rtfeldman$elm_css$Css$color = function (c) {
+	return A2(rtfeldman$elm_css$Css$property, 'color', c.value);
+};
+var rtfeldman$elm_css$Html$Styled$textarea = rtfeldman$elm_css$Html$Styled$node('textarea');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var rtfeldman$elm_css$VirtualDom$Styled$property = F2(
+	function (key, value) {
+		return A3(
+			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2(elm$virtual_dom$VirtualDom$property, key, value),
+			_List_Nil,
+			'');
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			rtfeldman$elm_css$VirtualDom$Styled$property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$spellcheck = rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('spellcheck');
+var rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			rtfeldman$elm_css$VirtualDom$Styled$property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$value = rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
+var rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var rtfeldman$elm_css$VirtualDom$Styled$on = F2(
+	function (eventName, handler) {
+		return A3(
+			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2(elm$virtual_dom$VirtualDom$on, eventName, handler),
+			_List_Nil,
+			'');
+	});
+var rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			rtfeldman$elm_css$VirtualDom$Styled$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	elm$json$Json$Decode$string);
+var rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
+	return A2(
+		rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
+		'input',
+		A2(
+			elm$json$Json$Decode$map,
+			rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
+			A2(elm$json$Json$Decode$map, tagger, rtfeldman$elm_css$Html$Styled$Events$targetValue)));
+};
+var author$project$View$TextArea$toHtml = function (_n0) {
+	var value = _n0.a.value;
+	var options = _n0.b;
+	var summary = author$project$View$TextArea$optionsToSummary(options);
+	var conditionalAttributes = A2(
+		elm$core$List$filterMap,
+		elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				A2(elm$core$Maybe$map, rtfeldman$elm_css$Html$Styled$Events$onInput, summary.onInput)
+			]));
+	var attributes = _List_fromArray(
+		[
+			rtfeldman$elm_css$Html$Styled$Attributes$css(
+			_List_fromArray(
+				[
+					rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content4),
+					author$project$Style$fontSmoothingNone,
+					author$project$Style$fullWidth,
+					author$project$Style$font,
+					author$project$Style$padding(2),
+					author$project$Style$noOutline,
+					author$project$Style$pit,
+					A2(author$project$Util$Css$styleMaybe, author$project$Style$height, summary.fixedHeight)
+				])),
+			rtfeldman$elm_css$Html$Styled$Attributes$spellcheck(false),
+			rtfeldman$elm_css$Html$Styled$Attributes$value(value)
+		]);
+	return A2(
+		rtfeldman$elm_css$Html$Styled$textarea,
+		_Utils_ap(attributes, conditionalAttributes),
+		_List_Nil);
+};
+var author$project$View$TextArea$Height = function (a) {
+	return {$: 'Height', a: a};
+};
+var author$project$View$TextArea$addOption = F2(
+	function (option, _n0) {
+		var model = _n0.a;
+		var options = _n0.b;
+		return A2(
+			author$project$View$TextArea$TextArea,
+			model,
+			A2(elm$core$List$cons, option, options));
+	});
+var author$project$View$TextArea$withHeight = A2(elm$core$Basics$composeL, author$project$View$TextArea$addOption, author$project$View$TextArea$Height);
+var author$project$View$Card$errorDisplay = function (error) {
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$row,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				Chadtech$elm_css_grid$Html$Grid$column,
+				_List_Nil,
+				_List_fromArray(
+					[
+						author$project$View$TextArea$toHtml(
+						A2(
+							author$project$View$TextArea$withHeight,
+							8,
+							author$project$View$TextArea$readOnly(error)))
+					]))
+			]));
+};
+var rtfeldman$elm_css$Html$Styled$p = rtfeldman$elm_css$Html$Styled$node('p');
+var rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
+	return {$: 'Unstyled', a: a};
+};
+var rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
+	return rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
+		elm$virtual_dom$VirtualDom$text(str));
+};
+var rtfeldman$elm_css$Html$Styled$text = rtfeldman$elm_css$VirtualDom$Styled$text;
+var author$project$View$Text$config = function (_n0) {
+	var styles = _n0.styles;
+	var value = _n0.value;
+	return A2(
+		rtfeldman$elm_css$Html$Styled$p,
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$Attributes$css(styles)
+			]),
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$text(value)
+			]));
+};
+var author$project$View$Text$withStyles = F2(
+	function (styles, str) {
+		return author$project$View$Text$config(
+			{styles: styles, value: str});
+	});
+var author$project$View$Text$fromString = author$project$View$Text$withStyles(_List_Nil);
+var author$project$View$Card$textRow = F2(
+	function (styles, text) {
+		return A2(
+			Chadtech$elm_css_grid$Html$Grid$row,
+			styles,
+			_List_fromArray(
+				[
+					A2(
+					Chadtech$elm_css_grid$Html$Grid$column,
+					_List_fromArray(
+						[
+							author$project$Style$padding(1)
+						]),
+					_List_fromArray(
+						[
+							author$project$View$Text$fromString(text)
+						]))
+				]));
+	});
+var Chadtech$elm_css_grid$Html$Grid$box = function (styles) {
+	return A2(
+		rtfeldman$elm_css$Html$Styled$node,
+		'box',
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Html$Styled$Attributes$css(styles)
+			]));
+};
+var Chadtech$ct_colors$Chadtech$Colors$content1 = rtfeldman$elm_css$Css$hex('#2C2826');
+var author$project$Style$outdent = rtfeldman$elm_css$Css$batch(
+	_List_fromArray(
+		[
+			A3(
+			rtfeldman$elm_css$Css$borderTop3,
+			author$project$Style$sizePx(1),
+			rtfeldman$elm_css$Css$solid,
+			Chadtech$ct_colors$Chadtech$Colors$content2),
+			A3(
+			rtfeldman$elm_css$Css$borderLeft3,
+			author$project$Style$sizePx(1),
+			rtfeldman$elm_css$Css$solid,
+			Chadtech$ct_colors$Chadtech$Colors$content2),
+			A3(
+			rtfeldman$elm_css$Css$borderRight3,
+			author$project$Style$sizePx(1),
+			rtfeldman$elm_css$Css$solid,
+			Chadtech$ct_colors$Chadtech$Colors$content0),
+			author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content0)
+		]));
+var rtfeldman$elm_css$Css$Preprocess$WithKeyframes = function (a) {
+	return {$: 'WithKeyframes', a: a};
+};
+var rtfeldman$elm_css$Css$animationName = function (arg) {
+	return ((arg.value === 'none') || ((arg.value === 'inherit') || ((arg.value === 'unset') || (arg.value === 'initial')))) ? A2(rtfeldman$elm_css$Css$prop1, 'animation-name', arg) : rtfeldman$elm_css$Css$Preprocess$WithKeyframes(arg.value);
+};
+var rtfeldman$elm_css$Css$cssFunction = F2(
+	function (funcName, args) {
+		return funcName + ('(' + (A2(elm$core$String$join, ', ', args) + ')'));
+	});
+var rtfeldman$elm_css$Css$scale = function (x) {
+	return {
+		transform: rtfeldman$elm_css$Css$Structure$Compatible,
+		value: A2(
+			rtfeldman$elm_css$Css$cssFunction,
+			'scale',
+			_List_fromArray(
+				[
+					elm$core$String$fromFloat(x)
+				]))
+	};
+};
+var rtfeldman$elm_css$Css$Internal$printKeyframeSelector = function (_n0) {
+	var percentage = _n0.a;
+	var properties = _n0.b;
+	var propertiesStr = A2(
+		elm$core$String$join,
+		'',
+		A2(
+			elm$core$List$map,
+			function (_n1) {
+				var prop = _n1.a;
+				return prop + ';';
+			},
+			properties));
+	var percentageStr = elm$core$String$fromInt(percentage) + '%';
+	return percentageStr + (' {' + (propertiesStr + '}'));
+};
+var rtfeldman$elm_css$Css$Internal$compileKeyframes = function (tuples) {
+	return A2(
+		elm$core$String$join,
+		'\n\n',
+		A2(elm$core$List$map, rtfeldman$elm_css$Css$Internal$printKeyframeSelector, tuples));
+};
+var rtfeldman$elm_css$Css$Animations$keyframes = function (tuples) {
+	return elm$core$List$isEmpty(tuples) ? {keyframes: rtfeldman$elm_css$Css$Structure$Compatible, none: rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'} : {
+		keyframes: rtfeldman$elm_css$Css$Structure$Compatible,
+		none: rtfeldman$elm_css$Css$Structure$Compatible,
+		value: rtfeldman$elm_css$Css$Internal$compileKeyframes(tuples)
+	};
+};
+var rtfeldman$elm_css$Css$Internal$Property = function (a) {
+	return {$: 'Property', a: a};
+};
+var rtfeldman$elm_css$Css$Animations$transform = function (values) {
+	return rtfeldman$elm_css$Css$Internal$Property(
+		elm$core$List$isEmpty(values) ? 'transform:none' : ('transform:' + A2(
+			elm$core$String$join,
+			' ',
+			A2(
+				elm$core$List$map,
+				function ($) {
+					return $.value;
+				},
+				values))));
+};
+var author$project$View$Card$cardStyles = rtfeldman$elm_css$Css$batch(
+	_List_fromArray(
+		[
+			author$project$Style$outdent,
+			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content1),
+			author$project$Style$padding(1),
+			A2(rtfeldman$elm_css$Css$property, 'animation-duration', '150ms'),
+			rtfeldman$elm_css$Css$animationName(
+			rtfeldman$elm_css$Css$Animations$keyframes(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						0,
+						_List_fromArray(
+							[
+								rtfeldman$elm_css$Css$Animations$transform(
+								_List_fromArray(
+									[
+										rtfeldman$elm_css$Css$scale(0)
+									]))
+							])),
+						_Utils_Tuple2(
+						100,
+						_List_fromArray(
+							[
+								rtfeldman$elm_css$Css$Animations$transform(
+								_List_fromArray(
+									[
+										rtfeldman$elm_css$Css$scale(1)
+									]))
+							]))
+					])))
+		]));
+var author$project$View$Card$view = function (styles) {
+	return Chadtech$elm_css_grid$Html$Grid$box(
+		A2(elm$core$List$cons, author$project$View$Card$cardStyles, styles));
+};
+var author$project$View$CardHeader$CardHeader = F2(
+	function (a, b) {
+		return {$: 'CardHeader', a: a, b: b};
+	});
+var author$project$View$CardHeader$config = function (model) {
+	return A2(author$project$View$CardHeader$CardHeader, model, _List_Nil);
+};
+var rtfeldman$elm_css$Css$marginBottom = rtfeldman$elm_css$Css$prop1('margin-bottom');
+var author$project$Style$marginBottom = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginBottom, author$project$Style$sizePx);
+var author$project$View$CardHeader$optionsToSummary = function () {
+	var modifySummary = F2(
+		function (option, summary) {
+			var msg = option.a;
+			return _Utils_update(
+				summary,
+				{
+					closeButton: elm$core$Maybe$Just(msg)
+				});
+		});
+	return A2(
+		elm$core$List$foldr,
+		modifySummary,
+		{closeButton: elm$core$Maybe$Nothing});
+}();
+var author$project$View$CardHeader$toHtml = function (_n0) {
+	var model = _n0.a;
+	var options = _n0.b;
+	var summary = author$project$View$CardHeader$optionsToSummary(options);
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$row,
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4),
+				author$project$Style$marginBottom(2)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				Chadtech$elm_css_grid$Html$Grid$column,
+				_List_fromArray(
+					[
+						author$project$Style$padding(2)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						author$project$View$Text$withStyles,
+						_List_fromArray(
+							[
+								rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content1)
+							]),
+						model.title)
+					]))
+			]));
+};
+var Chadtech$elm_css_grid$Html$Grid$columnShrink = rtfeldman$elm_css$Css$flex(
+	rtfeldman$elm_css$Css$int(0));
+var rtfeldman$elm_css$Css$center = rtfeldman$elm_css$Css$prop1('center');
+var rtfeldman$elm_css$Css$Internal$property = F2(
+	function (key, value) {
+		return rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
+	});
+var rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
+	function (functionName, desiredKey, style) {
+		getOverloadedProperty:
+		while (true) {
+			switch (style.$) {
+				case 'AppendProperty':
+					var str = style.a;
+					var key = A2(
+						elm$core$Maybe$withDefault,
+						'',
+						elm$core$List$head(
+							A2(elm$core$String$split, ':', str)));
+					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, key);
+				case 'ExtendSelector':
+					var selector = style.a;
+					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-selector'));
+				case 'NestSnippet':
+					var combinator = style.a;
+					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-combinator'));
+				case 'WithPseudoElement':
+					var pseudoElement = style.a;
+					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-pseudo-element setter'));
+				case 'WithMedia':
+					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-media-query'));
+				case 'WithKeyframes':
+					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-keyframes'));
+				default:
+					if (!style.a.b) {
+						return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-empty-Style'));
+					} else {
+						if (!style.a.b.b) {
+							var _n1 = style.a;
+							var only = _n1.a;
+							var $temp$functionName = functionName,
+								$temp$desiredKey = desiredKey,
+								$temp$style = only;
+							functionName = $temp$functionName;
+							desiredKey = $temp$desiredKey;
+							style = $temp$style;
+							continue getOverloadedProperty;
+						} else {
+							var _n2 = style.a;
+							var first = _n2.a;
+							var rest = _n2.b;
+							var $temp$functionName = functionName,
+								$temp$desiredKey = desiredKey,
+								$temp$style = rtfeldman$elm_css$Css$Preprocess$ApplyStyles(rest);
+							functionName = $temp$functionName;
+							desiredKey = $temp$desiredKey;
+							style = $temp$style;
+							continue getOverloadedProperty;
+						}
+					}
+			}
+		}
+	});
+var rtfeldman$elm_css$Css$Internal$IncompatibleUnits = {$: 'IncompatibleUnits'};
+var rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$Internal$IncompatibleUnits, '', 0);
+var rtfeldman$elm_css$Css$justifyContent = function (fn) {
+	return A3(
+		rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'justifyContent',
+		'justify-content',
+		fn(rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
+var author$project$Style$centerContent = rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$center);
+var rtfeldman$elm_css$Css$column = _Utils_update(
+	rtfeldman$elm_css$Css$row,
+	{value: 'column'});
+var author$project$View$SingleCardPage$view = function (card) {
+	return _List_fromArray(
+		[
+			A2(
+			Chadtech$elm_css_grid$Html$Grid$row,
+			_List_fromArray(
+				[
+					rtfeldman$elm_css$Css$flex(
+					rtfeldman$elm_css$Css$int(1)),
+					author$project$Style$centerContent
+				]),
+			_List_fromArray(
+				[
+					A2(
+					Chadtech$elm_css_grid$Html$Grid$column,
+					_List_fromArray(
+						[
+							Chadtech$elm_css_grid$Html$Grid$columnShrink,
+							author$project$Style$centerContent,
+							rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
+						]),
+					_List_fromArray(
+						[card]))
+				]))
+		]);
+};
+var author$project$Main$viewError = function (decodeError) {
+	var header = author$project$View$CardHeader$toHtml(
+		author$project$View$CardHeader$config(
+			{title: 'error'}));
+	var errorBody = _List_fromArray(
+		[
+			A2(author$project$View$Card$textRow, _List_Nil, '\n                Something went really wrong. Sorry.\n                Please report this error if you can.\n                You can copy and paste the error below,\n                and send it to my email at\n                chadtech0@gmail.com\n                '),
+			author$project$View$Card$errorDisplay(
+			elm$json$Json$Decode$errorToString(decodeError))
+		]);
+	return {
+		body: author$project$View$SingleCardPage$view(
+			A2(
+				author$project$View$Card$view,
+				_List_fromArray(
+					[
+						author$project$Style$width(10)
+					]),
+				A2(elm$core$List$cons, header, errorBody))),
+		title: elm$core$Maybe$Nothing
+	};
+};
+var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var rtfeldman$elm_css$VirtualDom$Styled$KeyedNode = F3(
+	function (a, b, c) {
+		return {$: 'KeyedNode', a: a, b: b, c: c};
+	});
+var rtfeldman$elm_css$VirtualDom$Styled$KeyedNodeNS = F4(
+	function (a, b, c, d) {
+		return {$: 'KeyedNodeNS', a: a, b: b, c: c, d: d};
+	});
+var rtfeldman$elm_css$VirtualDom$Styled$NodeNS = F4(
+	function (a, b, c, d) {
+		return {$: 'NodeNS', a: a, b: b, c: c, d: d};
+	});
+var elm$virtual_dom$VirtualDom$mapAttribute = _VirtualDom_mapAttribute;
+var rtfeldman$elm_css$VirtualDom$Styled$mapAttribute = F2(
+	function (transform, _n0) {
+		var prop = _n0.a;
+		var styles = _n0.b;
+		var classname = _n0.c;
+		return A3(
+			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2(elm$virtual_dom$VirtualDom$mapAttribute, transform, prop),
+			styles,
+			classname);
+	});
+var rtfeldman$elm_css$VirtualDom$Styled$map = F2(
+	function (transform, vdomNode) {
+		switch (vdomNode.$) {
+			case 'Node':
+				var elemType = vdomNode.a;
+				var properties = vdomNode.b;
+				var children = vdomNode.c;
+				return A3(
+					rtfeldman$elm_css$VirtualDom$Styled$Node,
+					elemType,
+					A2(
+						elm$core$List$map,
+						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
+						properties),
+					A2(
+						elm$core$List$map,
+						rtfeldman$elm_css$VirtualDom$Styled$map(transform),
+						children));
+			case 'NodeNS':
+				var ns = vdomNode.a;
+				var elemType = vdomNode.b;
+				var properties = vdomNode.c;
+				var children = vdomNode.d;
+				return A4(
+					rtfeldman$elm_css$VirtualDom$Styled$NodeNS,
+					ns,
+					elemType,
+					A2(
+						elm$core$List$map,
+						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
+						properties),
+					A2(
+						elm$core$List$map,
+						rtfeldman$elm_css$VirtualDom$Styled$map(transform),
+						children));
+			case 'KeyedNode':
+				var elemType = vdomNode.a;
+				var properties = vdomNode.b;
+				var children = vdomNode.c;
+				return A3(
+					rtfeldman$elm_css$VirtualDom$Styled$KeyedNode,
+					elemType,
+					A2(
+						elm$core$List$map,
+						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
+						properties),
+					A2(
+						elm$core$List$map,
+						function (_n1) {
+							var key = _n1.a;
+							var child = _n1.b;
+							return _Utils_Tuple2(
+								key,
+								A2(rtfeldman$elm_css$VirtualDom$Styled$map, transform, child));
+						},
+						children));
+			case 'KeyedNodeNS':
+				var ns = vdomNode.a;
+				var elemType = vdomNode.b;
+				var properties = vdomNode.c;
+				var children = vdomNode.d;
+				return A4(
+					rtfeldman$elm_css$VirtualDom$Styled$KeyedNodeNS,
+					ns,
+					elemType,
+					A2(
+						elm$core$List$map,
+						rtfeldman$elm_css$VirtualDom$Styled$mapAttribute(transform),
+						properties),
+					A2(
+						elm$core$List$map,
+						function (_n2) {
+							var key = _n2.a;
+							var child = _n2.b;
+							return _Utils_Tuple2(
+								key,
+								A2(rtfeldman$elm_css$VirtualDom$Styled$map, transform, child));
+						},
+						children));
+			default:
+				var vdom = vdomNode.a;
+				return rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
+					A2(elm$virtual_dom$VirtualDom$map, transform, vdom));
+		}
+	});
+var rtfeldman$elm_css$Html$Styled$map = rtfeldman$elm_css$VirtualDom$Styled$map;
+var author$project$Data$Document$map = F2(
+	function (mapper, document) {
+		return {
+			body: A2(
+				elm$core$List$map,
+				rtfeldman$elm_css$Html$Styled$map(mapper),
+				document.body),
+			title: document.title
+		};
+	});
 var rtfeldman$elm_css$Css$display = rtfeldman$elm_css$Css$prop1('display');
 var rtfeldman$elm_css$Css$inline = {display: rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline'};
-var rtfeldman$elm_css$Css$width = rtfeldman$elm_css$Css$prop1('width');
 var rtfeldman$elm_css$Css$zero = {length: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumber: rtfeldman$elm_css$Css$Structure$Compatible, number: rtfeldman$elm_css$Css$Structure$Compatible, numericValue: 0, outline: rtfeldman$elm_css$Css$Structure$Compatible, unitLabel: '', units: rtfeldman$elm_css$Css$UnitlessInteger, value: '0'};
 var author$project$Style$divider = rtfeldman$elm_css$Css$batch(
 	_List_fromArray(
 		[
 			A3(
 			rtfeldman$elm_css$Css$borderLeft3,
-			author$project$Style$sizePx(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content0),
 			A3(
 			rtfeldman$elm_css$Css$borderRight3,
-			author$project$Style$sizePx(2),
+			author$project$Style$sizePx(1),
 			rtfeldman$elm_css$Css$solid,
 			Chadtech$ct_colors$Chadtech$Colors$content2),
 			rtfeldman$elm_css$Css$width(rtfeldman$elm_css$Css$zero),
 			rtfeldman$elm_css$Css$display(rtfeldman$elm_css$Css$inline)
 		]));
-var author$project$Style$fullWidth = rtfeldman$elm_css$Css$width(
-	rtfeldman$elm_css$Css$pct(100));
-var rtfeldman$elm_css$Css$height = rtfeldman$elm_css$Css$prop1('height');
-var author$project$Style$height = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$height, author$project$Style$sizePx);
 var rtfeldman$elm_css$Css$marginRight = rtfeldman$elm_css$Css$prop1('margin-right');
 var author$project$Style$marginRight = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginRight, author$project$Style$sizePx);
-var rtfeldman$elm_css$Css$padding = rtfeldman$elm_css$Css$prop1('padding');
-var author$project$Style$padding = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$padding, author$project$Style$sizePx);
 var author$project$Ui$Nav$NavBarOptionClicked = function (a) {
 	return {$: 'NavBarOptionClicked', a: a};
 };
@@ -9477,25 +11631,16 @@ var author$project$Ui$Nav$Option$About = {$: 'About'};
 var author$project$Ui$Nav$Option$Draw = {$: 'Draw'};
 var author$project$Ui$Nav$Option$Login = {$: 'Login'};
 var author$project$Ui$Nav$Option$Title = {$: 'Title'};
-var author$project$Ui$Nav$Option$toLabel = function (option) {
-	switch (option.$) {
-		case 'Draw':
-			return 'draw';
-		case 'Title':
-			return 'title';
-		case 'About':
-			return 'about';
-		default:
-			return 'log in';
-	}
-};
-var author$project$View$Button$Button = function (a) {
-	return {$: 'Button', a: a};
-};
+var author$project$View$Button$Button = F2(
+	function (a, b) {
+		return {$: 'Button', a: a, b: b};
+	});
 var author$project$View$Button$config = F2(
 	function (onClick, label) {
-		return author$project$View$Button$Button(
-			{label: label, onClick: onClick, options: _List_Nil});
+		return A2(
+			author$project$View$Button$Button,
+			{label: label, onClick: onClick},
+			_List_Nil);
 	});
 var author$project$View$Button$Indent = function (a) {
 	return {$: 'Indent', a: a};
@@ -9503,76 +11648,17 @@ var author$project$View$Button$Indent = function (a) {
 var author$project$View$Button$addOption = F2(
 	function (option, _n0) {
 		var model = _n0.a;
-		return author$project$View$Button$Button(
-			_Utils_update(
-				model,
-				{
-					options: A2(elm$core$List$cons, option, model.options)
-				}));
+		var options = _n0.b;
+		return A2(
+			author$project$View$Button$Button,
+			model,
+			A2(elm$core$List$cons, option, options));
 	});
 var author$project$View$Button$indent = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Indent);
-var Chadtech$ct_colors$Chadtech$Colors$content4 = rtfeldman$elm_css$Css$hex('#B0A69A');
 var Chadtech$ct_colors$Chadtech$Colors$content5 = rtfeldman$elm_css$Css$hex('#E0D6CA');
-var rtfeldman$elm_css$Css$stringsToValue = function (list) {
-	return elm$core$List$isEmpty(list) ? {value: 'none'} : {
-		value: A2(
-			elm$core$String$join,
-			', ',
-			A2(
-				elm$core$List$map,
-				function (s) {
-					return s;
-				},
-				list))
-	};
-};
-var rtfeldman$elm_css$Css$fontFamilies = A2(
-	elm$core$Basics$composeL,
-	rtfeldman$elm_css$Css$prop1('font-family'),
-	rtfeldman$elm_css$Css$stringsToValue);
-var rtfeldman$elm_css$Css$fontSize = rtfeldman$elm_css$Css$prop1('font-size');
-var author$project$Style$hfnss = rtfeldman$elm_css$Css$batch(
-	_List_fromArray(
-		[
-			rtfeldman$elm_css$Css$fontFamilies(
-			_List_fromArray(
-				['HFNSS'])),
-			rtfeldman$elm_css$Css$fontSize(
-			rtfeldman$elm_css$Css$px(32))
-		]));
-var author$project$Style$font = author$project$Style$hfnss;
-var author$project$Style$fontSmoothingNone = A2(rtfeldman$elm_css$Css$property, '-webkit-font-smoothing', 'none');
-var rtfeldman$elm_css$Css$borderTop3 = rtfeldman$elm_css$Css$prop3('border-top');
-var author$project$Style$indent = rtfeldman$elm_css$Css$batch(
-	_List_fromArray(
-		[
-			A3(
-			rtfeldman$elm_css$Css$borderTop3,
-			author$project$Style$sizePx(1),
-			rtfeldman$elm_css$Css$solid,
-			Chadtech$ct_colors$Chadtech$Colors$content0),
-			A3(
-			rtfeldman$elm_css$Css$borderLeft3,
-			author$project$Style$sizePx(1),
-			rtfeldman$elm_css$Css$solid,
-			Chadtech$ct_colors$Chadtech$Colors$content0),
-			A3(
-			rtfeldman$elm_css$Css$borderRight3,
-			author$project$Style$sizePx(1),
-			rtfeldman$elm_css$Css$solid,
-			Chadtech$ct_colors$Chadtech$Colors$content2),
-			author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content2)
-		]));
-var rtfeldman$elm_css$Css$none = {backgroundImage: rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: rtfeldman$elm_css$Css$Structure$Compatible, cursor: rtfeldman$elm_css$Css$Structure$Compatible, display: rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: rtfeldman$elm_css$Css$Structure$Compatible, keyframes: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: rtfeldman$elm_css$Css$Structure$Compatible, none: rtfeldman$elm_css$Css$Structure$Compatible, outline: rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, resize: rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: rtfeldman$elm_css$Css$Structure$Compatible, textTransform: rtfeldman$elm_css$Css$Structure$Compatible, touchAction: rtfeldman$elm_css$Css$Structure$Compatible, transform: rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
-var rtfeldman$elm_css$Css$outline = rtfeldman$elm_css$Css$prop1('outline');
-var author$project$Style$noOutline = rtfeldman$elm_css$Css$outline(rtfeldman$elm_css$Css$none);
-var rtfeldman$elm_css$Css$cursor = rtfeldman$elm_css$Css$prop1('cursor');
-var rtfeldman$elm_css$Css$pointer = {cursor: rtfeldman$elm_css$Css$Structure$Compatible, value: 'pointer'};
-var author$project$Style$pointer = rtfeldman$elm_css$Css$cursor(rtfeldman$elm_css$Css$pointer);
 var author$project$View$Button$buttonHeight = function (tall) {
 	return tall ? author$project$Style$height(6) : author$project$Style$height(5);
 };
-var author$project$Style$width = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$width, author$project$Style$sizePx);
 var author$project$View$Button$buttonWidth = function (summary) {
 	var _n0 = summary.width;
 	switch (_n0.$) {
@@ -9586,27 +11672,6 @@ var author$project$View$Button$buttonWidth = function (summary) {
 			return author$project$Style$fullWidth;
 	}
 };
-var author$project$Style$outdent = rtfeldman$elm_css$Css$batch(
-	_List_fromArray(
-		[
-			A3(
-			rtfeldman$elm_css$Css$borderTop3,
-			author$project$Style$sizePx(1),
-			rtfeldman$elm_css$Css$solid,
-			Chadtech$ct_colors$Chadtech$Colors$content2),
-			A3(
-			rtfeldman$elm_css$Css$borderLeft3,
-			author$project$Style$sizePx(1),
-			rtfeldman$elm_css$Css$solid,
-			Chadtech$ct_colors$Chadtech$Colors$content2),
-			A3(
-			rtfeldman$elm_css$Css$borderRight3,
-			author$project$Style$sizePx(1),
-			rtfeldman$elm_css$Css$solid,
-			Chadtech$ct_colors$Chadtech$Colors$content0),
-			author$project$Style$borderBottom(Chadtech$ct_colors$Chadtech$Colors$content0)
-		]));
-var author$project$Util$Css$noStyle = rtfeldman$elm_css$Css$batch(_List_Nil);
 var rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
 	function (a, b) {
 		return {$: 'ExtendSelector', a: a, b: b};
@@ -9619,9 +11684,6 @@ var rtfeldman$elm_css$Css$pseudoClass = function (_class) {
 		rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
 };
 var rtfeldman$elm_css$Css$active = rtfeldman$elm_css$Css$pseudoClass('active');
-var rtfeldman$elm_css$Css$backgroundColor = function (c) {
-	return A2(rtfeldman$elm_css$Css$property, 'background-color', c.value);
-};
 var author$project$View$Button$disabledStyle = function (disabled) {
 	return disabled ? rtfeldman$elm_css$Css$batch(
 		_List_fromArray(
@@ -9677,28 +11739,11 @@ var author$project$View$Button$optionsToSummary = function () {
 		modifySummary,
 		{disabled: false, indent: elm$core$Maybe$Nothing, tall: false, width: author$project$View$Button$SingleWidth});
 }();
-var rtfeldman$elm_css$Css$color = function (c) {
-	return A2(rtfeldman$elm_css$Css$property, 'color', c.value);
-};
 var rtfeldman$elm_css$Css$hover = rtfeldman$elm_css$Css$pseudoClass('hover');
 var rtfeldman$elm_css$Html$Styled$button = rtfeldman$elm_css$Html$Styled$node('button');
-var rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
-	return rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
-		elm$virtual_dom$VirtualDom$text(str));
-};
-var rtfeldman$elm_css$Html$Styled$text = rtfeldman$elm_css$VirtualDom$Styled$text;
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var rtfeldman$elm_css$VirtualDom$Styled$on = F2(
-	function (eventName, handler) {
-		return A3(
-			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2(elm$virtual_dom$VirtualDom$on, eventName, handler),
-			_List_Nil,
-			'');
-	});
 var rtfeldman$elm_css$Html$Styled$Events$on = F2(
 	function (event, decoder) {
 		return A2(
@@ -9715,7 +11760,7 @@ var rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
 var author$project$View$Button$toHtml = function (_n0) {
 	var onClick = _n0.a.onClick;
 	var label = _n0.a.label;
-	var options = _n0.a.options;
+	var options = _n0.b;
 	var summary = author$project$View$Button$optionsToSummary(options);
 	return A2(
 		rtfeldman$elm_css$Html$Styled$button,
@@ -9725,12 +11770,9 @@ var author$project$View$Button$toHtml = function (_n0) {
 				_List_fromArray(
 					[
 						author$project$View$Button$indentStyle(summary.indent),
-						author$project$Style$font,
 						author$project$View$Button$buttonHeight(summary.tall),
 						rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content1),
 						rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content4),
-						author$project$Style$fontSmoothingNone,
-						author$project$Style$noOutline,
 						rtfeldman$elm_css$Css$active(
 						_List_fromArray(
 							[author$project$Style$indent])),
@@ -9739,7 +11781,6 @@ var author$project$View$Button$toHtml = function (_n0) {
 							[
 								rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content5)
 							])),
-						author$project$Style$pointer,
 						author$project$View$Button$buttonWidth(summary),
 						author$project$View$Button$disabledStyle(summary.disabled)
 					])),
@@ -9822,42 +11863,10 @@ var author$project$Main$viewInFrame = F2(
 			title: title
 		};
 	});
-var author$project$Data$BuildNumber$toString = function (_n0) {
-	var _int = _n0.a;
-	return elm$core$String$fromInt(_int);
-};
 var author$project$Page$About$intro = '\n    CtPaint is good paint software that runs in your web browser.\n    Its broadly suited for drawing pixel art, drawing memes, or just\n    making a quick practical drawings like diagrams or maps. Its also\n    embedded in the internet, so its super easy to edit any image\n    already on the internet, or share your drawings via a url.\n    ';
 var author$project$Page$About$personal = '\n    It was made by one guy named "Chadtech" over the course of two years\n    in his free time.\n    ';
 var author$project$Page$About$tech = '\n    It was made with the following technology: Elm, Elm-Css, Elm-Canvas,\n    Browserify, Amazon Web Services, and Gulp.\n    ';
 var author$project$Page$About$thanks = '\n    Ive worked on this project for a long time, and so I have worked with\n    a lot of different people during the course of this project. In chronological\n    order, here are my thank yous. Thanks to Funkytek who caused me to get into\n    JavaScript whereafter I began working on CtPaint. Thanks to Jack Hou, a contributor\n    to Chromium, who added \'image rendering : pixelated\' to Google Chromium,\n    a development I followed closely and has been essential to the technology\n    behind CtPaint. Thanks to the meet ups NodeAZ, VegasJS, QueensJS, and\n    Elm Berlin for letting me talk about CtPaint. Thanks to my friend Jacob\n    Rosenthal who was always there to talk to me about code, and initially proposed\n    the idea of doing a kickstarter. Thanks to Ethan Hartman, Taylor Alexander, and\n    Alex Rees, all of whom were marketers who had great feedback about kickstarter campaigns.\n    Thanks to Patrick Gram, Bob Laudner, and David Urbanic, who  did a really good job\n    helping me put together my kickstarter video. Thanks to everyone who contributed to\n    the original kick starter even tho it wasnt successful. Thanks Sascha Naderer,\n    Andreas Kullenberg, Jun, Bo, and Erik \'Kasumi\' from the pixelation community,\n    for either their thorough and knowledgeable opinions on pixel art software, as\n    well as their time using the CtPaint alpha to provide feedback, or the pixel art\n    they have contributed to this project.\n    ';
-var rtfeldman$elm_css$Css$marginBottom = rtfeldman$elm_css$Css$prop1('margin-bottom');
-var author$project$Style$marginBottom = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginBottom, author$project$Style$sizePx);
-var author$project$View$Text$unwrapOption = function (_n0) {
-	var attr = _n0.a;
-	return attr;
-};
-var rtfeldman$elm_css$Html$Styled$p = rtfeldman$elm_css$Html$Styled$node('p');
-var author$project$View$Text$config = function (_n0) {
-	var styles = _n0.styles;
-	var options = _n0.options;
-	var value = _n0.value;
-	return A2(
-		rtfeldman$elm_css$Html$Styled$p,
-		A2(
-			elm$core$List$cons,
-			rtfeldman$elm_css$Html$Styled$Attributes$css(styles),
-			A2(elm$core$List$map, author$project$View$Text$unwrapOption, options)),
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Html$Styled$text(value)
-			]));
-};
-var author$project$View$Text$withStyles = F2(
-	function (styles, str) {
-		return author$project$View$Text$config(
-			{options: _List_Nil, styles: styles, value: str});
-	});
-var author$project$View$Text$fromString = author$project$View$Text$withStyles(_List_Nil);
 var author$project$Page$About$textRows = function (buildNumber) {
 	var paragraphView = function (str) {
 		return A2(
@@ -9899,21 +11908,14 @@ var author$project$Page$About$textRows = function (buildNumber) {
 };
 var rtfeldman$elm_css$Css$marginTop = rtfeldman$elm_css$Css$prop1('margin-top');
 var author$project$Style$marginTop = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$marginTop, author$project$Style$sizePx);
-var author$project$Style$marginVertical = function (index) {
+var author$project$Style$marginVertical = function (size) {
 	return rtfeldman$elm_css$Css$batch(
 		_List_fromArray(
 			[
-				author$project$Style$marginTop(index),
-				author$project$Style$marginBottom(index)
+				author$project$Style$marginTop(size),
+				author$project$Style$marginBottom(size)
 			]));
 };
-var Chadtech$ct_colors$Chadtech$Colors$background1 = rtfeldman$elm_css$Css$hex('#071D10');
-var author$project$Style$pit = rtfeldman$elm_css$Css$batch(
-	_List_fromArray(
-		[
-			author$project$Style$indent,
-			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$background1)
-		]));
 var author$project$View$Image$Image = F2(
 	function (a, b) {
 		return {$: 'Image', a: a, b: b};
@@ -9930,12 +11932,6 @@ var author$project$View$Image$logo = author$project$View$Image$Asset(author$proj
 var author$project$Style$exactWidth = function (flWidth) {
 	return rtfeldman$elm_css$Css$width(
 		rtfeldman$elm_css$Css$px(flWidth));
-};
-var author$project$Util$Css$styleMaybe = function (f) {
-	return A2(
-		elm$core$Basics$composeR,
-		elm$core$Maybe$map(f),
-		elm$core$Maybe$withDefault(author$project$Util$Css$noStyle));
 };
 var author$project$View$Image$optionsToSummary = function () {
 	var modifySummary = F2(
@@ -9975,21 +11971,6 @@ var author$project$View$Image$sourceToString = function (source) {
 var rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, cursor: rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible, overflow: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: rtfeldman$elm_css$Css$Structure$Compatible, textRendering: rtfeldman$elm_css$Css$Structure$Compatible, touchAction: rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
 var rtfeldman$elm_css$Css$margin = rtfeldman$elm_css$Css$prop1('margin');
 var rtfeldman$elm_css$Html$Styled$img = rtfeldman$elm_css$Html$Styled$node('img');
-var rtfeldman$elm_css$VirtualDom$Styled$property = F2(
-	function (key, value) {
-		return A3(
-			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2(elm$virtual_dom$VirtualDom$property, key, value),
-			_List_Nil,
-			'');
-	});
-var rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			rtfeldman$elm_css$VirtualDom$Styled$property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
 var rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
 	return A2(rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'src', url);
 };
@@ -10068,89 +12049,6 @@ var author$project$View$Body$addOption = F2(
 			children);
 	});
 var author$project$View$Body$singleColumnWidth = author$project$View$Body$addOption(author$project$View$Body$SingleColumnWidth);
-var rtfeldman$elm_css$Css$center = rtfeldman$elm_css$Css$prop1('center');
-var rtfeldman$elm_css$Css$Internal$property = F2(
-	function (key, value) {
-		return rtfeldman$elm_css$Css$Preprocess$AppendProperty(key + (':' + value));
-	});
-var rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
-	function (functionName, desiredKey, style) {
-		getOverloadedProperty:
-		while (true) {
-			switch (style.$) {
-				case 'AppendProperty':
-					var str = style.a;
-					var key = A2(
-						elm$core$Maybe$withDefault,
-						'',
-						elm$core$List$head(
-							A2(elm$core$String$split, ':', str)));
-					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, key);
-				case 'ExtendSelector':
-					var selector = style.a;
-					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-selector'));
-				case 'NestSnippet':
-					var combinator = style.a;
-					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-combinator'));
-				case 'WithPseudoElement':
-					var pseudoElement = style.a;
-					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-pseudo-element setter'));
-				case 'WithMedia':
-					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-media-query'));
-				case 'WithKeyframes':
-					return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-inapplicable-Style-for-keyframes'));
-				default:
-					if (!style.a.b) {
-						return A2(rtfeldman$elm_css$Css$Internal$property, desiredKey, 'elm-css-error-cannot-apply-' + (functionName + '-with-empty-Style'));
-					} else {
-						if (!style.a.b.b) {
-							var _n1 = style.a;
-							var only = _n1.a;
-							var $temp$functionName = functionName,
-								$temp$desiredKey = desiredKey,
-								$temp$style = only;
-							functionName = $temp$functionName;
-							desiredKey = $temp$desiredKey;
-							style = $temp$style;
-							continue getOverloadedProperty;
-						} else {
-							var _n2 = style.a;
-							var first = _n2.a;
-							var rest = _n2.b;
-							var $temp$functionName = functionName,
-								$temp$desiredKey = desiredKey,
-								$temp$style = rtfeldman$elm_css$Css$Preprocess$ApplyStyles(rest);
-							functionName = $temp$functionName;
-							desiredKey = $temp$desiredKey;
-							style = $temp$style;
-							continue getOverloadedProperty;
-						}
-					}
-			}
-		}
-	});
-var rtfeldman$elm_css$Css$Internal$IncompatibleUnits = {$: 'IncompatibleUnits'};
-var rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3(rtfeldman$elm_css$Css$Internal$lengthConverter, rtfeldman$elm_css$Css$Internal$IncompatibleUnits, '', 0);
-var rtfeldman$elm_css$Css$justifyContent = function (fn) {
-	return A3(
-		rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'justifyContent',
-		'justify-content',
-		fn(rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
-};
-var author$project$Style$centerContent = rtfeldman$elm_css$Css$justifyContent(rtfeldman$elm_css$Css$center);
-var elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var rtfeldman$elm_css$Css$column = _Utils_update(
-	rtfeldman$elm_css$Css$row,
-	{value: 'column'});
 var author$project$View$Body$toHtml = function (_n0) {
 	var options = _n0.a;
 	var children = _n0.b;
@@ -10194,61 +12092,59 @@ var author$project$Page$About$view = F2(
 			title: elm$core$Maybe$Just('about')
 		};
 	});
-var author$project$View$CardHeader$CardHeader = F2(
-	function (a, b) {
-		return {$: 'CardHeader', a: a, b: b};
-	});
-var author$project$View$CardHeader$config = function (model) {
-	return A2(author$project$View$CardHeader$CardHeader, model, _List_Nil);
-};
-var author$project$Ui$LoginCard$header = author$project$View$CardHeader$config(
-	{title: 'log in'});
-var Chadtech$elm_css_grid$Html$Grid$box = function (styles) {
-	return A2(
-		rtfeldman$elm_css$Html$Styled$node,
-		'box',
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Html$Styled$Attributes$css(styles)
-			]));
-};
-var author$project$View$Card$cardStyles = rtfeldman$elm_css$Css$batch(
-	_List_fromArray(
-		[
-			author$project$Style$outdent,
-			rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content1),
-			author$project$Style$padding(1)
-		]));
-var author$project$View$Card$view = function (styles) {
-	return Chadtech$elm_css_grid$Html$Grid$box(
-		A2(elm$core$List$cons, author$project$View$Card$cardStyles, styles));
+var author$project$Ui$LoginCard$header = function (model) {
+	return author$project$View$CardHeader$config(
+		{
+			title: function () {
+				if (model.$ === 'Login') {
+					return 'log in';
+				} else {
+					return 'forgot password';
+				}
+			}()
+		});
 };
 var author$project$Ui$LoginCard$view = author$project$View$Card$view(
 	_List_fromArray(
 		[
-			author$project$Style$width(9),
-			author$project$Style$padding(1),
-			rtfeldman$elm_css$Css$flex(
-			rtfeldman$elm_css$Css$int(0))
+			author$project$Style$width(9)
 		]));
-var Chadtech$elm_css_grid$Html$Grid$exactWidthColumn = function (width_) {
-	return rtfeldman$elm_css$Css$batch(
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Css$flex(rtfeldman$elm_css$Css$none),
-				rtfeldman$elm_css$Css$width(width_)
-			]));
-};
-var rtfeldman$elm_css$Css$paddingLeft = rtfeldman$elm_css$Css$prop1('padding-left');
-var author$project$Style$paddingLeft = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$paddingLeft, author$project$Style$sizePx);
-var author$project$Ui$LoginCard$EmailUpdated = function (a) {
+var Chadtech$ct_colors$Chadtech$Colors$problem0 = rtfeldman$elm_css$Css$hex('#651A20');
+var author$project$Style$problemBackground = rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$problem0);
+var author$project$Ui$LoginCard$ForgotPassword$EmailUpdated = function (a) {
 	return {$: 'EmailUpdated', a: a};
 };
-var author$project$Ui$LoginCard$PasswordUpdated = function (a) {
-	return {$: 'PasswordUpdated', a: a};
+var author$project$Ui$LoginCard$ForgotPassword$EnterPressed = {$: 'EnterPressed'};
+var author$project$Ui$LoginCard$ForgotPassword$ReadyMsg = function (a) {
+	return {$: 'ReadyMsg', a: a};
 };
-var author$project$Ui$LoginCard$Field$getValue = function ($) {
-	return $.value;
+var author$project$Ui$LoginCard$ForgotPassword$ResetPasswordClicked = {$: 'ResetPasswordClicked'};
+var author$project$Util$Html$mapList = function (f) {
+	return elm$core$List$map(
+		rtfeldman$elm_css$Html$Styled$map(f));
+};
+var author$project$View$Button$DoubleWidth = {$: 'DoubleWidth'};
+var author$project$View$Button$Width = function (a) {
+	return {$: 'Width', a: a};
+};
+var author$project$View$Button$withWidth = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Width);
+var author$project$View$Button$asDoubleWidth = author$project$View$Button$withWidth(author$project$View$Button$DoubleWidth);
+var author$project$View$ButtonRow$buttonColumn = function (button) {
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$column,
+		_List_fromArray(
+			[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
+		_List_fromArray(
+			[
+				author$project$View$Button$toHtml(button)
+			]));
+};
+var author$project$View$ButtonRow$view = function (buttons) {
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$row,
+		_List_fromArray(
+			[author$project$Style$centerContent]),
+		A2(elm$core$List$map, author$project$View$ButtonRow$buttonColumn, buttons));
 };
 var author$project$View$Input$Input = F2(
 	function (a, b) {
@@ -10261,7 +12157,9 @@ var author$project$View$Input$config = F2(
 			{onInput: msgCtor, value: value},
 			_List_Nil);
 	});
-var author$project$View$Input$Password = {$: 'Password'};
+var author$project$View$Input$OnEnter = function (a) {
+	return {$: 'OnEnter', a: a};
+};
 var author$project$View$Input$addOption = F2(
 	function (option, _n0) {
 		var model = _n0.a;
@@ -10271,7 +12169,21 @@ var author$project$View$Input$addOption = F2(
 			model,
 			A2(elm$core$List$cons, option, options));
 	});
-var author$project$View$Input$isPassword = author$project$View$Input$addOption(author$project$View$Input$Password);
+var author$project$View$Input$onEnter = A2(elm$core$Basics$composeL, author$project$View$Input$addOption, author$project$View$Input$OnEnter);
+var author$project$View$Input$Autocomplete = function (a) {
+	return {$: 'Autocomplete', a: a};
+};
+var author$project$View$Input$withAutocomplete = A2(elm$core$Basics$composeL, author$project$View$Input$addOption, author$project$View$Input$Autocomplete);
+var rtfeldman$elm_css$Html$Styled$Events$keyCode = A2(elm$json$Json$Decode$field, 'keyCode', elm$json$Json$Decode$int);
+var author$project$Util$Html$onEnter = function (msg) {
+	var fromCode = function (code) {
+		return (code === 13) ? elm$json$Json$Decode$succeed(msg) : elm$json$Json$Decode$fail('Key is not enter');
+	};
+	return A2(
+		rtfeldman$elm_css$Html$Styled$Events$on,
+		'keydown',
+		A2(elm$json$Json$Decode$andThen, fromCode, rtfeldman$elm_css$Html$Styled$Events$keyCode));
+};
 var author$project$Util$Maybe$fromBool = F2(
 	function (bool, value) {
 		return bool ? elm$core$Maybe$Just(value) : elm$core$Maybe$Nothing;
@@ -10279,76 +12191,50 @@ var author$project$Util$Maybe$fromBool = F2(
 var author$project$View$Input$optionsToSummary = function () {
 	var modifySummary = F2(
 		function (option, summary) {
-			return _Utils_update(
-				summary,
-				{password: true});
+			switch (option.$) {
+				case 'Password':
+					return _Utils_update(
+						summary,
+						{password: true});
+				case 'OnEnter':
+					var msg = option.a;
+					return _Utils_update(
+						summary,
+						{
+							onEnter: elm$core$Maybe$Just(msg)
+						});
+				default:
+					var autocomplete = option.a;
+					return _Utils_update(
+						summary,
+						{
+							autocomplete: elm$core$Maybe$Just(autocomplete)
+						});
+			}
 		});
 	return A2(
 		elm$core$List$foldr,
 		modifySummary,
-		{password: false, unit: elm$core$Maybe$Nothing});
+		{autocomplete: elm$core$Maybe$Nothing, onEnter: elm$core$Maybe$Nothing, password: false});
 }();
-var elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _n0 = f(mx);
-		if (_n0.$ === 'Just') {
-			var x = _n0.a;
-			return A2(elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var rtfeldman$elm_css$Html$Styled$input = rtfeldman$elm_css$Html$Styled$node('input');
-var elm$json$Json$Encode$bool = _Json_wrap;
-var rtfeldman$elm_css$Html$Styled$Attributes$boolProperty = F2(
-	function (key, bool) {
+var elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
 		return A2(
-			rtfeldman$elm_css$VirtualDom$Styled$property,
-			key,
-			elm$json$Json$Encode$bool(bool));
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
-var rtfeldman$elm_css$Html$Styled$Attributes$spellcheck = rtfeldman$elm_css$Html$Styled$Attributes$boolProperty('spellcheck');
+var rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
+	function (key, value) {
+		return A3(
+			rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2(elm$virtual_dom$VirtualDom$attribute, key, value),
+			_List_Nil,
+			'');
+	});
+var rtfeldman$elm_css$Html$Styled$Attributes$attribute = rtfeldman$elm_css$VirtualDom$Styled$attribute;
 var rtfeldman$elm_css$Html$Styled$Attributes$type_ = rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('type');
-var rtfeldman$elm_css$Html$Styled$Attributes$value = rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
-var rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			rtfeldman$elm_css$VirtualDom$Styled$on,
-			event,
-			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
-	});
-var rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
-	elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	elm$json$Json$Decode$string);
-var rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
-	return A2(
-		rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
-		'input',
-		A2(
-			elm$json$Json$Decode$map,
-			rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
-			A2(elm$json$Json$Decode$map, tagger, rtfeldman$elm_css$Html$Styled$Events$targetValue)));
-};
 var author$project$View$Input$toHtml = function (_n0) {
 	var value = _n0.a.value;
 	var onInput = _n0.a.onInput;
@@ -10362,7 +12248,12 @@ var author$project$View$Input$toHtml = function (_n0) {
 				A2(
 				author$project$Util$Maybe$fromBool,
 				summary.password,
-				rtfeldman$elm_css$Html$Styled$Attributes$type_('password'))
+				rtfeldman$elm_css$Html$Styled$Attributes$type_('password')),
+				A2(elm$core$Maybe$map, author$project$Util$Html$onEnter, summary.onEnter),
+				A2(
+				elm$core$Maybe$map,
+				rtfeldman$elm_css$Html$Styled$Attributes$attribute('autocomplete'),
+				summary.autocomplete)
 			]));
 	var baseAttrs = _List_fromArray(
 		[
@@ -10387,6 +12278,90 @@ var author$project$View$Input$toHtml = function (_n0) {
 		_Utils_ap(baseAttrs, conditionalAttrs),
 		_List_Nil);
 };
+var author$project$View$InputGroup$InputGroup = F2(
+	function (a, b) {
+		return {$: 'InputGroup', a: a, b: b};
+	});
+var author$project$View$InputGroup$config = function (model) {
+	return A2(author$project$View$InputGroup$InputGroup, model, _List_Nil);
+};
+var author$project$View$InputGroup$text = function (_n0) {
+	var label = _n0.label;
+	var input = _n0.input;
+	return author$project$View$InputGroup$config(
+		{
+			input: _List_fromArray(
+				[
+					author$project$View$Input$toHtml(input)
+				]),
+			label: label
+		});
+};
+var Chadtech$elm_css_grid$Html$Grid$exactWidthColumn = function (width_) {
+	return rtfeldman$elm_css$Css$batch(
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$flex(rtfeldman$elm_css$Css$none),
+				rtfeldman$elm_css$Css$width(width_)
+			]));
+};
+var rtfeldman$elm_css$Css$paddingLeft = rtfeldman$elm_css$Css$prop1('padding-left');
+var author$project$Style$paddingLeft = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$paddingLeft, author$project$Style$sizePx);
+var author$project$View$InputGroup$errorView = function (maybeError) {
+	if (maybeError.$ === 'Just') {
+		var error = maybeError.a;
+		return A2(
+			Chadtech$elm_css_grid$Html$Grid$row,
+			_List_fromArray(
+				[
+					rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$problem0)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					Chadtech$elm_css_grid$Html$Grid$column,
+					_List_fromArray(
+						[
+							author$project$Style$centerContent,
+							rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column),
+							author$project$Style$padding(1)
+						]),
+					_List_fromArray(
+						[
+							author$project$View$Text$fromString(error)
+						]))
+				]));
+	} else {
+		return rtfeldman$elm_css$Html$Styled$text('');
+	}
+};
+var author$project$View$InputGroup$optionsToSummary = function () {
+	var modifySummary = F2(
+		function (option, summary) {
+			switch (option.$) {
+				case 'Error':
+					var maybeError = option.a;
+					return _Utils_update(
+						summary,
+						{error: maybeError});
+				case 'ExtraStyles':
+					var styles = option.a;
+					return _Utils_update(
+						summary,
+						{
+							styles: _Utils_ap(styles, summary.styles)
+						});
+				default:
+					return _Utils_update(
+						summary,
+						{doubleWidth: true});
+			}
+		});
+	return A2(
+		elm$core$List$foldr,
+		modifySummary,
+		{doubleWidth: false, error: elm$core$Maybe$Nothing, styles: _List_Nil});
+}();
 var author$project$View$Label$view = F2(
 	function (label, styles) {
 		return A2(
@@ -10402,15 +12377,25 @@ var author$project$View$Label$view = F2(
 					author$project$View$Text$fromString(label)
 				]));
 	});
-var author$project$Ui$LoginCard$viewBody = function (model) {
-	var labelView = F2(
-		function (label, input) {
-			return A2(
+var rtfeldman$elm_css$Css$block = {display: rtfeldman$elm_css$Css$Structure$Compatible, value: 'block'};
+var author$project$View$InputGroup$toHtml = function (_n0) {
+	var label = _n0.a.label;
+	var input = _n0.a.input;
+	var options = _n0.b;
+	var summary = author$project$View$InputGroup$optionsToSummary(options);
+	var width = summary.doubleWidth ? 8 : 7;
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$box,
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$display(rtfeldman$elm_css$Css$block),
+				rtfeldman$elm_css$Css$batch(summary.styles)
+			]),
+		_List_fromArray(
+			[
+				A2(
 				Chadtech$elm_css_grid$Html$Grid$row,
-				_List_fromArray(
-					[
-						author$project$Style$marginBottom(1)
-					]),
+				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
@@ -10418,125 +12403,427 @@ var author$project$Ui$LoginCard$viewBody = function (model) {
 						label,
 						_List_fromArray(
 							[
-								author$project$Style$width(7),
 								author$project$Style$paddingLeft(1),
 								Chadtech$elm_css_grid$Html$Grid$exactWidthColumn(
-								author$project$Style$sizePx(7))
+								author$project$Style$sizePx(width))
 							])),
 						A2(
 						Chadtech$elm_css_grid$Html$Grid$column,
+						_List_fromArray(
+							[
+								rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
+							]),
+						input)
+					])),
+				author$project$View$InputGroup$errorView(summary.error)
+			]));
+};
+var author$project$View$InputGroup$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var author$project$View$InputGroup$addOption = F2(
+	function (option, _n0) {
+		var model = _n0.a;
+		var options = _n0.b;
+		return A2(
+			author$project$View$InputGroup$InputGroup,
+			model,
+			A2(elm$core$List$cons, option, options));
+	});
+var author$project$View$InputGroup$withError = A2(elm$core$Basics$composeL, author$project$View$InputGroup$addOption, author$project$View$InputGroup$Error);
+var author$project$View$InputGroup$ExtraStyles = function (a) {
+	return {$: 'ExtraStyles', a: a};
+};
+var author$project$View$InputGroup$withStyles = A2(elm$core$Basics$composeL, author$project$View$InputGroup$addOption, author$project$View$InputGroup$ExtraStyles);
+var rtfeldman$elm_css$Css$hidden = {borderStyle: rtfeldman$elm_css$Css$Structure$Compatible, overflow: rtfeldman$elm_css$Css$Structure$Compatible, value: 'hidden', visibility: rtfeldman$elm_css$Css$Structure$Compatible};
+var rtfeldman$elm_css$Css$overflow = rtfeldman$elm_css$Css$prop1('overflow');
+var author$project$Style$noOverflow = rtfeldman$elm_css$Css$overflow(rtfeldman$elm_css$Css$hidden);
+var author$project$Style$pxStr = function (i) {
+	return elm$core$String$fromInt(
+		author$project$Style$scale(i)) + 'px';
+};
+var rtfeldman$elm_css$Css$position = rtfeldman$elm_css$Css$prop1('position');
+var rtfeldman$elm_css$Css$relative = {position: rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
+var author$project$Style$relative = rtfeldman$elm_css$Css$position(rtfeldman$elm_css$Css$relative);
+var rtfeldman$elm_css$Css$Animations$property = F2(
+	function (key, value) {
+		return rtfeldman$elm_css$Css$Internal$Property(key + (':' + value));
+	});
+var author$project$View$Spinner$left = F2(
+	function (percent, pxs) {
+		return _Utils_Tuple2(
+			percent,
+			_List_fromArray(
+				[
+					A2(rtfeldman$elm_css$Css$Animations$property, 'left', pxs)
+				]));
+	});
+var rtfeldman$elm_css$Css$absolute = {position: rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
+var rtfeldman$elm_css$Css$top = rtfeldman$elm_css$Css$prop1('top');
+var author$project$View$Spinner$view = A2(
+	Chadtech$elm_css_grid$Html$Grid$box,
+	_List_fromArray(
+		[
+			author$project$Style$pit,
+			author$project$Style$width(8),
+			author$project$Style$height(5),
+			author$project$Style$relative,
+			author$project$Style$noOverflow
+		]),
+	_List_fromArray(
+		[
+			A2(
+			Chadtech$elm_css_grid$Html$Grid$box,
+			_List_fromArray(
+				[
+					A2(rtfeldman$elm_css$Css$property, 'animation-duration', '1000ms'),
+					A2(rtfeldman$elm_css$Css$property, 'animation-iteration-count', 'infinite'),
+					A2(rtfeldman$elm_css$Css$property, 'animation-timing-function', 'linear'),
+					rtfeldman$elm_css$Css$animationName(
+					rtfeldman$elm_css$Css$Animations$keyframes(
+						_List_fromArray(
+							[
+								A2(
+								author$project$View$Spinner$left,
+								0,
+								'-' + author$project$Style$pxStr(7)),
+								A2(
+								author$project$View$Spinner$left,
+								100,
+								author$project$Style$pxStr(8))
+							]))),
+					author$project$Style$width(6),
+					author$project$Style$height(5),
+					rtfeldman$elm_css$Css$top(
+					rtfeldman$elm_css$Css$px(0)),
+					rtfeldman$elm_css$Css$position(rtfeldman$elm_css$Css$absolute),
+					rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4)
+				]),
+			_List_Nil)
+		]));
+var author$project$View$Spinner$row = A2(
+	Chadtech$elm_css_grid$Html$Grid$row,
+	_List_fromArray(
+		[author$project$Style$centerContent]),
+	_List_fromArray(
+		[
+			A2(
+			Chadtech$elm_css_grid$Html$Grid$column,
+			_List_fromArray(
+				[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
+			_List_fromArray(
+				[author$project$View$Spinner$view]))
+		]));
+var rtfeldman$elm_css$Html$Styled$form = rtfeldman$elm_css$Html$Styled$node('form');
+var author$project$Ui$LoginCard$ForgotPassword$view = function (model) {
+	switch (model.$) {
+		case 'Ready':
+			var email = model.a;
+			return A2(
+				author$project$Util$Html$mapList,
+				author$project$Ui$LoginCard$ForgotPassword$ReadyMsg,
+				_List_fromArray(
+					[
+						A2(
+						rtfeldman$elm_css$Html$Styled$form,
 						_List_Nil,
 						_List_fromArray(
 							[
-								author$project$View$Input$toHtml(input)
+								author$project$View$InputGroup$toHtml(
+								A2(
+									author$project$View$InputGroup$withError,
+									author$project$Data$Field$getError(email),
+									A2(
+										author$project$View$InputGroup$withStyles,
+										_List_fromArray(
+											[
+												author$project$Style$marginBottom(1)
+											]),
+										author$project$View$InputGroup$text(
+											{
+												input: A2(
+													author$project$View$Input$onEnter,
+													author$project$Ui$LoginCard$ForgotPassword$EnterPressed,
+													A2(
+														author$project$View$Input$withAutocomplete,
+														'email',
+														A2(
+															author$project$View$Input$config,
+															author$project$Ui$LoginCard$ForgotPassword$EmailUpdated,
+															author$project$Data$Field$getValue(email)))),
+												label: 'email'
+											}))))
+							])),
+						author$project$View$ButtonRow$view(
+						_List_fromArray(
+							[
+								author$project$View$Button$asDoubleWidth(
+								A2(author$project$View$Button$config, author$project$Ui$LoginCard$ForgotPassword$ResetPasswordClicked, 'reset password'))
 							]))
 					]));
-		});
-	return _List_fromArray(
-		[
-			A2(
-			labelView,
-			'email',
-			A2(
-				author$project$View$Input$config,
-				author$project$Ui$LoginCard$EmailUpdated,
-				author$project$Ui$LoginCard$Field$getValue(model.email))),
-			A2(
-			labelView,
-			'password',
-			author$project$View$Input$isPassword(
-				A2(
-					author$project$View$Input$config,
-					author$project$Ui$LoginCard$PasswordUpdated,
-					author$project$Ui$LoginCard$Field$getValue(model.password))))
-		]);
+		case 'Waiting':
+			return _List_fromArray(
+				[author$project$View$Spinner$row]);
+		case 'Success':
+			var email = model.a.email;
+			return _List_fromArray(
+				[
+					author$project$View$Text$fromString(
+					A2(
+						elm$core$String$join,
+						' ',
+						_List_fromArray(
+							['Okay, I have sent an email to', email, 'containing a password reset link. Check your email to proceed.'])))
+				]);
+		default:
+			return _List_fromArray(
+				[
+					A2(
+					author$project$View$Card$textRow,
+					_List_fromArray(
+						[author$project$Style$problemBackground]),
+					'\n                Oh no, something went wrong. Im sorry about that.\n                Try again, and if it still doesnt work, please report\n                this error to chadtech0@gmail.com .\n                ')
+				]);
+	}
 };
-var author$project$Util$Html$mapList = function (f) {
-	return elm$core$List$map(
-		rtfeldman$elm_css$Html$Styled$map(f));
+var author$project$Ui$LoginCard$Login$EmailUpdated = function (a) {
+	return {$: 'EmailUpdated', a: a};
 };
-var author$project$View$CardHeader$optionsToSummary = function () {
+var author$project$Ui$LoginCard$Login$ForgotPasswordClicked = {$: 'ForgotPasswordClicked'};
+var author$project$Ui$LoginCard$Login$LoginClicked = {$: 'LoginClicked'};
+var author$project$Ui$LoginCard$Login$PasswordUpdated = function (a) {
+	return {$: 'PasswordUpdated', a: a};
+};
+var author$project$Ui$LoginCard$Login$TryAgainClicked = {$: 'TryAgainClicked'};
+var author$project$Ui$LoginCard$Login$errorMsg = function (error) {
+	if (error.$ === 'IncorrectCredentials') {
+		return 'Either the user does not exist or the password you entered was incorrect';
+	} else {
+		return 'Please reset your password';
+	}
+};
+var author$project$Ui$LoginCard$Login$errorView = function (listenerError) {
+	var problemRow = author$project$View$Card$textRow(
+		_List_fromArray(
+			[
+				author$project$Style$problemBackground,
+				author$project$Style$marginBottom(1)
+			]));
+	if (listenerError.$ === 'DecodeError') {
+		var decodeError = listenerError.a;
+		return _List_fromArray(
+			[
+				problemRow('\n                Im really sorry. Something really broke.\n                Please let me know that you had this problem\n                by emailing me at chadtech0@gmail.com. Below\n                is the error that occurred:\n                '),
+				author$project$View$Card$errorDisplay(
+				elm$json$Json$Decode$errorToString(decodeError))
+			]);
+	} else {
+		var error = listenerError.a;
+		return _List_fromArray(
+			[
+				problemRow(
+				author$project$Ui$LoginCard$Login$errorMsg(error))
+			]);
+	}
+};
+var author$project$Ui$LoginCard$Login$EnterPressed = {$: 'EnterPressed'};
+var author$project$Util$Function$composeMany = A2(elm$core$List$foldr, elm$core$Basics$composeR, elm$core$Basics$identity);
+var author$project$Ui$LoginCard$Login$inputGroupView = function (_n0) {
+	var label = _n0.label;
+	var options = _n0.options;
+	var onInput = _n0.onInput;
+	var field = _n0.field;
+	return author$project$View$InputGroup$toHtml(
+		A2(
+			author$project$View$InputGroup$withError,
+			author$project$Data$Field$getError(field),
+			A2(
+				author$project$View$InputGroup$withStyles,
+				_List_fromArray(
+					[
+						author$project$Style$marginBottom(1)
+					]),
+				author$project$View$InputGroup$text(
+					{
+						input: A2(
+							author$project$View$Input$onEnter,
+							author$project$Ui$LoginCard$Login$EnterPressed,
+							A2(
+								author$project$Util$Function$composeMany,
+								options,
+								A2(
+									author$project$View$Input$config,
+									onInput,
+									author$project$Data$Field$getValue(field)))),
+						label: label
+					}))));
+};
+var author$project$View$Input$Password = {$: 'Password'};
+var author$project$View$Input$isPassword = author$project$View$Input$addOption(author$project$View$Input$Password);
+var author$project$View$Link$Link = F2(
+	function (a, b) {
+		return {$: 'Link', a: a, b: b};
+	});
+var author$project$View$Link$config = F2(
+	function (onClick, label) {
+		return A2(
+			author$project$View$Link$Link,
+			{label: label, onClick: onClick},
+			_List_Nil);
+	});
+var Chadtech$ct_colors$Chadtech$Colors$important0 = rtfeldman$elm_css$Css$hex('#B39F4B');
+var Chadtech$ct_colors$Chadtech$Colors$important1 = rtfeldman$elm_css$Css$hex('#E3D34B');
+var author$project$Style$noBackground = A2(rtfeldman$elm_css$Css$property, 'background', 'none');
+var author$project$Style$noBorder = A2(rtfeldman$elm_css$Css$property, 'border', 'none');
+var author$project$View$Link$optionsToSummary = function () {
 	var modifySummary = F2(
 		function (option, summary) {
-			var msg = option.a;
-			return _Utils_update(
-				summary,
-				{
-					closeButton: elm$core$Maybe$Just(msg)
-				});
+			return summary;
 		});
 	return A2(
 		elm$core$List$foldr,
 		modifySummary,
-		{closeButton: elm$core$Maybe$Nothing});
+		{});
 }();
-var author$project$View$CardHeader$toHtml = function (_n0) {
-	var model = _n0.a;
+var author$project$View$Link$toHtml = function (_n0) {
+	var onClick = _n0.a.onClick;
+	var label = _n0.a.label;
 	var options = _n0.b;
-	var summary = author$project$View$CardHeader$optionsToSummary(options);
+	var summary = author$project$View$Link$optionsToSummary(options);
 	return A2(
-		Chadtech$elm_css_grid$Html$Grid$row,
+		rtfeldman$elm_css$Html$Styled$button,
 		_List_fromArray(
 			[
-				rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4),
-				author$project$Style$marginBottom(2)
+				rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						author$project$Style$height(5),
+						rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$important0),
+						rtfeldman$elm_css$Css$hover(
+						_List_fromArray(
+							[
+								rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$important1)
+							])),
+						author$project$Style$noBackground,
+						author$project$Style$noBorder
+					])),
+				rtfeldman$elm_css$Html$Styled$Events$onClick(onClick)
 			]),
 		_List_fromArray(
 			[
-				A2(
-				Chadtech$elm_css_grid$Html$Grid$column,
-				_List_fromArray(
-					[
-						author$project$Style$padding(2)
-					]),
-				_List_fromArray(
-					[
-						A2(
-						author$project$View$Text$withStyles,
-						_List_fromArray(
-							[
-								rtfeldman$elm_css$Css$color(Chadtech$ct_colors$Chadtech$Colors$content1)
-							]),
-						model.title)
-					]))
+				rtfeldman$elm_css$Html$Styled$text(label)
 			]));
 };
+var author$project$Ui$LoginCard$Login$view = function (model) {
+	var _n0 = model.httpStatus;
+	switch (_n0.$) {
+		case 'Ready':
+			return _List_fromArray(
+				[
+					A2(
+					rtfeldman$elm_css$Html$Styled$form,
+					_List_Nil,
+					_List_fromArray(
+						[
+							author$project$Ui$LoginCard$Login$inputGroupView(
+							{
+								field: model.email,
+								label: 'email',
+								onInput: author$project$Ui$LoginCard$Login$EmailUpdated,
+								options: _List_fromArray(
+									[
+										author$project$View$Input$withAutocomplete('email')
+									])
+							}),
+							author$project$Ui$LoginCard$Login$inputGroupView(
+							{
+								field: model.password,
+								label: 'password',
+								onInput: author$project$Ui$LoginCard$Login$PasswordUpdated,
+								options: _List_fromArray(
+									[
+										author$project$View$Input$isPassword,
+										author$project$View$Input$withAutocomplete('current-password')
+									])
+							})
+						])),
+					author$project$View$Link$toHtml(
+					A2(author$project$View$Link$config, author$project$Ui$LoginCard$Login$ForgotPasswordClicked, 'I forgot my password')),
+					author$project$View$ButtonRow$view(
+					_List_fromArray(
+						[
+							A2(author$project$View$Button$config, author$project$Ui$LoginCard$Login$LoginClicked, 'log in')
+						]))
+				]);
+		case 'LoggingIn':
+			return _List_fromArray(
+				[author$project$View$Spinner$row]);
+		default:
+			var error = _n0.a;
+			return A2(
+				elm$core$List$append,
+				author$project$Ui$LoginCard$Login$errorView(error),
+				_List_fromArray(
+					[
+						author$project$View$ButtonRow$view(
+						_List_fromArray(
+							[
+								A2(author$project$View$Button$config, author$project$Ui$LoginCard$Login$TryAgainClicked, 'try again')
+							]))
+					]));
+	}
+};
+var author$project$Ui$LoginCard$viewBody = function (model) {
+	if (model.$ === 'Login') {
+		var subModel = model.a;
+		return A2(
+			author$project$Util$Html$mapList,
+			author$project$Ui$LoginCard$LoginMsg,
+			author$project$Ui$LoginCard$Login$view(subModel));
+	} else {
+		var subModel = model.a;
+		return A2(
+			author$project$Util$Html$mapList,
+			author$project$Ui$LoginCard$ForgotPasswordMsg,
+			author$project$Ui$LoginCard$ForgotPassword$view(subModel));
+	}
+};
 var author$project$Page$Login$view = function (model) {
-	var header = author$project$View$CardHeader$toHtml(author$project$Ui$LoginCard$header);
+	var header = author$project$View$CardHeader$toHtml(
+		author$project$Ui$LoginCard$header(model.loginCard));
 	var body = A2(
 		author$project$Util$Html$mapList,
 		author$project$Page$Login$LoginCardMsg,
 		author$project$Ui$LoginCard$viewBody(model.loginCard));
 	return {
-		body: _List_fromArray(
-			[
-				A2(
-				Chadtech$elm_css_grid$Html$Grid$row,
-				_List_fromArray(
-					[
-						rtfeldman$elm_css$Css$flex(
-						rtfeldman$elm_css$Css$int(1)),
-						author$project$Style$centerContent
-					]),
-				_List_fromArray(
-					[
-						A2(
-						Chadtech$elm_css_grid$Html$Grid$column,
-						_List_fromArray(
-							[
-								Chadtech$elm_css_grid$Html$Grid$columnShrink,
-								author$project$Style$centerContent,
-								rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
-							]),
-						_List_fromArray(
-							[
-								author$project$Ui$LoginCard$view(
-								A2(elm$core$List$cons, header, body))
-							]))
-					]))
-			]),
-		title: elm$core$Maybe$Just('login')
+		body: author$project$View$SingleCardPage$view(
+			author$project$Ui$LoginCard$view(
+				A2(elm$core$List$cons, header, body))),
+		title: elm$core$Maybe$Just('log in')
 	};
+};
+var author$project$Page$PageNotFound$GoHomeClicked = {$: 'GoHomeClicked'};
+var author$project$Page$PageNotFound$view = {
+	body: author$project$View$SingleCardPage$view(
+		A2(
+			author$project$View$Card$view,
+			_List_fromArray(
+				[
+					author$project$Style$width(9)
+				]),
+			_List_fromArray(
+				[
+					author$project$View$CardHeader$toHtml(
+					author$project$View$CardHeader$config(
+						{title: 'page not found'})),
+					A2(author$project$View$Card$textRow, _List_Nil, 'Sorry, something went wrong. This page does not exist.'),
+					author$project$View$ButtonRow$view(
+					_List_fromArray(
+						[
+							A2(author$project$View$Button$config, author$project$Page$PageNotFound$GoHomeClicked, 'go home')
+						]))
+				]))),
+	title: elm$core$Maybe$Nothing
 };
 var author$project$Page$PaintApp$view = function (model) {
 	return {
@@ -10547,14 +12834,182 @@ var author$project$Page$PaintApp$view = function (model) {
 		title: elm$core$Maybe$Nothing
 	};
 };
+var author$project$Page$ResetPassword$CodeUpdated = function (a) {
+	return {$: 'CodeUpdated', a: a};
+};
+var author$project$Page$ResetPassword$EmailUpdated = function (a) {
+	return {$: 'EmailUpdated', a: a};
+};
+var author$project$Page$ResetPassword$LoginClicked = {$: 'LoginClicked'};
+var author$project$Page$ResetPassword$PasswordConfirmUpdated = function (a) {
+	return {$: 'PasswordConfirmUpdated', a: a};
+};
+var author$project$Page$ResetPassword$PasswordUpdated = function (a) {
+	return {$: 'PasswordUpdated', a: a};
+};
+var author$project$Page$ResetPassword$ReadyMsg = function (a) {
+	return {$: 'ReadyMsg', a: a};
+};
+var author$project$Page$ResetPassword$ResetPasswordClicked = {$: 'ResetPasswordClicked'};
+var author$project$Page$ResetPassword$errorView = function (error) {
+	var problemRow = author$project$View$Card$textRow(
+		_List_fromArray(
+			[author$project$Style$problemBackground]));
+	if (error.$ === 'DecodeError') {
+		var decodeError = error.a;
+		return _List_fromArray(
+			[
+				problemRow('\n                Im really sorry. Something really broke.\n                Please let me know that you had this problem\n                by emailing me at chadtech0@gmail.com. Below\n                is the error that occurred:\n                '),
+				author$project$View$Card$errorDisplay(
+				elm$json$Json$Decode$errorToString(decodeError))
+			]);
+	} else {
+		if (error.a.$ === 'InvalidCode') {
+			var _n1 = error.a;
+			return _List_fromArray(
+				[
+					problemRow('\n                The reset code was invalid. \n                If you requested this code a while ago, \n                then its probably expired. \n                Sorry. Please try again."\n                ')
+				]);
+		} else {
+			var str = error.a.a;
+			return _List_fromArray(
+				[
+					problemRow('\n                Sorry, something unexpected happened. \n                Please let me know that you had this problem\n                by emailing me at chadtech0@gmail.com. Below\n                is the error that occurred:\n                '),
+					author$project$View$Card$errorDisplay(str)
+				]);
+		}
+	}
+};
+var author$project$Page$ResetPassword$EnterPressed = {$: 'EnterPressed'};
+var author$project$View$InputGroup$DoubleWidth = {$: 'DoubleWidth'};
+var author$project$View$InputGroup$withDoubleWidth = author$project$View$InputGroup$addOption(author$project$View$InputGroup$DoubleWidth);
+var author$project$Page$ResetPassword$inputGroupView = function (_n0) {
+	var label = _n0.label;
+	var options = _n0.options;
+	var onInput = _n0.onInput;
+	var field = _n0.field;
+	return author$project$View$InputGroup$toHtml(
+		author$project$View$InputGroup$withDoubleWidth(
+			A2(
+				author$project$View$InputGroup$withError,
+				author$project$Data$Field$getError(field),
+				A2(
+					author$project$View$InputGroup$withStyles,
+					_List_fromArray(
+						[
+							author$project$Style$marginBottom(1)
+						]),
+					author$project$View$InputGroup$text(
+						{
+							input: A2(
+								author$project$View$Input$onEnter,
+								author$project$Page$ResetPassword$EnterPressed,
+								A2(
+									author$project$Util$Function$composeMany,
+									options,
+									A2(
+										author$project$View$Input$config,
+										onInput,
+										author$project$Data$Field$getValue(field)))),
+							label: label
+						})))));
+};
+var author$project$Page$ResetPassword$viewBody = function (model) {
+	switch (model.$) {
+		case 'Ready':
+			var readyModel = model.a;
+			return A2(
+				author$project$Util$Html$mapList,
+				author$project$Page$ResetPassword$ReadyMsg,
+				_List_fromArray(
+					[
+						A2(
+						rtfeldman$elm_css$Html$Styled$form,
+						_List_Nil,
+						_List_fromArray(
+							[
+								author$project$Page$ResetPassword$inputGroupView(
+								{
+									field: readyModel.email,
+									label: 'email',
+									onInput: author$project$Page$ResetPassword$EmailUpdated,
+									options: _List_fromArray(
+										[
+											author$project$View$Input$withAutocomplete('email')
+										])
+								}),
+								author$project$Page$ResetPassword$inputGroupView(
+								{field: readyModel.code, label: 'code', onInput: author$project$Page$ResetPassword$CodeUpdated, options: _List_Nil}),
+								author$project$Page$ResetPassword$inputGroupView(
+								{
+									field: readyModel.password,
+									label: 'new password',
+									onInput: author$project$Page$ResetPassword$PasswordUpdated,
+									options: _List_fromArray(
+										[
+											author$project$View$Input$isPassword,
+											author$project$View$Input$withAutocomplete('new-password')
+										])
+								}),
+								author$project$Page$ResetPassword$inputGroupView(
+								{
+									field: readyModel.passwordConfirm,
+									label: 'confirm new password',
+									onInput: author$project$Page$ResetPassword$PasswordConfirmUpdated,
+									options: _List_fromArray(
+										[
+											author$project$View$Input$isPassword,
+											author$project$View$Input$withAutocomplete('new-password')
+										])
+								})
+							])),
+						author$project$View$ButtonRow$view(
+						_List_fromArray(
+							[
+								author$project$View$Button$asDoubleWidth(
+								A2(author$project$View$Button$config, author$project$Page$ResetPassword$ResetPasswordClicked, 'reset password'))
+							]))
+					]));
+		case 'Waiting':
+			return _List_fromArray(
+				[author$project$View$Spinner$row]);
+		case 'Success':
+			return _List_fromArray(
+				[
+					A2(author$project$View$Card$textRow, _List_Nil, '\n                    Great. It worked. Your password has been reset.\n                    Now go back to the login in page and use your\n                    new password.\n                    '),
+					author$project$View$ButtonRow$view(
+					_List_fromArray(
+						[
+							A2(author$project$View$Button$config, author$project$Page$ResetPassword$LoginClicked, 'go to login')
+						]))
+				]);
+		default:
+			var error = model.a;
+			return author$project$Page$ResetPassword$errorView(error);
+	}
+};
+var author$project$Page$ResetPassword$view = function (model) {
+	var title = 'reset password';
+	var header = author$project$View$CardHeader$toHtml(
+		author$project$View$CardHeader$config(
+			{title: title}));
+	return {
+		body: author$project$View$SingleCardPage$view(
+			A2(
+				author$project$View$Card$view,
+				_List_fromArray(
+					[
+						author$project$Style$width(9)
+					]),
+				A2(
+					elm$core$List$cons,
+					header,
+					author$project$Page$ResetPassword$viewBody(model)))),
+		title: elm$core$Maybe$Just(title)
+	};
+};
 var author$project$Page$Splash$DrawClicked = {$: 'DrawClicked'};
 var author$project$Page$Splash$LearnMoreClicked = {$: 'LearnMoreClicked'};
-var author$project$View$Button$DoubleWidth = {$: 'DoubleWidth'};
-var author$project$View$Button$Width = function (a) {
-	return {$: 'Width', a: a};
-};
-var author$project$View$Button$withWidth = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Width);
-var author$project$View$Button$asDoubleWidth = author$project$View$Button$withWidth(author$project$View$Button$DoubleWidth);
 var author$project$View$Button$Tall = function (a) {
 	return {$: 'Tall', a: a};
 };
@@ -10693,9 +13148,6 @@ var author$project$Page$Splash$view = function (mountPath) {
 		title: elm$core$Maybe$Nothing
 	};
 };
-var author$project$Session$getBuildNumber = function ($) {
-	return $.buildNumber;
-};
 var author$project$Session$getMountPath = function ($) {
 	return $.mountPath;
 };
@@ -10703,6 +13155,8 @@ var author$project$Main$viewPage = function (model) {
 	switch (model.$) {
 		case 'Blank':
 			return {body: _List_Nil, title: elm$core$Maybe$Nothing};
+		case 'PageNotFound':
+			return A2(author$project$Data$Document$map, author$project$Main$PageNotFoundMsg, author$project$Page$PageNotFound$view);
 		case 'PaintApp':
 			var subModel = model.a;
 			return author$project$Page$PaintApp$view(subModel);
@@ -10725,15 +13179,18 @@ var author$project$Main$viewPage = function (model) {
 					author$project$Page$About$view,
 					author$project$Session$getBuildNumber(session),
 					author$project$Session$getMountPath(session)));
-		default:
+		case 'Login':
 			var subModel = model.a;
 			return A2(
-				author$project$Main$viewInFrame,
-				model,
-				A2(
-					author$project$Data$Document$map,
-					author$project$Main$LoginMsg,
-					author$project$Page$Login$view(subModel)));
+				author$project$Data$Document$map,
+				author$project$Main$LoginMsg,
+				author$project$Page$Login$view(subModel));
+		default:
+			var subModel = model.b;
+			return A2(
+				author$project$Data$Document$map,
+				author$project$Main$ResetPasswordMsg,
+				author$project$Page$ResetPassword$view(subModel));
 	}
 };
 var author$project$Main$view = function (result) {
@@ -10742,18 +13199,32 @@ var author$project$Main$view = function (result) {
 		return author$project$Main$viewPage(page);
 	} else {
 		var error = result.a;
-		return {
-			body: _List_fromArray(
-				[
-					rtfeldman$elm_css$Html$Styled$text(
-					elm$json$Json$Decode$errorToString(error))
-				]),
-			title: elm$core$Maybe$Nothing
-		};
+		return author$project$Main$viewError(error);
 	}
 };
+var rtfeldman$elm_css$Css$cursor = rtfeldman$elm_css$Css$prop1('cursor');
+var rtfeldman$elm_css$Css$pointer = {cursor: rtfeldman$elm_css$Css$Structure$Compatible, value: 'pointer'};
+var author$project$Style$pointer = rtfeldman$elm_css$Css$cursor(rtfeldman$elm_css$Css$pointer);
 var rtfeldman$elm_css$Css$borderBox = {backgroundClip: rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
 var rtfeldman$elm_css$Css$boxSizing = rtfeldman$elm_css$Css$prop1('box-sizing');
+var rtfeldman$elm_css$Css$Structure$TypeSelector = function (a) {
+	return {$: 'TypeSelector', a: a};
+};
+var rtfeldman$elm_css$Css$Global$typeSelector = F2(
+	function (selectorStr, styles) {
+		var sequence = A2(
+			rtfeldman$elm_css$Css$Structure$TypeSelectorSequence,
+			rtfeldman$elm_css$Css$Structure$TypeSelector(selectorStr),
+			_List_Nil);
+		var sel = A3(rtfeldman$elm_css$Css$Structure$Selector, sequence, _List_Nil, elm$core$Maybe$Nothing);
+		return rtfeldman$elm_css$Css$Preprocess$Snippet(
+			_List_fromArray(
+				[
+					rtfeldman$elm_css$Css$Preprocess$StyleBlockDeclaration(
+					A3(rtfeldman$elm_css$Css$Preprocess$StyleBlock, sel, _List_Nil, styles))
+				]));
+	});
+var rtfeldman$elm_css$Css$Global$button = rtfeldman$elm_css$Css$Global$typeSelector('button');
 var rtfeldman$elm_css$Css$Global$everything = function (styles) {
 	return A2(
 		rtfeldman$elm_css$VirtualDom$Styled$makeSnippet,
@@ -10773,23 +13244,6 @@ var rtfeldman$elm_css$Css$Global$global = function (snippets) {
 						elm$core$List$singleton(
 							rtfeldman$elm_css$Css$Preprocess$stylesheet(snippets)))))));
 };
-var rtfeldman$elm_css$Css$Structure$TypeSelector = function (a) {
-	return {$: 'TypeSelector', a: a};
-};
-var rtfeldman$elm_css$Css$Global$typeSelector = F2(
-	function (selectorStr, styles) {
-		var sequence = A2(
-			rtfeldman$elm_css$Css$Structure$TypeSelectorSequence,
-			rtfeldman$elm_css$Css$Structure$TypeSelector(selectorStr),
-			_List_Nil);
-		var sel = A3(rtfeldman$elm_css$Css$Structure$Selector, sequence, _List_Nil, elm$core$Maybe$Nothing);
-		return rtfeldman$elm_css$Css$Preprocess$Snippet(
-			_List_fromArray(
-				[
-					rtfeldman$elm_css$Css$Preprocess$StyleBlockDeclaration(
-					A3(rtfeldman$elm_css$Css$Preprocess$StyleBlock, sel, _List_Nil, styles))
-				]));
-	});
 var rtfeldman$elm_css$Css$Global$p = rtfeldman$elm_css$Css$Global$typeSelector('p');
 var author$project$Style$globals = rtfeldman$elm_css$Css$Global$global(
 	_List_fromArray(
@@ -10801,6 +13255,9 @@ var author$project$Style$globals = rtfeldman$elm_css$Css$Global$global(
 					author$project$Style$fontSmoothingNone,
 					author$project$Style$font
 				])),
+			rtfeldman$elm_css$Css$Global$button(
+			_List_fromArray(
+				[author$project$Style$font, author$project$Style$noOutline, author$project$Style$pointer, author$project$Style$fontSmoothingNone])),
 			rtfeldman$elm_css$Css$Global$everything(
 			_List_fromArray(
 				[
@@ -10810,7 +13267,6 @@ var author$project$Style$globals = rtfeldman$elm_css$Css$Global$global(
 				]))
 		]));
 var elm$browser$Browser$application = _Browser_application;
-var elm$json$Json$Decode$value = _Json_decodeValue;
 var author$project$Main$main = elm$browser$Browser$application(
 	{
 		init: author$project$Main$init,

@@ -6,6 +6,7 @@ module Page.PaintApp exposing
     )
 
 import Data.Document exposing (Document)
+import Data.Viewer exposing (Viewer)
 import Session exposing (Session)
 import View.Text as Text
 
@@ -17,7 +18,7 @@ import View.Text as Text
 
 
 type alias Model =
-    { session : Session }
+    { session : Session Viewer }
 
 
 
@@ -26,7 +27,7 @@ type alias Model =
 -------------------------------------------------------------------------------
 
 
-init : Session -> Model
+init : Session Viewer -> Model
 init session =
     { session = session }
 
@@ -37,7 +38,7 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session
+getSession : Model -> Session Viewer
 getSession =
     .session
 

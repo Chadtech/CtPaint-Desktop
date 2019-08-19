@@ -9,13 +9,16 @@ import Chadtech.Colors as Colors
 import Css exposing (Style)
 import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
+import Data.Viewer as Viewer
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Model exposing (Model)
 import Route
+import Session
 import Style
 import Ui.Nav.Option as Option exposing (Option)
 import View.Button as Button
+import View.Text as Text
 
 
 
@@ -51,6 +54,23 @@ view model =
                         (optionIsCurrentPage model option)
                     |> Button.toHtml
                 ]
+
+        userOptions : List (Grid.Column Msg)
+        userOptions =
+            case Session.getViewer <| Model.getSession model of
+                Viewer.Offline ->
+                    [ Grid.column
+                        [ Grid.columnShrink ]
+                        [ Text.fromString "offline" ]
+                    ]
+
+                Viewer.Viewer ->
+                    [ optionView [] Option.Login ]
+
+                Viewer.User user ->
+                    [ optionView [] Option.Logout
+                    , optionView [] Option.Settings
+                    ]
     in
     Grid.row
         [ Style.fullWidth
@@ -58,21 +78,22 @@ view model =
         , Style.padding 2
         , Style.borderBottom Colors.content0
         ]
-        [ optionView
+        ([ optionView
             [ Style.marginRight 3 ]
             Option.Draw
-        , Grid.column
+         , Grid.column
             [ Style.divider
             , Grid.columnShrink
             , Style.marginRight 3
             , Style.height 5
             ]
             []
-        , optionView [] Option.Title
-        , optionView [] Option.About
-        , Grid.column [] []
-        , optionView [] Option.Login
-        ]
+         , optionView [] Option.Title
+         , optionView [] Option.About
+         , Grid.column [] []
+         ]
+            ++ userOptions
+        )
 
 
 optionIsCurrentPage : Model -> Option -> Bool

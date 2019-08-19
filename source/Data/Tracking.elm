@@ -1,16 +1,13 @@
 module Data.Tracking exposing
     ( Event
-    , Payload
-    , encode
     , event
+    , send
     , tag
+    , withListenerResponse
     , withProp
+    , withResult
+    , withString
     )
-
-import Data.SessionId as SesionId exposing (SessionId)
-import Json.Encode as Encode exposing (Value)
-import Util.Json.Encode as EncodeUtil
-
 
 {-|
 
@@ -29,19 +26,17 @@ import Util.Json.Encode as EncodeUtil
 
 -}
 
+import Data.Listener as Listener
+import Data.SessionId as SesionId exposing (SessionId)
+import Json.Encode as Encode exposing (Value)
+import Ports
+import Util.Json.Encode as EncodeUtil
+
 
 
 -------------------------------------------------------------------------------
 -- TYPES --
 -------------------------------------------------------------------------------
-
-
-type alias Payload =
-    { name : String
-    , props : List ( String, Value )
-    , sessionId : SessionId
-    , email : Maybe String
-    }
 
 
 type alias Event =
@@ -66,6 +61,27 @@ tag propName =
     withProp propName Encode.null
 
 
+withListenerResponse : Listener.Response String value -> Maybe Event -> Maybe Event
+withListenerResponse =
+    withResult (Listener.errorToString identity)
+
+
+withResult : (error -> String) -> Result error value -> Maybe Event -> Maybe Event
+withResult encodeError result =
+    case result of
+        Ok _ ->
+            withString "response" "Ok"
+
+        Err error ->
+            withString "response" "Error"
+                >> withString "error" (encodeError error)
+
+
+withString : String -> String -> Maybe Event -> Maybe Event
+withString propName =
+    encodeString >> Encode.string >> withProp propName
+
+
 withProp : String -> Encode.Value -> Maybe Event -> Maybe Event
 withProp propName value maybeEvent =
     case maybeEvent of
@@ -80,23 +96,34 @@ withProp propName value maybeEvent =
             Nothing
 
 
-encode : Payload -> Value
-encode { name, props, email, sessionId } =
-    let
-        encodedProps : Value
-        encodedProps =
-            [ Tuple.pair "sessionId" <|
-                SesionId.encode sessionId
-            , Tuple.pair "email" <|
-                EncodeUtil.maybe Encode.string email
-            ]
-                |> List.append props
-                |> Encode.object
-    in
-    [ name
-        |> String.replace " " "_"
-        |> Encode.string
-        |> Tuple.pair "name"
-    , Tuple.pair "properties" encodedProps
-    ]
-        |> Encode.object
+encodeProps : List ( String, Encode.Value ) -> Ports.Payload -> Ports.Payload
+encodeProps remainingProps =
+    case remainingProps of
+        [] ->
+            identity
+
+        ( propName, propValue ) :: rest ->
+            Ports.withProp
+                (encodeString propName)
+                propValue
+                >> encodeProps rest
+
+
+send : Maybe Event -> Cmd msg
+send maybeEvent =
+    case maybeEvent of
+        Just { name, props } ->
+            Ports.payload "track"
+                |> Ports.withString
+                    "name"
+                    name
+                |> encodeProps props
+                |> Ports.send
+
+        Nothing ->
+            Cmd.none
+
+
+encodeString : String -> String
+encodeString =
+    String.replace " " "_"

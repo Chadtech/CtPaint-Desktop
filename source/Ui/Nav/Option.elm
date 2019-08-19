@@ -20,6 +20,8 @@ type Option
     | Title
     | About
     | Login
+    | Logout
+    | Settings
 
 
 
@@ -43,6 +45,12 @@ toLabel option =
         Login ->
             "log in"
 
+        Logout ->
+            "log out"
+
+        Settings ->
+            "settings"
+
 
 toRoute : Option -> Route
 toRoute option =
@@ -58,6 +66,12 @@ toRoute option =
 
         Login ->
             Route.Login
+
+        Logout ->
+            Route.Logout
+
+        Settings ->
+            Route.Settings
 
 
 encode : Option -> Encode.Value
