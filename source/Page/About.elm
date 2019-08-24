@@ -21,11 +21,8 @@ view : BuildNumber -> MountPath -> Document msg
 view buildNumber mountPath =
     { title = Just "about"
     , body =
-        [ Body.config
+        Body.singleColumnView
             (BannerLogo.view mountPath :: textRows buildNumber)
-            |> Body.singleColumnWidth
-            |> Body.toHtml
-        ]
     }
 
 

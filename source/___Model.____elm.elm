@@ -6,7 +6,7 @@ module asdasdModel exposing
     )
 
 import Data.Taco as Taco exposing (Taco)
-import Data.User as User
+import Data.Account as User
 import Page exposing (Page(..))
 import Random exposing (Seed)
 

@@ -5,18 +5,19 @@ module Session exposing
     , getMountPath
     , getNavKey
     , getSessionId
-    , getViewer
+    , getUser
     , mapViewer
-    , setViewer
+    , removeAccount
+    , setUser
     , userLoggedIn
     )
 
+import Data.Account as Account exposing (Account)
 import Data.BuildNumber as BuildNumber exposing (BuildNumber)
 import Data.MountPath as MountPath exposing (MountPath)
 import Data.NavKey exposing (NavKey)
 import Data.SessionId as SessionId exposing (SessionId)
-import Data.User exposing (User)
-import Data.Viewer as Viewer exposing (Viewer)
+import Data.User as Viewer exposing (User)
 import Json.Decode as Decode exposing (Decoder)
 import Random exposing (Seed)
 import Util.Json.Decode as DecodeUtil
@@ -28,11 +29,11 @@ import Util.Json.Decode as DecodeUtil
 -------------------------------------------------------------------------------
 
 
-type alias Session viewer =
+type alias Session user =
     { mountPath : MountPath
     , navKey : NavKey
     , buildNumber : BuildNumber
-    , viewer : viewer
+    , user : user
     , sessionId : SessionId
     , seed : Seed
     }
@@ -44,10 +45,20 @@ type alias Session viewer =
 -------------------------------------------------------------------------------
 
 
-decoder : NavKey -> Decoder (Session Viewer)
+removeAccount : Session user -> Session Account.None
+removeAccount =
+    setUser Account.none
+
+
+setUser : newUser -> Session user -> Session newUser
+setUser =
+    mapViewer << always
+
+
+decoder : NavKey -> Decoder (Session User)
 decoder navKey =
     let
-        fromSeed : Seed -> Decoder (Session Viewer)
+        fromSeed : Seed -> Decoder (Session User)
         fromSeed seed0 =
             let
                 ( sessionId, seed1 ) =
@@ -73,42 +84,37 @@ mapViewer f session =
     { mountPath = getMountPath session
     , navKey = getNavKey session
     , buildNumber = getBuildNumber session
-    , viewer = f session.viewer
+    , user = f session.user
     , sessionId = getSessionId session
     , seed = session.seed
     }
 
 
-setViewer : newViewer -> Session viewer -> Session newViewer
-setViewer newViewer =
-    mapViewer (always newViewer)
+userLoggedIn : Account -> Session User -> Session User
+userLoggedIn account session =
+    { session | user = Viewer.Account account }
 
 
-userLoggedIn : User -> Session Viewer -> Session Viewer
-userLoggedIn user session =
-    { session | viewer = Viewer.User user }
-
-
-getBuildNumber : Session viewer -> BuildNumber
+getBuildNumber : Session user -> BuildNumber
 getBuildNumber =
     .buildNumber
 
 
-getMountPath : Session viewer -> MountPath
+getMountPath : Session user -> MountPath
 getMountPath =
     .mountPath
 
 
-getNavKey : Session viewer -> NavKey
+getNavKey : Session user -> NavKey
 getNavKey =
     .navKey
 
 
-getSessionId : Session viwer -> SessionId
+getSessionId : Session user -> SessionId
 getSessionId =
     .sessionId
 
 
-getViewer : Session viewer -> viewer
-getViewer =
-    .viewer
+getUser : Session user -> user
+getUser =
+    .user

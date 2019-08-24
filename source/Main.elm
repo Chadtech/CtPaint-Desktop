@@ -8,15 +8,19 @@ import Data.Listener as Listener exposing (Listener)
 import Data.NavKey as NavKey
 import Data.SessionId as SessionId
 import Data.Tracking as Tracking
-import Data.Viewer exposing (Viewer)
+import Data.User as Viewer exposing (User)
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (Model)
 import Page.About as About
+import Page.Contact as Contact
+import Page.Home as Home
 import Page.Login as Login
+import Page.Logout as Logout
 import Page.PageNotFound as PageNotFound
 import Page.PaintApp as PaintApp
 import Page.ResetPassword as ResetPassword
+import Page.Settings as Settings
 import Page.Splash as Splash
 import Ports
 import Route exposing (Route)
@@ -66,6 +70,9 @@ type Msg
     | SplashMsg Splash.Msg
     | LoginMsg Login.Msg
     | ResetPasswordMsg ResetPassword.Msg
+    | HomeMsg Home.Msg
+    | SettingsMsg Settings.Msg
+    | ContactMsg Contact.Msg
 
 
 
@@ -181,9 +188,25 @@ viewPage model =
             Login.view subModel
                 |> Document.map LoginMsg
 
-        Model.ResetPassword _ subModel ->
+        Model.ResetPassword subModel ->
             ResetPassword.view subModel
                 |> Document.map ResetPasswordMsg
+
+        Model.Settings subModel ->
+            Settings.view subModel
+                |> Document.map SettingsMsg
+
+        Model.Home subModel ->
+            Home.view subModel
+                |> Document.map HomeMsg
+                |> viewInFrame model
+
+        Model.Logout subModel ->
+            Logout.view subModel
+
+        Model.Contact subModel ->
+            Contact.view subModel
+                |> Document.map ContactMsg
 
 
 viewInFrame : Model -> Document Msg -> Document Msg
@@ -215,13 +238,13 @@ update msg result =
 updateFromOk : Msg -> Model -> ( Model, Cmd Msg )
 updateFromOk msg model =
     let
-        session : Session Viewer
+        session : Session User
         session =
             Model.getSession model
     in
     case msg of
         UrlChanged routeResult ->
-            handleRoute routeResult model
+            handleRoute routeResult session
 
         UrlRequested _ ->
             model
@@ -262,12 +285,11 @@ updateFromOk msg model =
 
         ResetPasswordMsg subMsg ->
             case model of
-                Model.ResetPassword _ subModel ->
+                Model.ResetPassword subModel ->
                     ResetPassword.update
-                        (Session.getNavKey session)
                         subMsg
                         subModel
-                        |> CmdUtil.mapModel (Model.ResetPassword session)
+                        |> CmdUtil.mapModel Model.ResetPassword
                         |> CmdUtil.mapCmd ResetPasswordMsg
 
                 _ ->
@@ -296,38 +318,70 @@ updateFromOk msg model =
             model
                 |> CmdUtil.withNoCmd
 
+        HomeMsg subMsg ->
+            case model of
+                Model.Home subModel ->
+                    Home.update subMsg subModel
+                        |> Tuple.mapFirst Model.Home
+                        |> CmdUtil.mapCmd HomeMsg
 
-handleRoute : Result String Route -> Model -> ( Model, Cmd Msg )
-handleRoute routeResult model =
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        SettingsMsg subMsg ->
+            case model of
+                Model.Settings subModel ->
+                    Settings.update subMsg subModel
+                        |> Tuple.mapFirst Model.Settings
+                        |> CmdUtil.mapCmd SettingsMsg
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        ContactMsg subMsg ->
+            case model of
+                Model.Contact subModel ->
+                    Contact.update subMsg subModel
+                        |> Tuple.mapFirst Model.Contact
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+
+handleRoute : Result String Route -> Session User -> ( Model, Cmd Msg )
+handleRoute routeResult session =
     case routeResult of
         Ok route ->
-            handleRouteFromOk route model
+            handleRouteFromOk route session
 
         Err _ ->
-            Model.PageNotFound (Model.getSession model)
+            Model.PageNotFound session
                 |> CmdUtil.withNoCmd
 
 
-handleRouteFromOk : Route -> Model -> ( Model, Cmd Msg )
-handleRouteFromOk route model =
-    let
-        session : Session Viewer
-        session =
-            Model.getSession model
-    in
+handleRouteFromOk : Route -> Session User -> ( Model, Cmd Msg )
+handleRouteFromOk route session =
     case route of
-        Route.PaintApp ->
+        Route.PaintApp subRoute ->
             Model.PaintApp
                 (PaintApp.init session)
                 |> CmdUtil.withNoCmd
 
         Route.Landing ->
-            case Session.getViewer session of
+            case Session.getUser session of
+                Viewer.User ->
+                    Session.removeAccount session
+                        |> Model.Splash
+                        |> CmdUtil.withNoCmd
 
-
-
-            Model.Splash session
-                |> CmdUtil.withNoCmd
+                Viewer.Account user ->
+                    Session.setUser user session
+                        |> Home.init
+                        |> Tuple.mapFirst Model.Home
+                        |> CmdUtil.mapCmd HomeMsg
 
         Route.About ->
             Model.About session
@@ -339,16 +393,33 @@ handleRouteFromOk route model =
                 |> CmdUtil.withNoCmd
 
         Route.ResetPassword ->
-            Model.ResetPassword
-                session
-                ResetPassword.init
+            ResetPassword.init
+                (Session.removeAccount session)
+                |> Model.ResetPassword
                 |> CmdUtil.withNoCmd
+
+        Route.Logout ->
+            Logout.init
+                (Session.removeAccount session)
+                |> Tuple.mapFirst Model.Logout
+
+        Route.Settings ->
+            case Session.getUser session of
+                Viewer.User ->
+                    Model.PageNotFound session
+                        |> CmdUtil.withNoCmd
+
+                Viewer.Account user ->
+                    Settings.init
+                        (Session.setUser user session)
+                        |> Model.Settings
+                        |> CmdUtil.withNoCmd
 
 
 track : Msg -> Model -> Cmd Msg
 track msg model =
     let
-        session : Session Viewer
+        session : Session User
         session =
             Model.getSession model
     in
@@ -394,6 +465,15 @@ trackPage msg =
 
         PageNotFoundMsg subMsg ->
             PageNotFound.track subMsg
+
+        HomeMsg subMsg ->
+            Home.track subMsg
+
+        SettingsMsg subMsg ->
+            Settings.track subMsg
+
+        ContactMsg subMsg ->
+            Contact.track subMsg
 
 
 
@@ -451,7 +531,7 @@ listeners model =
         Model.Login _ ->
             Listener.mapMany LoginMsg Login.listeners
 
-        Model.ResetPassword _ _ ->
+        Model.ResetPassword _ ->
             [ ResetPassword.listener
                 |> Listener.map ResetPasswordMsg
             ]

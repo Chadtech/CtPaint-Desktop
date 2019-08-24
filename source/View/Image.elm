@@ -3,6 +3,7 @@ module View.Image exposing
     , Option
     , config
     , logo
+    , thirdParty
     , toHtml
     , withWidth
     )
@@ -27,6 +28,7 @@ type Image
 
 type Source
     = Asset AssetSource MountPath
+    | ThirdParty String
 
 
 type AssetSource
@@ -51,6 +53,11 @@ type alias Summary =
 logo : MountPath -> Source
 logo =
     Asset Logo
+
+
+thirdParty : String -> Source
+thirdParty =
+    ThirdParty
 
 
 withWidth : Float -> Image -> Image
@@ -96,6 +103,9 @@ sourceToString source =
             case assetSource of
                 Logo ->
                     mount "splash-image.png"
+
+        ThirdParty url ->
+            url
 
 
 

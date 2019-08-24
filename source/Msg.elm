@@ -3,9 +3,9 @@ module Msg exposing
     , decode
     )
 
+import Data.Account as User exposing (Account)
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
-import Data.User as User exposing (User)
 import Html.InitDrawing as InitDrawing
 import Json.Decode as Decode exposing (Decoder)
 import Nav
@@ -49,7 +49,7 @@ import Route exposing (Route(..))
 
 type Msg
     = RouteChanged (Result String Route)
-    | LogInSucceeded User
+    | LogInSucceeded Account
     | LogOutSucceeded
     | HomeMsg Home.Msg
     | PricingMsg Pricing.Msg
@@ -199,7 +199,7 @@ toMsg taco type_ =
             Decode.fail ("Unrecognized Js Msg : " ++ type_)
 
 
-userDecoder : Taco -> Decoder User
+userDecoder : Taco -> Decoder Account
 userDecoder taco =
     User.userDecoder taco.config.browser
 

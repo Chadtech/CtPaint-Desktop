@@ -1,7 +1,6 @@
 module Style exposing
     ( borderBottom
     , centerContent
-    , divider
     , exactWidth
     , font
     , fontSmoothingNone
@@ -31,6 +30,7 @@ module Style exposing
     , pxStr
     , relative
     , sizePx
+    , verticalDivider
     , width
     )
 
@@ -227,14 +227,19 @@ noOutline =
     Css.outline Css.none
 
 
-divider : Style
-divider =
+verticalDivider : Style
+verticalDivider =
     [ borderLeft3 (sizePx 1) solid Colors.content0
     , borderRight3 (sizePx 1) solid Colors.content2
     , Css.width Css.zero
     , display inline
     ]
         |> Css.batch
+
+
+horizontalDivider : Style
+horizontalDivider =
+    indent
 
 
 centerContent : Style

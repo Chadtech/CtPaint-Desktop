@@ -7,6 +7,7 @@ module View.Button exposing
     , indent
     , isDisabled
     , makeTaller
+    , noLabel
     , toHtml
     )
 
@@ -30,9 +31,7 @@ type Button msg
 
 
 type alias Model msg =
-    { onClick : msg
-    , label : String
-    }
+    { onClick : msg }
 
 
 type Width
@@ -47,6 +46,8 @@ type Option
     | Indent Bool
     | Disabled Bool
     | Tall Bool
+    | Label String
+    | BackgroundColor Css.Color
 
 
 type alias Summary =
@@ -54,6 +55,8 @@ type alias Summary =
     , indent : Maybe Bool
     , disabled : Bool
     , tall : Bool
+    , label : Maybe String
+    , backgroundColor : Maybe Css.Color
     }
 
 
@@ -61,6 +64,11 @@ type alias Summary =
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+withBackgroundColor : Css.Color -> Button msg -> Button msg
+withBackgroundColor =
+    addOption << BackgroundColor
 
 
 isDisabled : Bool -> Button msg -> Button msg
@@ -131,12 +139,20 @@ optionsToSummary =
 
                 Tall tall ->
                     { summary | tall = tall }
+
+                Label label ->
+                    { summary | label = Just label }
+
+                BackgroundColor color ->
+                    { summary | backgroundColor = Just color }
     in
     List.foldr modifySummary
         { width = SingleWidth
         , indent = Nothing
         , disabled = False
         , tall = False
+        , label = Nothing
+        , backgroundColor = Nothing
         }
 
 
@@ -149,14 +165,19 @@ optionsToSummary =
 config : msg -> String -> Button msg
 config onClick label =
     Button
-        { onClick = onClick
-        , label = label
-        }
+        { onClick = onClick }
+        [ Label label ]
+
+
+noLabel : msg -> Button msg
+noLabel onClick =
+    Button
+        { onClick = onClick }
         []
 
 
 toHtml : Button msg -> Html msg
-toHtml (Button { onClick, label } options) =
+toHtml (Button { onClick } options) =
     let
         summary : Summary
         summary =
@@ -166,7 +187,9 @@ toHtml (Button { onClick, label } options) =
         [ Attrs.css
             [ indentStyle summary.indent
             , buttonHeight summary.tall
-            , Css.backgroundColor Colors.content1
+            , summary.backgroundColor
+                |> Maybe.withDefault Colors.content1
+                |> Css.backgroundColor
             , Css.color Colors.content4
             , Css.active [ Style.indent ]
             , Css.hover [ Css.color Colors.content5 ]
@@ -175,7 +198,7 @@ toHtml (Button { onClick, label } options) =
             ]
         , Events.onClick onClick
         ]
-        [ Html.text label ]
+        [ Html.text (Maybe.withDefault "" summary.label) ]
 
 
 disabledStyle : Bool -> Style

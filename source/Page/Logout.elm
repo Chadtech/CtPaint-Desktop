@@ -1,107 +1,139 @@
 module Page.Logout exposing
     ( Model
     , Msg
-    , css
+    , getSession
     , init
     , track
     , update
     , view
     )
 
+import Data.Account as User
+import Data.Document exposing (Document)
+import Data.Listener as Listener
 import Data.Tracking as Tracking
-import Html exposing (Html, p)
-import Json.Encode as Encode
+import Ports
+import Route
+import Session exposing (Session)
+import Util.Cmd as CmdUtil
 
 
 
+-------------------------------------------------------------------------------
 -- TYPES --
+-------------------------------------------------------------------------------
 
 
-init : Model
-init =
-    Waiting
+type alias Model =
+    { session : Session User.None
+    , status : HttpStatus
+    }
 
 
-type Model
+type HttpStatus
     = Waiting
     | Fail String
 
 
 type Msg
-    = LogoutFailed String
+    = GotLogoutResponse (Listener.Response String ())
 
 
 
+-------------------------------------------------------------------------------
+-- INIT --
+-------------------------------------------------------------------------------
+
+
+init : Session User.None -> ( Model, Cmd msg )
+init session =
+    ( { session = session
+      , status = Waiting
+      }
+    , Ports.withNoProps "log out"
+    )
+
+
+
+-------------------------------------------------------------------------------
+-- PUBLIC HELPERS --
+-------------------------------------------------------------------------------
+
+
+getSession : Model -> Session User.None
+getSession =
+    .session
+
+
+
+-------------------------------------------------------------------------------
+-- PRIVATE HELPERS --
+-------------------------------------------------------------------------------
+
+
+setError : String -> Model -> Model
+setError error model =
+    { model | status = Fail error }
+
+
+
+-------------------------------------------------------------------------------
 -- UPDATE --
+-------------------------------------------------------------------------------
 
 
-update : Msg -> Model
-update msg =
+update : Msg -> Model -> ( Model, Cmd msg )
+update msg model =
     case msg of
-        LogoutFailed err ->
-            Fail err
+        GotLogoutResponse response ->
+            case response of
+                Ok () ->
+                    ( model
+                    , Route.goTo
+                        (Session.getNavKey model.session)
+                        Route.Landing
+                    )
 
-
-
--- TRACKING --
+                Err error ->
+                    setError
+                        (Listener.errorToString identity error)
+                        model
+                        |> CmdUtil.withNoCmd
 
 
 track : Msg -> Maybe Tracking.Event
 track msg =
     case msg of
-        LogoutFailed err ->
-            err
-                |> Encode.string
-                |> def "error"
-                |> List.singleton
-                |> def "logout-fail"
-                |> Just
+        GotLogoutResponse response ->
+            Tracking.event "got logout response"
+                |> Tracking.withListenerResponse response
 
 
 
--- STYLES --
-
-
-css : Stylesheet
-css =
-    []
-        |> namespace logoutNamespace
-        |> stylesheet
-
-
-logoutNamespace : String
-logoutNamespace =
-    Html.Custom.makeNamespace "Logout"
-
-
-
+-------------------------------------------------------------------------------
 -- VIEW --
+-------------------------------------------------------------------------------
 
 
-{ class } =
-    Html.CssHelpers.withNamespace logoutNamespace
-
-
-view : Model -> Html Msg
+view : Model -> Document msg
 view model =
-    Html.Custom.card []
-        [ Html.Custom.header
-            { text = "log out"
-            , closability = Html.Custom.NotClosable
-            }
-        , Html.Custom.cardBody [] (viewContent model)
-        ]
+    { title = Nothing
+    , body =
+        []
+    }
 
 
-viewContent : Model -> List (Html Msg)
-viewContent model =
-    case model of
-        Waiting ->
-            [ p [] [ Html.text "logging out.." ]
-            , Html.Custom.spinner
-            ]
 
-        Fail err ->
-            [ p [] [ Html.text "Weird, I couldnt log out." ]
-            , p [] [ Html.text err ]
-            ]
+--
+--viewContent : Model -> List (Html Msg)
+--viewContent model =
+--    case model of
+--        Waiting ->
+--            [ p [] [ Html.text "logging out.." ]
+--            , Html.Custom.spinner
+--            ]
+--
+--        Fail err ->
+--            [ p [] [ Html.text "Weird, I couldnt log out." ]
+--            , p [] [ Html.text err ]
+--            ]

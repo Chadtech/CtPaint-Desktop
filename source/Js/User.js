@@ -54,16 +54,16 @@ function get(Client, init) {
             init(fromAttributes(attrs));
         },
         onFailure: function(err) {
-            switch (String(err)) {
+            switch (err.name) {
                 case "no session":
                     init(null);
                     break;
 
-                case "NetworkingError: Network Failure":
+                case "NetworkingError":
                     init("offline");
                     break;
 
-                case "UserNotFoundException: User does not exist.":
+                case "UserNotFoundException":
                     init(null);
                     break;
 

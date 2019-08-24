@@ -11,9 +11,9 @@ module Ui.LoginCard exposing
     )
 
 import Css exposing (Style)
+import Data.Account exposing (Account)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Data.User exposing (User)
 import Html.Styled exposing (Html)
 import Ports
 import Style
@@ -96,7 +96,7 @@ viewBody model =
 -------------------------------------------------------------------------------
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, Maybe User )
+update : Msg -> Model -> ( Model, Cmd Msg, Maybe Account )
 update msg model =
     case msg of
         LoginMsg subMsg ->
@@ -121,7 +121,7 @@ update msg model =
                         |> CmdUtil.justModel
 
 
-updateLogin : Login.Msg -> Login.Model -> ( Model, Cmd Msg, Maybe User )
+updateLogin : Login.Msg -> Login.Model -> ( Model, Cmd Msg, Maybe Account )
 updateLogin msg model =
     case msg of
         Login.EmailUpdated str ->

@@ -3,6 +3,7 @@ module Data.Tracking exposing
     , event
     , send
     , tag
+    , withBool
     , withListenerResponse
     , withProp
     , withResult
@@ -80,6 +81,11 @@ withResult encodeError result =
 withString : String -> String -> Maybe Event -> Maybe Event
 withString propName =
     encodeString >> Encode.string >> withProp propName
+
+
+withBool : String -> Bool -> Maybe Event -> Maybe Event
+withBool propName =
+    Encode.bool >> withProp propName
 
 
 withProp : String -> Encode.Value -> Maybe Event -> Maybe Event

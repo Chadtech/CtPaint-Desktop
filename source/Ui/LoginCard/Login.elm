@@ -15,10 +15,10 @@ module Ui.LoginCard.Login exposing
 
 import Chadtech.Colors as Colors
 import Css
+import Data.Account as User exposing (Account)
 import Data.Field as Field exposing (Field)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Data.User as User exposing (User)
 import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode
@@ -67,7 +67,7 @@ type Msg
     | LoginClicked
     | ForgotPasswordClicked
     | TryAgainClicked
-    | GotLoginResponse (Listener.Response Error User)
+    | GotLoginResponse (Listener.Response Error Account)
 
 
 

@@ -1,6 +1,7 @@
 module Page.ResetPassword exposing
     ( Model
     , Msg
+    , getSession
     , init
     , listener
     , track
@@ -8,16 +9,17 @@ module Page.ResetPassword exposing
     , view
     )
 
+import Data.Account as User
 import Data.Document exposing (Document)
 import Data.Field as Field exposing (Field)
 import Data.Listener as Listener exposing (Listener)
 import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
-import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode
 import Ports
 import Route
+import Session exposing (Session)
 import Style
 import Util.Cmd as CmdUtil
 import Util.Function as FunctionUtil
@@ -42,8 +44,18 @@ import View.TextArea as TextArea
 -------------------------------------------------------------------------------
 
 
-type Model
-    = Ready ReadyModel
+type alias Model =
+    { session : Session User.None
+    , email : Field
+    , code : Field
+    , password : Field
+    , passwordConfirm : Field
+    , status : HttpStatus
+    }
+
+
+type HttpStatus
+    = Ready
     | Waiting
     | Success
     | Fail (Listener.Error Error)
@@ -54,24 +66,11 @@ type Error
     | Other String
 
 
-type alias ReadyModel =
-    { email : Field
-    , code : Field
-    , password : Field
-    , passwordConfirm : Field
-    , error : Maybe String
-    }
-
-
 type Msg
-    = ReadyMsg ReadyMsg
-    | GotResetPasswordResponse (Listener.Response Error ())
+    = GotResetPasswordResponse (Listener.Response Error ())
     | LoginClicked
     | TryAgainClicked
-
-
-type ReadyMsg
-    = EmailUpdated String
+    | EmailUpdated String
     | CodeUpdated String
     | PasswordUpdated String
     | PasswordConfirmUpdated String
@@ -85,15 +84,26 @@ type ReadyMsg
 -------------------------------------------------------------------------------
 
 
-init : Model
-init =
-    Ready
-        { email = Field.init
-        , code = Field.init
-        , password = Field.init
-        , passwordConfirm = Field.init
-        , error = Nothing
-        }
+init : Session User.None -> Model
+init session =
+    { session = session
+    , email = Field.init
+    , code = Field.init
+    , password = Field.init
+    , passwordConfirm = Field.init
+    , status = Ready
+    }
+
+
+
+-------------------------------------------------------------------------------
+-- PUBLIC HELPERS --
+-------------------------------------------------------------------------------
+
+
+getSession : Model -> Session User.None
+getSession =
+    .session
 
 
 
@@ -112,17 +122,22 @@ errorToString error =
             str
 
 
-setEmail : String -> ReadyModel -> ReadyModel
+setStatus : HttpStatus -> Model -> Model
+setStatus status model =
+    { model | status = status }
+
+
+setEmail : String -> Model -> Model
 setEmail newEmail model =
     { model | email = Field.setValue newEmail model.email }
 
 
-setCode : String -> ReadyModel -> ReadyModel
+setCode : String -> Model -> Model
 setCode newCode model =
     { model | code = Field.setValue newCode model.code }
 
 
-setPassword : String -> ReadyModel -> ReadyModel
+setPassword : String -> Model -> Model
 setPassword newPassword model =
     { model
         | password =
@@ -130,7 +145,7 @@ setPassword newPassword model =
     }
 
 
-setPasswordConfirm : String -> ReadyModel -> ReadyModel
+setPasswordConfirm : String -> Model -> Model
 setPasswordConfirm newPasswordConfirm model =
     { model
         | passwordConfirm =
@@ -138,17 +153,10 @@ setPasswordConfirm newPasswordConfirm model =
     }
 
 
-validate :
-    ReadyModel
-    ->
-        Result ReadyModel
-            { email : String
-            , code : String
-            , newPassword : String
-            }
+validate : Model -> Result Model { email : String, code : String, newPassword : String }
 validate model =
     let
-        validatedModel : ReadyModel
+        validatedModel : Model
         validatedModel =
             { model
                 | email = Field.validateEmail model.email
@@ -192,29 +200,23 @@ validate model =
 -------------------------------------------------------------------------------
 
 
-update : NavKey -> Msg -> Model -> ( Model, Cmd Msg )
-update navKey msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
-        ReadyMsg readyMsg ->
-            case model of
-                Ready readyModel ->
-                    updateReady readyMsg readyModel
-
-                _ ->
-                    model
-                        |> CmdUtil.withNoCmd
-
         GotResetPasswordResponse result ->
-            case model of
+            case model.status of
                 Waiting ->
                     case result of
                         Ok () ->
-                            Success
+                            setStatus
+                                Success
+                                model
                                 |> CmdUtil.withNoCmd
 
                         Err error ->
-                            error
-                                |> Fail
+                            setStatus
+                                (Fail error)
+                                model
                                 |> CmdUtil.withNoCmd
 
                 _ ->
@@ -223,35 +225,29 @@ update navKey msg model =
 
         LoginClicked ->
             ( model
-            , Route.goTo navKey Route.Login
+            , Route.goTo
+                (Session.getNavKey model.session)
+                Route.Login
             )
 
         TryAgainClicked ->
-            init
+            init model.session
                 |> CmdUtil.withNoCmd
 
-
-updateReady : ReadyMsg -> ReadyModel -> ( Model, Cmd Msg )
-updateReady msg model =
-    case msg of
         EmailUpdated newEmail ->
             setEmail newEmail model
-                |> Ready
                 |> CmdUtil.withNoCmd
 
         CodeUpdated newCode ->
             setCode newCode model
-                |> Ready
                 |> CmdUtil.withNoCmd
 
         PasswordUpdated newPassword ->
             setPassword newPassword model
-                |> Ready
                 |> CmdUtil.withNoCmd
 
         PasswordConfirmUpdated newPasswordConfirm ->
             setPasswordConfirm newPasswordConfirm model
-                |> Ready
                 |> CmdUtil.withNoCmd
 
         ResetPasswordClicked ->
@@ -261,29 +257,32 @@ updateReady msg model =
             attemptSubmission model
 
 
-attemptSubmission : ReadyModel -> ( Model, Cmd msg )
+attemptSubmission : Model -> ( Model, Cmd msg )
 attemptSubmission model =
-    case validate model of
-        Ok { newPassword, email, code } ->
-            ( Waiting
-            , Ports.payload "reset password"
-                |> Ports.withString "email" email
-                |> Ports.withString "code" code
-                |> Ports.withString "password" newPassword
-                |> Ports.send
-            )
+    case model.status of
+        Ready ->
+            case validate model of
+                Ok { newPassword, email, code } ->
+                    ( setStatus Waiting model
+                    , Ports.payload "reset password"
+                        |> Ports.withString "email" email
+                        |> Ports.withString "code" code
+                        |> Ports.withString "password" newPassword
+                        |> Ports.send
+                    )
 
-        Err validatedModel ->
-            Ready validatedModel
+                Err validatedModel ->
+                    validatedModel
+                        |> CmdUtil.withNoCmd
+
+        _ ->
+            model
                 |> CmdUtil.withNoCmd
 
 
 track : Msg -> Maybe Tracking.Event
 track msg =
     case msg of
-        ReadyMsg readyMsg ->
-            trackReady readyMsg
-
         GotResetPasswordResponse response ->
             Tracking.event "got reset password response"
                 |> Tracking.withListenerResponse
@@ -295,10 +294,6 @@ track msg =
         TryAgainClicked ->
             Tracking.event "try again clicked"
 
-
-trackReady : ReadyMsg -> Maybe Tracking.Event
-trackReady msg =
-    case msg of
         EmailUpdated _ ->
             Nothing
 
@@ -348,21 +343,21 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
-    case model of
-        Ready readyModel ->
+    case model.status of
+        Ready ->
             [ Html.form
                 []
                 [ inputGroupView
                     { label = "email"
                     , onInput = EmailUpdated
                     , options = [ Input.withAutocomplete "email" ]
-                    , field = readyModel.email
+                    , field = model.email
                     }
                 , inputGroupView
                     { label = "code"
                     , onInput = CodeUpdated
                     , options = []
-                    , field = readyModel.code
+                    , field = model.code
                     }
                 , inputGroupView
                     { label = "new password"
@@ -371,7 +366,7 @@ viewBody model =
                         [ Input.isPassword
                         , Input.withAutocomplete "new-password"
                         ]
-                    , field = readyModel.password
+                    , field = model.password
                     }
                 , inputGroupView
                     { label = "confirm new password"
@@ -380,7 +375,7 @@ viewBody model =
                         [ Input.isPassword
                         , Input.withAutocomplete "new-password"
                         ]
-                    , field = readyModel.passwordConfirm
+                    , field = model.passwordConfirm
                     }
                 ]
             , ButtonRow.view
@@ -390,7 +385,6 @@ viewBody model =
                     |> Button.asDoubleWidth
                 ]
             ]
-                |> HtmlUtil.mapList ReadyMsg
 
         Waiting ->
             [ Spinner.row ]
@@ -459,11 +453,11 @@ errorView error =
 
 inputGroupView :
     { label : String
-    , onInput : String -> ReadyMsg
-    , options : List (Input ReadyMsg -> Input ReadyMsg)
+    , onInput : String -> Msg
+    , options : List (Input Msg -> Input Msg)
     , field : Field
     }
-    -> Html ReadyMsg
+    -> Html Msg
 inputGroupView { label, options, onInput, field } =
     InputGroup.text
         { label = label

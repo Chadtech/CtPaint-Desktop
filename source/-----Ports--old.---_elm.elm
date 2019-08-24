@@ -3,7 +3,7 @@ port module old___Ports exposing (JsMsg(..), RegistrationPayload, UpdatePayload,
 import Data.Browser exposing (Browser)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
-import Data.User as User
+import Data.Account as User
 import Json.Encode as Encode exposing (Value)
 
 

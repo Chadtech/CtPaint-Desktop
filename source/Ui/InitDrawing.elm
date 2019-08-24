@@ -1,7 +1,7 @@
 module Ui.InitDrawing exposing
     ( Model
     , Msg
-    , css
+    , bodyView
     , init
     , track
     , update
@@ -20,9 +20,23 @@ module Ui.InitDrawing exposing
 -}
 
 import Data.BackgroundColor as BackgroundColor exposing (BackgroundColor)
+import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
-import Json.Encode as Encode
+import Html.Grid as Grid
+import Html.Styled exposing (Html)
+import Route
+import Route.PaintApp as PaintAppRoute
+import Style
+import Url
 import Util.Cmd as CmdUtil
+import Util.Maybe as MaybeUtil
+import Util.String as StringUtil
+import View.Button as Button
+import View.ButtonRow as ButtonRow
+import View.Card as Card
+import View.CardHeader as CardHeader exposing (CardHeader)
+import View.Input as Input
+import View.InputGroup as InputGroup
 
 
 
@@ -33,18 +47,16 @@ import Util.Cmd as CmdUtil
 
 type alias Model =
     { name : String
-    , width : Int
-    , height : Int
+    , width : Maybe Int
+    , height : Maybe Int
     , url : String
     , backgroundColor : BackgroundColor
-    , submitted : Bool
     }
 
 
 type Msg
-    = FromUrlClicked
+    = FromUrlClicked Bool
     | ColorClicked BackgroundColor
-    | NewInitSubmitted
     | StartNewDrawingClicked
     | UrlUpdated String
     | WidthUpdated String
@@ -61,11 +73,10 @@ type Msg
 init : Model
 init =
     { name = ""
-    , width = 400
-    , height = 400
+    , width = Nothing
+    , height = Nothing
     , url = ""
     , backgroundColor = BackgroundColor.black
-    , submitted = False
     }
 
 
@@ -75,9 +86,71 @@ init =
 -------------------------------------------------------------------------------
 
 
+initWidth : Int
+initWidth =
+    400
+
+
+initHeight : Int
+initHeight =
+    400
+
+
+getWidthUiStr : Model -> String
+getWidthUiStr model =
+    model.width
+        |> Maybe.map String.fromInt
+        |> Maybe.withDefault ""
+
+
+getHeightUiStr : Model -> String
+getHeightUiStr model =
+    model.height
+        |> Maybe.map String.fromInt
+        |> Maybe.withDefault ""
+
+
 setWidth : Int -> Model -> Model
 setWidth newWidth model =
-    { model | width = newWidth }
+    { model | width = Just newWidth }
+
+
+setHeight : Int -> Model -> Model
+setHeight newHeight model =
+    { model | height = Just newHeight }
+
+
+toPaintAppParams : Model -> PaintAppRoute.Params
+toPaintAppParams model =
+    { dimensions =
+        Just
+            { width =
+                [ model.width
+                , model.height
+                ]
+                    |> MaybeUtil.firstValue
+                    |> Maybe.withDefault initWidth
+            , height =
+                [ model.height
+                , model.width
+                ]
+                    |> MaybeUtil.firstValue
+                    |> Maybe.withDefault initHeight
+            }
+    , backgroundColor =
+        Just model.backgroundColor
+    , name =
+        if StringUtil.isBlank model.name then
+            Nothing
+
+        else
+            Just model.name
+    }
+
+
+fromUrlDisabled : Model -> Bool
+fromUrlDisabled =
+    .url >> StringUtil.isBlank
 
 
 
@@ -86,11 +159,11 @@ setWidth newWidth model =
 -------------------------------------------------------------------------------
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : NavKey -> Msg -> Model -> ( Model, Cmd msg )
+update navKey msg model =
     case msg of
-        FromUrlClicked ->
-            fromUrl model
+        FromUrlClicked _ ->
+            fromUrl navKey model
 
         NameUpdated str ->
             { model | name = str }
@@ -132,291 +205,158 @@ update msg model =
             { model | backgroundColor = color }
                 |> CmdUtil.withNoCmd
 
-        NewInitSubmitted ->
-            openPaintApp model
-
         StartNewDrawingClicked ->
-            openPaintApp model
+            ( model
+            , model
+                |> toPaintAppParams
+                |> Route.paintAppWithParams
+                |> Route.goTo navKey
+            )
 
 
-
-
-
-openPaintApp : Model -> ( Model, Cmd Msg )
-openPaintApp model =
-    (model
-        |> toQueryString
-    ,
-
-
-fromUrl : Model -> ( Model, Cmd Msg )
-fromUrl model =
-    if String.isEmpty model.url then
+fromUrl : NavKey -> Model -> ( Model, Cmd msg )
+fromUrl navKey model =
+    if fromUrlDisabled model then
         model
-            |> R2.withNoCmd
+            |> CmdUtil.withNoCmd
 
     else
-        OpenUrlInPaintApp model.url
-            |> Ports.send
-            |> R2.withModel
-                { model | submitted = True }
+        ( model
+        , model.url
+            |> Route.paintAppFromUrl
+            |> Route.goTo navKey
+        )
 
 
-
--- TRACKING --
-
-
-track : Msg -> Model -> Maybe Tracking.Event
-track msg model =
+track : Msg -> Maybe Tracking.Event
+track msg =
     case msg of
-        FromUrlClicked ->
-            model
-                |> fromUrlDisabled
-                |> Encode.bool
-                |> def "disabled"
-                |> List.singleton
-                |> def "from-url click"
-                |> Just
-
-        UrlInitSubmitted ->
-            Tracking.noProps "from-url enter press"
-
-        FieldUpdated _ _ ->
-            Nothing
+        FromUrlClicked disabled ->
+            Tracking.event "from-url click"
+                |> Tracking.withBool "disabled" disabled
 
         ColorClicked bgColor ->
-            bgColor
-                |> toString
-                |> Encode.string
-                |> def "color"
-                |> List.singleton
-                |> def "color click"
-                |> Just
-
-        NewInitSubmitted ->
-            Tracking.noProps "submit enter press"
+            Tracking.event "color click"
+                |> Tracking.withString
+                    "color"
+                    (BackgroundColor.toString bgColor)
 
         StartNewDrawingClicked ->
-            Tracking.noProps "submit click"
+            Tracking.event "submit click"
 
+        UrlUpdated _ ->
+            Nothing
 
-fromUrlDisabled : Model -> Bool
-fromUrlDisabled =
-    .url >> String.isEmpty
+        WidthUpdated _ ->
+            Nothing
 
+        HeightUpdated _ ->
+            Nothing
 
-
--- STYLES --
-
-
-type Class
-    = Label
-    | UrlField
-    | Divider
-    | Button
-    | NewSection
-    | Selected
-    | WhiteClass
-    | BlackClass
-    | ColorBox
-    | ColorsContainer
-    | Disabled
-    | Left
-    | InitializingText
-
-
-css : Stylesheet
-css =
-    [ Css.class Label
-        [ marginRight (px 8)
-        , width (px 200)
-        ]
-    , Css.class NewSection
-        []
-    , Css.class Button
-        [ margin2 zero auto
-        , display table
-        , withClass Disabled
-            [ backgroundColor Ct.ignorable1
-            , active Html.Custom.outdent
-            , hover
-                [ color Ct.point0 ]
-            ]
-        ]
-    , (Css.class Divider << List.append Html.Custom.indent)
-        [ margin auto
-        , display block
-        , marginTop (px 8)
-        , marginBottom (px 8)
-        ]
-    , (Css.class ColorBox << List.append Html.Custom.outdent)
-        [ height (px 19)
-        , paddingTop (px 1)
-        , width (px 107)
-        , marginRight (px 8)
-        , display inlineBlock
-        , cursor pointer
-        , withClass BlackClass
-            [ backgroundColor (hex "#000000") ]
-        , withClass WhiteClass
-            [ backgroundColor (hex "#ffffff") ]
-        , withClass Selected
-            Html.Custom.indent
-        , active Html.Custom.indent
-        ]
-    , Css.class Left
-        [ marginRight (px 8) ]
-    , Css.class InitializingText
-        [ marginBottom (px 8) ]
-    , Css.class ColorsContainer
-        [ display inlineBlock ]
-    ]
-        |> namespace initDrawingNamespace
-        |> stylesheet
-
-
-colorToStyle : BackgroundColor -> Class
-colorToStyle backgroundColor =
-    case backgroundColor of
-        White ->
-            WhiteClass
-
-        Black ->
-            BlackClass
-
-
-initDrawingNamespace : String
-initDrawingNamespace =
-    Html.Custom.makeNamespace "InitDrawing"
+        NameUpdated _ ->
+            Nothing
 
 
 
+-------------------------------------------------------------------------------
 -- VIEW --
+-------------------------------------------------------------------------------
 
 
-{ class, classList } =
-    Html.CssHelpers.withNamespace initDrawingNamespace
+header : Model -> CardHeader msg
+header model =
+    CardHeader.config
+        { title = "init drawing" }
 
 
-view : Model -> Html Msg
-view model =
-    Html.Custom.cardBody [] (bodyView model)
+view : List (Html msg) -> Html msg
+view =
+    Card.view [ Style.width 9 ]
 
 
 bodyView : Model -> List (Html Msg)
 bodyView model =
-    if model.submitted then
-        loadingView
-
-    else
-        [ newView model
-        , div [ class [ Divider ] ] []
-        , urlView model
-        ]
-
-
-loadingView : List (Html Msg)
-loadingView =
-    [ p
-        [ class [ InitializingText ] ]
-        [ Html.text "initializing" ]
-    , Html.Custom.spinner
+    [ newView model
+    , [ Grid.row [ Style.verticalDivider ] [] ]
+    , urlView model
     ]
+        |> List.concat
 
 
-newView : Model -> Html Msg
+newView : Model -> List (Html Msg)
 newView model =
-    [ Html.Custom.field []
-        [ label "name"
-        , input
-            [ Attrs.value model.name
-            , Attrs.spellcheck False
-            , onInput (FieldUpdated Name)
+    let
+        colorButton : BackgroundColor -> Html Msg
+        colorButton backgroundColor =
+            Button.noLabel
+                (ColorClicked backgroundColor)
+                |> Button.indent
+                    (backgroundColor == model.backgroundColor)
+                |> Button.toHtml
+    in
+    [ InputGroup.text
+        { label = "name"
+        , input =
+            Input.config
+                NameUpdated
+                model.name
+        }
+        |> InputGroup.toHtml
+    , InputGroup.text
+        { label = "width"
+        , input =
+            Input.config
+                WidthUpdated
+                (getWidthUiStr model)
+                |> Input.withPlaceholder
+                    (String.fromInt initWidth ++ "px")
+        }
+        |> InputGroup.toHtml
+    , InputGroup.text
+        { label = "height"
+        , input =
+            Input.config
+                HeightUpdated
+                (getHeightUiStr model)
+                |> Input.withPlaceholder
+                    (String.fromInt initHeight ++ "px")
+        }
+        |> InputGroup.toHtml
+    , InputGroup.config
+        { label = "background color"
+        , input =
+            [ colorButton BackgroundColor.black
+            , colorButton BackgroundColor.white
             ]
-            []
+        }
+        |> InputGroup.toHtml
+    , ButtonRow.view
+        [ Button.config
+            StartNewDrawingClicked
+            "start new drawing"
         ]
-    , Html.Custom.field []
-        [ label "width"
-        , input
-            [ Attrs.value model.widthField
-            , Attrs.placeholder
-                (toString model.width ++ "px")
-            , Attrs.spellcheck False
-            , onInput (FieldUpdated Width)
-            ]
-            []
-        ]
-    , Html.Custom.field []
-        [ label "height"
-        , input
-            [ Attrs.value model.heightField
-            , Attrs.placeholder
-                (toString model.height ++ "px")
-            , Attrs.spellcheck False
-            , onInput (FieldUpdated Height)
-            ]
-            []
-        ]
-    , Html.Custom.field []
-        [ label "background color"
-        , div
-            [ class [ ColorsContainer ] ]
-            [ colorBox Black model.backgroundColor
-            , colorBox White model.backgroundColor
-            ]
-        ]
-    , a
-        [ class [ Button ]
-        , onClick StartNewDrawingClicked
-        ]
-        [ Html.text "start new drawing" ]
     ]
-        |> form [ onSubmit NewInitSubmitted ]
 
 
-colorBox : BackgroundColor -> BackgroundColor -> Html Msg
-colorBox thisColor selectedColor =
-    div
-        [ classList
-            [ def ColorBox True
-            , def (colorToStyle thisColor) True
-            , def Selected (selectedColor == thisColor)
-            , def Left (thisColor == Black)
-            ]
-        , onClick (ColorClicked thisColor)
-        ]
-        []
-
-
-label : String -> Html Msg
-label str =
-    p
-        [ class [ Label ] ]
-        [ Html.text str ]
-
-
-urlView : Model -> Html Msg
+urlView : Model -> List (Html Msg)
 urlView model =
-    [ Html.Custom.field
-        [ class [ UrlField ] ]
-        [ p
-            [ class [ Label ] ]
-            [ Html.text "url" ]
-        , input
-            [ class [ UrlField ]
-            , Attrs.value model.url
-            , onInput (FieldUpdated Url)
-            ]
-            []
+    let
+        buttonIsDisabled : Bool
+        buttonIsDisabled =
+            fromUrlDisabled model
+    in
+    [ InputGroup.text
+        { label = "url"
+        , input =
+            Input.config
+                UrlUpdated
+                model.url
+        }
+        |> InputGroup.toHtml
+    , ButtonRow.view
+        [ Button.config
+            (FromUrlClicked buttonIsDisabled)
+            "start from url"
+            |> Button.isDisabled buttonIsDisabled
         ]
-    , a
-        [ classList
-            [ def Button True
-            , def Disabled (fromUrlDisabled model)
-            ]
-        , onClick FromUrlClicked
-        ]
-        [ Html.text "start from url" ]
     ]
-        |> form
-            [ onSubmit UrlInitSubmitted ]

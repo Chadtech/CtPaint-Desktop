@@ -12,7 +12,7 @@ module Page.Login exposing
 import Data.Document exposing (Document)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Data.Viewer exposing (Viewer)
+import Data.User exposing (User)
 import Html.Styled exposing (Html)
 import Route
 import Session exposing (Session)
@@ -30,7 +30,7 @@ import View.SingleCardPage as SingleCardPage
 
 
 type alias Model =
-    { session : Session Viewer
+    { session : Session User
     , loginCard : LoginCard.Model
     }
 
@@ -45,7 +45,7 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session Viewer -> Model
+init : Session User -> Model
 init session =
     { session = session
     , loginCard = LoginCard.init
@@ -63,7 +63,7 @@ setLoginCard newLoginCard model =
     { model | loginCard = newLoginCard }
 
 
-mapSession : (Session Viewer -> Session Viewer) -> Model -> Model
+mapSession : (Session User -> Session User) -> Model -> Model
 mapSession f model =
     { model | session = f model.session }
 
@@ -74,7 +74,7 @@ mapSession f model =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session Viewer
+getSession : Model -> Session User
 getSession =
     .session
 

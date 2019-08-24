@@ -47,39 +47,36 @@ view mountPath =
 
 viewBody : MountPath -> List (Html Msg)
 viewBody mountPath =
-    [ Body.config
-        [ BannerLogo.view mountPath
-        , Grid.row
-            [ Style.marginBottom 3 ]
-            [ Grid.column
-                []
-                [ Text.fromString splashMsg ]
-            ]
-        , Grid.row
-            [ Css.justifyContent Css.spaceAround ]
-            [ button
-                LearnMoreClicked
-                "learn more"
-            , button
-                DrawClicked
-                "start drawing"
-            ]
-        , Grid.row
-            [ Style.indent
-            , Style.marginTop 3
-            ]
-            [ Grid.column
-                []
-                [ Video.config
-                    (Video.splash mountPath)
-                    |> Video.asFullWidth
-                    |> Video.toHtml
-                ]
+    [ BannerLogo.view mountPath
+    , Grid.row
+        [ Style.marginBottom 3 ]
+        [ Grid.column
+            []
+            [ Text.fromString splashMsg ]
+        ]
+    , Grid.row
+        [ Css.justifyContent Css.spaceAround ]
+        [ button
+            LearnMoreClicked
+            "learn more"
+        , button
+            DrawClicked
+            "start drawing"
+        ]
+    , Grid.row
+        [ Style.indent
+        , Style.marginTop 3
+        ]
+        [ Grid.column
+            []
+            [ Video.config
+                (Video.splash mountPath)
+                |> Video.asFullWidth
+                |> Video.toHtml
             ]
         ]
-        |> Body.singleColumnWidth
-        |> Body.toHtml
     ]
+        |> Body.singleColumnView
 
 
 button : Msg -> String -> Grid.Column Msg
@@ -116,7 +113,7 @@ update key msg =
             Route.goTo key Route.About
 
         DrawClicked ->
-            Route.goTo key Route.PaintApp
+            Route.goTo key Route.paintApp
 
 
 track : Msg -> Maybe Tracking.Event

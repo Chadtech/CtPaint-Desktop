@@ -8,9 +8,9 @@ module Page.Pricing exposing
 
 import Chadtech.Colors as Ct
 import Css exposing (..)
+import Data.Account as User
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
-import Data.User as User
 import Html exposing (Attribute, Html, a, div, p)
 import Html.Events exposing (onClick)
 import Ports exposing (JsMsg)

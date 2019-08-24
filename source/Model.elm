@@ -4,9 +4,12 @@ module Model exposing
     , pageId
     )
 
-import Data.Viewer as Viewer exposing (Viewer)
+import Data.Account as User
+import Data.User as Viewer exposing (User)
+import Page.Contact as Contact
 import Page.Home as Home
 import Page.Login as Login
+import Page.Logout as Logout
 import Page.PaintApp as PaintApp
 import Page.ResetPassword as ResetPassword
 import Page.Settings as Settings
@@ -20,16 +23,17 @@ import Session exposing (Session)
 
 
 type Model
-    = Blank (Session Viewer)
-    | PageNotFound (Session Viewer)
+    = Blank (Session User)
+    | PageNotFound (Session User)
     | PaintApp PaintApp.Model
-    | Splash (Session ())
-    | About (Session Viewer)
+    | Splash (Session User.None)
+    | About (Session User)
     | Login Login.Model
-    | ResetPassword (Session ()) ResetPassword.Model
+    | ResetPassword ResetPassword.Model
     | Settings Settings.Model
-    | Offline (Session ())
     | Home Home.Model
+    | Logout Logout.Model
+    | Contact Contact.Model
 
 
 
@@ -38,7 +42,7 @@ type Model
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session Viewer
+getSession : Model -> Session User
 getSession model =
     case model of
         Blank session ->
@@ -51,8 +55,8 @@ getSession model =
             PaintApp.getSession subModel
 
         Splash session ->
-            Session.setViewer
-                Viewer.Viewer
+            Session.setUser
+                Viewer.User
                 session
 
         About session ->
@@ -61,15 +65,25 @@ getSession model =
         Login subModel ->
             Login.getSession subModel
 
-        ResetPassword session _ ->
-            Session.setViewer
-                Viewer.Viewer
-                session
+        ResetPassword subModel ->
+            ResetPassword.getSession subModel
+                |> Session.setUser Viewer.User
 
         Settings subModel ->
             subModel
                 |> Settings.getSession
-                |> Session.mapViewer Viewer.User
+                |> Session.mapViewer Viewer.Account
+
+        Home subModel ->
+            Home.getSession subModel
+                |> Session.mapViewer Viewer.Account
+
+        Logout subModel ->
+            Logout.getSession subModel
+                |> Session.setUser Viewer.User
+
+        Contact subModel ->
+            Contact.getSession subModel
 
 
 pageId : Model -> String
@@ -93,8 +107,17 @@ pageId model =
         Login _ ->
             "login"
 
-        ResetPassword _ _ ->
+        ResetPassword _ ->
             "reset-password"
 
         Settings _ ->
             "settings"
+
+        Home _ ->
+            "home"
+
+        Logout _ ->
+            "logout"
+
+        Contact _ ->
+            "contact"

@@ -6,6 +6,7 @@ module View.Input exposing
     , onEnter
     , toHtml
     , withAutocomplete
+    , withPlaceholder
     )
 
 import Chadtech.Colors as Colors
@@ -36,19 +37,26 @@ type Option msg
     = Password
     | OnEnter msg
     | Autocomplete String
+    | Placeholder String
 
 
 type alias Summary msg =
     { password : Bool
     , onEnter : Maybe msg
     , autocomplete : Maybe String
+    , placeholder : Maybe String
     }
 
 
 
 -------------------------------------------------------------------------------
--- PRIVATE HELPERS --
+-- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+withPlaceholder : String -> Input msg -> Input msg
+withPlaceholder =
+    addOption << Placeholder
 
 
 isPassword : Input msg -> Input msg
@@ -91,12 +99,16 @@ optionsToSummary =
 
                 Autocomplete autocomplete ->
                     { summary | autocomplete = Just autocomplete }
+
+                Placeholder placeholder ->
+                    { summary | placeholder = Just placeholder }
     in
     List.foldr
         modifySummary
         { onEnter = Nothing
         , password = False
         , autocomplete = Nothing
+        , placeholder = Nothing
         }
 
 
@@ -144,6 +156,9 @@ toHtml (Input { value, onInput } options) =
             , Maybe.map
                 (Attrs.attribute "autocomplete")
                 summary.autocomplete
+            , Maybe.map
+                Attrs.placeholder
+                summary.placeholder
             ]
                 |> List.filterMap identity
     in

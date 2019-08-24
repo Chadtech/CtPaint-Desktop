@@ -1,7 +1,7 @@
 module Data.Flags exposing (Flags, decoder)
 
+import Data.Account as User
 import Data.Browser as Browser exposing (Browser)
-import Data.User as User
 import Json.Decode as Decode exposing (Decoder)
 import Random exposing (Seed)
 import Util.Json.Decode as DecodeUtil

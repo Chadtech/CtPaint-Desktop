@@ -1,9 +1,9 @@
 module View.Body exposing
     ( Body
     , Option
-    , config
+    , singleColumnView
     , singleColumnWidth
-    , toHtml
+    , view
     )
 
 import Chadtech.Colors as Colors
@@ -11,7 +11,6 @@ import Css exposing (Style)
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Style
-import Util.Css as CssUtil
 
 
 
@@ -50,30 +49,23 @@ addOption option (Body options children) =
 -------------------------------------------------------------------------------
 
 
-config : List (Html msg) -> Body msg
-config =
-    Body []
-
-
-toHtml : Body msg -> Html msg
-toHtml (Body options children) =
-    let
-        width : Style
-        width =
-            if List.member SingleColumnWidth options then
-                Style.width 10
-
-            else
-                CssUtil.noStyle
-    in
-    Grid.row
+view : List (Grid.Column msg) -> List (Html msg)
+view children =
+    [ Grid.row
         [ Css.backgroundColor Colors.content1
         , Style.fullWidth
         , Css.flex (Css.int 1)
         , Style.centerContent
         ]
+        children
+    ]
+
+
+singleColumnView : List (Html msg) -> List (Html msg)
+singleColumnView children =
+    view
         [ Grid.column
-            [ width
+            [ Style.width 10
             , Css.flex Css.none
             , Css.flexDirection Css.column
             ]

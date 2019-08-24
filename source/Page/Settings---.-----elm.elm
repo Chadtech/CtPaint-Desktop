@@ -13,7 +13,7 @@ module Page.asdasdSettings exposing
 
 import Css exposing (..)
 import Data.Tracking as Tracking
-import Data.User exposing (User)
+import Data.Account exposing (Account)
 import Html exposing (Attribute, Html, a, div, form, input, p)
 import Html.Attributes as Attrs
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -64,7 +64,7 @@ type Msg
 
 
 type Reply
-    = SetUser User
+    = SetUser Account
 
 
 succeeded : Msg
@@ -81,7 +81,7 @@ failed =
 -- INIT --
 
 
-init : User -> Model
+init : Account -> Model
 init user =
     { page = UserData
     , name = user.name
@@ -95,7 +95,7 @@ init user =
 -- UPDATE --
 
 
-update : Msg -> User -> Model -> Return Model Msg Reply
+update : Msg -> Account -> Model -> Return Model Msg Reply
 update msg user model =
     case msg of
         NavClickedOn page ->
@@ -138,7 +138,7 @@ update msg user model =
                 |> R3.withNothing
 
 
-toUpdatePayload : User -> Model -> UpdatePayload
+toUpdatePayload : Account -> Model -> UpdatePayload
 toUpdatePayload srcUser model =
     { email = srcUser.email
     , name = model.name
@@ -152,12 +152,12 @@ toUpdatePayload srcUser model =
     }
 
 
-validate : User -> Model -> Model
+validate : Account -> Model -> Model
 validate srcUser model =
     { model | changed = hasChanges model srcUser }
 
 
-toUser : Model -> User -> User
+toUser : Model -> Account -> Account
 toUser model srcUser =
     { email = srcUser.email
     , name = model.name
@@ -172,7 +172,7 @@ toUser model srcUser =
     }
 
 
-hasChanges : Model -> User -> Bool
+hasChanges : Model -> Account -> Bool
 hasChanges model srcUser =
     toUser model srcUser /= srcUser
 

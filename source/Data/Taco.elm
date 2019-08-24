@@ -6,10 +6,10 @@ module Data.Taco exposing
     , setUser
     )
 
+import Data.Account as User
 import Data.Config as Config exposing (Config)
 import Data.Entities as Entities exposing (Entities)
 import Data.Flags exposing (Flags)
-import Data.User as User
 import Random exposing (Seed)
 
 

@@ -1,8 +1,8 @@
 module Update exposing (update)
 
+import Data.Account as User
 import Data.Entities as Entities
 import Data.Taco as Taco
-import Data.User as User
 import Html.InitDrawing as InitDrawing
 import Model exposing (Model)
 import Msg exposing (Msg(..))

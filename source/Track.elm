@@ -1,7 +1,7 @@
 module Track exposing (track)
 
+import Data.Account as User
 import Data.Tracking as Tracking
-import Data.User as User
 import Html.InitDrawing as InitDrawing
 import Json.Encode as Encode
 import Model exposing (Model)

@@ -1,8 +1,8 @@
 module Main exposing (main)
 
+import Data.Account as User
 import Data.Flags as Flags exposing (Flags)
 import Data.Taco as Taco exposing (Taco)
-import Data.User as User
 import Html exposing (Html)
 import Html.InitDrawing
 import Html.Main

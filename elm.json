@@ -7,6 +7,7 @@
     "dependencies": {
         "direct": {
             "Chadtech/ct-colors": "3.0.2",
+            "Chadtech/elm-bool-extra": "2.4.0",
             "Chadtech/elm-css-grid": "2.0.2",
             "Chadtech/elm-relational-database": "1.2.2",
             "elm/browser": "1.0.1",

@@ -3,10 +3,13 @@ port module Ports exposing
     , fromJs
     , payload
     , send
+    , withId
+    , withNoProps
     , withProp
     , withString
     )
 
+import Id exposing (Id)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -36,9 +39,26 @@ payload name =
     }
 
 
+withNoProps : String -> Cmd msg
+withNoProps =
+    payload >> send
+
+
+withId : String -> Id a -> Payload -> Payload
+withId propName id =
+    withProp propName (Id.encode id)
+
+
 withString : String -> String -> Payload -> Payload
 withString propName stringValue =
     withProp propName (Encode.string stringValue)
+
+
+withProp : String -> Encode.Value -> Payload -> Payload
+withProp propName value { name, props } =
+    { name = name
+    , props = ( propName, value ) :: props
+    }
 
 
 send : Payload -> Cmd msg
@@ -57,13 +77,6 @@ send { name, props } =
     ]
         |> Encode.object
         |> toJs
-
-
-withProp : String -> Encode.Value -> Payload -> Payload
-withProp propName value { name, props } =
-    { name = name
-    , props = ( propName, value ) :: props
-    }
 
 
 

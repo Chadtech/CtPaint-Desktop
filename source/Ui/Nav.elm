@@ -9,7 +9,7 @@ import Chadtech.Colors as Colors
 import Css exposing (Style)
 import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
-import Data.Viewer as Viewer
+import Data.User as User
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Model exposing (Model)
@@ -18,7 +18,6 @@ import Session
 import Style
 import Ui.Nav.Option as Option exposing (Option)
 import View.Button as Button
-import View.Text as Text
 
 
 
@@ -57,17 +56,11 @@ view model =
 
         userOptions : List (Grid.Column Msg)
         userOptions =
-            case Session.getViewer <| Model.getSession model of
-                Viewer.Offline ->
-                    [ Grid.column
-                        [ Grid.columnShrink ]
-                        [ Text.fromString "offline" ]
-                    ]
-
-                Viewer.Viewer ->
+            case Session.getUser <| Model.getSession model of
+                User.User ->
                     [ optionView [] Option.Login ]
 
-                Viewer.User user ->
+                User.Account _ ->
                     [ optionView [] Option.Logout
                     , optionView [] Option.Settings
                     ]
@@ -82,7 +75,7 @@ view model =
             [ Style.marginRight 3 ]
             Option.Draw
          , Grid.column
-            [ Style.divider
+            [ Style.verticalDivider
             , Grid.columnShrink
             , Style.marginRight 3
             , Style.height 5
@@ -100,6 +93,9 @@ optionIsCurrentPage : Model -> Option -> Bool
 optionIsCurrentPage model option =
     case ( model, option ) of
         ( Model.Splash _, Option.Title ) ->
+            True
+
+        ( Model.Home _, Option.Title ) ->
             True
 
         ( Model.About _, Option.About ) ->

@@ -2,17 +2,19 @@ module Route exposing
     ( Route(..)
     , fromUrl
     , goTo
+    , paintApp
+    , paintAppFromDrawing
+    , paintAppFromUrl
+    , paintAppWithParams
     , toUrl
     )
 
-import Data.BackgroundColor as BackgroundColor exposing (BackgroundColor)
 import Data.Drawing exposing (Drawing)
 import Data.NavKey as NavKey exposing (NavKey)
-import Data.Size exposing (Size)
 import Id exposing (Id)
+import Route.PaintApp as PaintApp
 import Url exposing (Url)
 import Url.Parser as Url exposing ((</>), (<?>), Parser)
-import Url.Parser.Query as Query
 
 
 
@@ -36,22 +38,12 @@ import Url.Parser.Query as Query
 -}
 type Route
     = Landing
-    | PaintApp
-    | PaintAppWithParams PaintAppParams
-    | PaintAppFromUrl String
-    | PaintAppFromDrawing (Id Drawing)
+    | PaintApp PaintApp.Route
     | About
     | Login
     | ResetPassword
     | Logout
     | Settings
-
-
-type alias PaintAppParams =
-    { dimensions : Maybe Size
-    , backgroundColor : Maybe BackgroundColor
-    , name : Maybe String
-    }
 
 
 
@@ -81,20 +73,7 @@ fromUrl url =
 parser : Parser (Route -> a) a
 parser =
     [ Url.map Landing Url.top
-    , Url.map PaintApp (Url.s "app")
-    , Url.map toPaintAppRoute
-        (Url.s "app"
-            <?> Query.int "width"
-            <?> Query.int "height"
-            <?> Query.custom
-                    "background_color"
-                    BackgroundColor.queryParser
-            <?> Query.string "name"
-        )
-    , Url.map PaintAppFromUrl
-        (Url.s "app" </> Url.s "url" </> Url.string)
-    , Url.map (PaintAppFromDrawing << Id.fromString)
-        (Url.s "app" </> Url.s "id" </> Url.string)
+    , Url.map PaintApp PaintApp.parser
     , Url.map About (Url.s "about")
     , Url.map Login (Url.s "login")
     , Url.map ResetPassword (Url.s "resetpassword")
@@ -113,19 +92,6 @@ parser =
         |> Url.oneOf
 
 
-toPaintAppRoute : Maybe Int -> Maybe Int -> Maybe BackgroundColor -> Maybe String -> Route
-toPaintAppRoute maybeWidth maybeHeight maybeBackgroundColor maybeName =
-    PaintAppWithParams
-        { dimensions =
-            Maybe.map2
-                Size
-                maybeWidth
-                maybeHeight
-        , backgroundColor = maybeBackgroundColor
-        , name = maybeName
-        }
-
-
 toUrl : Route -> String
 toUrl route =
     "/" ++ String.join "/" (toPieces route)
@@ -137,8 +103,8 @@ toPieces route =
         Landing ->
             []
 
-        PaintApp ->
-            [ "app" ]
+        PaintApp subRoute ->
+            [ "app", PaintApp.toUrl subRoute ]
 
         About ->
             [ "about" ]
@@ -186,3 +152,23 @@ toPieces route =
 goTo : NavKey -> Route -> Cmd msg
 goTo key =
     NavKey.goTo key << toUrl
+
+
+paintApp : Route
+paintApp =
+    PaintApp PaintApp.Landing
+
+
+paintAppWithParams : PaintApp.Params -> Route
+paintAppWithParams =
+    PaintApp << PaintApp.WithParams
+
+
+paintAppFromUrl : String -> Route
+paintAppFromUrl =
+    PaintApp << PaintApp.FromUrl << Url.percentEncode
+
+
+paintAppFromDrawing : Id Drawing -> Route
+paintAppFromDrawing =
+    PaintApp << PaintApp.FromDrawing

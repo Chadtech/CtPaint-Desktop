@@ -1,5 +1,5 @@
-public/desktop.js
-public/desktop-elm.js
+public/app.js
+public/elm.js
 node_modules
 elm-stuff
 client

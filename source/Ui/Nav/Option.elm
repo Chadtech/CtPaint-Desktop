@@ -56,7 +56,7 @@ toRoute : Option -> Route
 toRoute option =
     case option of
         Draw ->
-            Route.PaintApp
+            Route.paintApp
 
         Title ->
             Route.Landing

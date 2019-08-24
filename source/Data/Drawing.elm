@@ -1,6 +1,8 @@
 module Data.Drawing exposing
     ( Drawing
+    , PublicId
     , decoder
+    , getPublicId
     , toUrl
     )
 
@@ -34,6 +36,11 @@ type PublicId
 -------------------------------------------------------------------------------
 -- DECODER --
 -------------------------------------------------------------------------------
+
+
+getPublicId : Drawing -> PublicId
+getPublicId =
+    .publicId
 
 
 decoder : Decoder ( Id Drawing, Drawing )

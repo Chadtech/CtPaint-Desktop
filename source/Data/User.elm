@@ -1,10 +1,12 @@
 module Data.User exposing
-    ( User
+    ( User(..)
     , decoder
-    , getName
-    , getProfilePic
+    , getEmail
+    , isLoggedIn
+    , loggedIn
     )
 
+import Data.Account as Account exposing (Account)
 import Json.Decode as Decode exposing (Decoder)
 import Util.Json.Decode as DecodeUtil
 
@@ -15,11 +17,9 @@ import Util.Json.Decode as DecodeUtil
 -------------------------------------------------------------------------------
 
 
-type alias User =
-    { email : String
-    , name : String
-    , profilePic : Maybe String
-    }
+type User
+    = User
+    | Account Account
 
 
 
@@ -30,46 +30,33 @@ type alias User =
 
 decoder : Decoder User
 decoder =
-    Decode.succeed User
-        |> DecodeUtil.apply (Decode.field "email" Decode.string)
-        |> DecodeUtil.apply (Decode.field "name" Decode.string)
-        |> DecodeUtil.apply profilePicDecoder
-
-
-getName : User -> String
-getName =
-    .name
-
-
-getProfilePic : User -> Maybe String
-getProfilePic =
-    .profilePic
-
-
-
--------------------------------------------------------------------------------
--- PRIVATE HELPERS --
--------------------------------------------------------------------------------
-
-
-profilePicDecoder : Decoder (Maybe String)
-profilePicDecoder =
-    let
-        fromString : String -> Decoder (Maybe String)
-        fromString str =
-            case str of
-                "" ->
-                    Decode.succeed Nothing
-
-                "NONE" ->
-                    Decode.succeed Nothing
-
-                _ ->
-                    Decode.succeed (Just str)
-    in
-    [ Decode.string
-        |> Decode.field "picture"
-        |> Decode.andThen fromString
-    , Decode.succeed Nothing
+    [ Decode.null User
+    , DecodeUtil.matchString "offline" User
+    , Decode.map Account Account.decoder
     ]
         |> Decode.oneOf
+
+
+getEmail : User -> Maybe String
+getEmail model =
+    case model of
+        Account user ->
+            Just user.email
+
+        _ ->
+            Nothing
+
+
+isLoggedIn : User -> Bool
+isLoggedIn model =
+    case model of
+        Account _ ->
+            True
+
+        _ ->
+            False
+
+
+loggedIn : Account -> User
+loggedIn =
+    Account

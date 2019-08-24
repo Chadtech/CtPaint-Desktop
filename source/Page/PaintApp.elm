@@ -2,11 +2,13 @@ module Page.PaintApp exposing
     ( Model
     , getSession
     , init
+    , navigationIsOkay
     , view
     )
 
 import Data.Document exposing (Document)
-import Data.Viewer exposing (Viewer)
+import Data.User exposing (User)
+import Route exposing (Route)
 import Session exposing (Session)
 import View.Text as Text
 
@@ -18,7 +20,9 @@ import View.Text as Text
 
 
 type alias Model =
-    { session : Session Viewer }
+    { session : Session User
+    , pendingNavigation : Maybe Route
+    }
 
 
 
@@ -27,9 +31,11 @@ type alias Model =
 -------------------------------------------------------------------------------
 
 
-init : Session Viewer -> Model
+init : Session User -> Model
 init session =
-    { session = session }
+    { session = session
+    , pendingNavigation = Nothing
+    }
 
 
 
@@ -38,9 +44,14 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session Viewer
+getSession : Model -> Session User
 getSession =
     .session
+
+
+navigationIsOkay : Model -> Bool
+navigationIsOkay model =
+    False
 
 
 

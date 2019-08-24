@@ -15,7 +15,7 @@ import Css exposing (..)
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Taco exposing (Taco)
 import Data.Tracking as Tracking
-import Data.User exposing (User)
+import Data.Account exposing (Account)
 import Html exposing (Html, a, div, img, input, p)
 import Html.Attributes as Attrs
 import Html.Events exposing (onClick)
@@ -483,7 +483,7 @@ homeNamespace =
     Html.CssHelpers.withNamespace homeNamespace
 
 
-view : Taco -> User -> Model -> List (Html Msg)
+view : Taco -> Account -> Model -> List (Html Msg)
 view taco user model =
     [ leftSide user
     , div
@@ -762,28 +762,28 @@ errorView =
     Html.text ""
 
 
-leftSide : User -> Html Msg
+leftSide : Account -> Html Msg
 leftSide user =
     div
         [ class [ LeftSide ] ]
         [ profile user ]
 
 
-profile : User -> Html Msg
+profile : Account -> Html Msg
 profile user =
     user
         |> profileChildren
         |> Html.Custom.container []
 
 
-profileChildren : User -> List (Html Msg)
+profileChildren : Account -> List (Html Msg)
 profileChildren user =
     [ profilePicture user.profilePic
     , bio user
     ]
 
 
-bio : User -> Html Msg
+bio : Account -> Html Msg
 bio user =
     div
         [ class [ BioContainer ] ]

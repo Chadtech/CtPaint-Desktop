@@ -28,7 +28,8 @@ StartCtPaint = function(manifest) {
         log_in: User.login,
         track: track,
         forgot_password: User.forgotPassword,
-        reset_password: User.resetPassword
+        reset_password: User.resetPassword,
+        open_in_new_window: window.open
     };
 
     function jsMsgHandler(msg) {
