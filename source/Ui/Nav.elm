@@ -56,7 +56,7 @@ view model =
 
         userOptions : List (Grid.Column Msg)
         userOptions =
-            case Session.getUser <| Model.getSession model of
+            case Model.getUser model of
                 User.User ->
                     [ optionView [] Option.Login ]
 

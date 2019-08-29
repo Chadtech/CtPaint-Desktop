@@ -2,18 +2,22 @@ module Page.Login exposing
     ( Model
     , Msg
     , getSession
+    , getUser
     , init
     , listeners
+    , mapSession
     , track
     , update
     , view
     )
 
+import Data.Account exposing (Account)
 import Data.Document exposing (Document)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Data.User exposing (User)
+import Data.User as User exposing (User)
 import Html.Styled exposing (Html)
+import Ports
 import Route
 import Session exposing (Session)
 import Ui.LoginCard as LoginCard
@@ -30,7 +34,8 @@ import View.SingleCardPage as SingleCardPage
 
 
 type alias Model =
-    { session : Session User
+    { session : Session
+    , user : User
     , loginCard : LoginCard.Model
     }
 
@@ -45,11 +50,14 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session User -> Model
+init : Session -> ( Model, Cmd msg )
 init session =
-    { session = session
-    , loginCard = LoginCard.init
-    }
+    ( { session = session
+      , user = User.noAccount
+      , loginCard = LoginCard.init
+      }
+    , Ports.logout
+    )
 
 
 
@@ -63,9 +71,9 @@ setLoginCard newLoginCard model =
     { model | loginCard = newLoginCard }
 
 
-mapSession : (Session User -> Session User) -> Model -> Model
-mapSession f model =
-    { model | session = f model.session }
+loggedIn : Account -> Model -> Model
+loggedIn account model =
+    { model | user = User.account account }
 
 
 
@@ -74,9 +82,19 @@ mapSession f model =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session User
+getSession : Model -> Session
 getSession =
     .session
+
+
+getUser : Model -> User
+getUser =
+    .user
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 
@@ -133,9 +151,7 @@ update msg model =
             in
             case maybeUser of
                 Just newUser ->
-                    ( mapSession
-                        (Session.userLoggedIn newUser)
-                        modelWithCard
+                    ( loggedIn newUser modelWithCard
                     , Cmd.batch
                         [ Route.goTo
                             (Session.getNavKey model.session)

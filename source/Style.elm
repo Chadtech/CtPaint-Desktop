@@ -4,6 +4,7 @@ module Style exposing
     , exactWidth
     , font
     , fontSmoothingNone
+    , fullHeight
     , fullWidth
     , globals
     , height
@@ -21,6 +22,7 @@ module Style exposing
     , noOverflow
     , outdent
     , padding
+    , paddingBottom
     , paddingHorizontal
     , paddingLeft
     , paddingRight
@@ -77,6 +79,11 @@ paddingRight =
     Css.paddingRight << sizePx
 
 
+paddingBottom : Int -> Style
+paddingBottom =
+    Css.paddingBottom << sizePx
+
+
 margin : Int -> Style
 margin size =
     [ marginBottom size
@@ -89,7 +96,7 @@ margin size =
 
 marginLeft : Int -> Style
 marginLeft =
-    Css.marginTop << sizePx
+    Css.marginLeft << sizePx
 
 
 marginTop : Int -> Style
@@ -215,6 +222,11 @@ exactWidth flWidth =
 fullWidth : Style
 fullWidth =
     Css.width (Css.pct 100)
+
+
+fullHeight : Style
+fullHeight =
+    Css.height (Css.pct 100)
 
 
 pointer : Style

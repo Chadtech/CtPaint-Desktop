@@ -5,6 +5,7 @@ module Data.Field exposing
     , getError
     , getValue
     , init
+    , initWithValue
     , setError
     , setValue
     , validate
@@ -33,9 +34,12 @@ type alias Field =
 
 init : Field
 init =
-    { value = ""
-    , error = Nothing
-    }
+    initWithValue ""
+
+
+initWithValue : String -> Field
+initWithValue str =
+    { value = str, error = Nothing }
 
 
 

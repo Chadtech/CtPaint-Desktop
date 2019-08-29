@@ -23,13 +23,15 @@ StartCtPaint = function(manifest) {
     }
 
     var User = require("./Js/User")(Client, toElm);
+    var Drawing = require("./Js/Drawing")(Client, toElm);
 
     var actions = {
         log_in: User.login,
         track: track,
         forgot_password: User.forgotPassword,
         reset_password: User.resetPassword,
-        open_in_new_window: window.open
+        open_in_new_window: window.open,
+        get_drawings: Drawing.getAll
     };
 
     function jsMsgHandler(msg) {

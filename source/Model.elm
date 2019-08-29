@@ -1,11 +1,15 @@
 module Model exposing
     ( Model(..)
+    , decoder
     , getSession
+    , getUser
+    , mapSession
     , pageId
     )
 
-import Data.Account as User
-import Data.User as Viewer exposing (User)
+import Data.NavKey exposing (NavKey)
+import Data.User as User exposing (User)
+import Json.Decode as Decode exposing (Decoder)
 import Page.Contact as Contact
 import Page.Home as Home
 import Page.Login as Login
@@ -23,11 +27,11 @@ import Session exposing (Session)
 
 
 type Model
-    = Blank (Session User)
-    | PageNotFound (Session User)
+    = Blank { user : User, session : Session }
+    | PageNotFound { user : User, session : Session }
     | PaintApp PaintApp.Model
-    | Splash (Session User.None)
-    | About (Session User)
+    | Splash Session
+    | About { user : User, session : Session }
     | Login Login.Model
     | ResetPassword ResetPassword.Model
     | Settings Settings.Model
@@ -42,24 +46,118 @@ type Model
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session User
+decoder : NavKey -> Decoder Model
+decoder navKey =
+    Decode.map2
+        (\user session ->
+            Blank
+                { user = user
+                , session = session
+                }
+        )
+        (Decode.field "user" User.decoder)
+        (Session.decoder navKey)
+
+
+getUser : Model -> User
+getUser model =
+    case model of
+        Blank { user } ->
+            user
+
+        PageNotFound { user } ->
+            user
+
+        PaintApp subModel ->
+            PaintApp.getUser subModel
+
+        Splash _ ->
+            User.noAccount
+
+        About { user } ->
+            user
+
+        Login subModel ->
+            Login.getUser subModel
+
+        ResetPassword _ ->
+            User.noAccount
+
+        Settings subModel ->
+            User.account (Settings.getAccount subModel)
+
+        Home subModel ->
+            User.account (Home.getAccount subModel)
+
+        Logout _ ->
+            User.noAccount
+
+        Contact subModel ->
+            Contact.getUser subModel
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    case model of
+        Blank { user, session } ->
+            Blank
+                { user = user
+                , session = f session
+                }
+
+        PageNotFound { user, session } ->
+            PageNotFound
+                { user = user
+                , session = f session
+                }
+
+        PaintApp subModel ->
+            PaintApp (PaintApp.mapSession f subModel)
+
+        Splash session ->
+            Splash (f session)
+
+        About { user, session } ->
+            About
+                { user = user
+                , session = f session
+                }
+
+        Login subModel ->
+            Login (Login.mapSession f subModel)
+
+        ResetPassword subModel ->
+            ResetPassword (ResetPassword.mapSession f subModel)
+
+        Settings subModel ->
+            Settings (Settings.mapSession f subModel)
+
+        Home subModel ->
+            Home (Home.mapSession f subModel)
+
+        Logout subModel ->
+            Logout (Logout.mapSession f subModel)
+
+        Contact subModel ->
+            Contact (Contact.mapSession f subModel)
+
+
+getSession : Model -> Session
 getSession model =
     case model of
-        Blank session ->
+        Blank { session } ->
             session
 
-        PageNotFound session ->
+        PageNotFound { session } ->
             session
 
         PaintApp subModel ->
             PaintApp.getSession subModel
 
         Splash session ->
-            Session.setUser
-                Viewer.User
-                session
+            session
 
-        About session ->
+        About { session } ->
             session
 
         Login subModel ->
@@ -67,20 +165,16 @@ getSession model =
 
         ResetPassword subModel ->
             ResetPassword.getSession subModel
-                |> Session.setUser Viewer.User
 
         Settings subModel ->
             subModel
                 |> Settings.getSession
-                |> Session.mapViewer Viewer.Account
 
         Home subModel ->
             Home.getSession subModel
-                |> Session.mapViewer Viewer.Account
 
         Logout subModel ->
             Logout.getSession subModel
-                |> Session.setUser Viewer.User
 
         Contact subModel ->
             Contact.getSession subModel

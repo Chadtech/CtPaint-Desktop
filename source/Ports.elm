@@ -1,6 +1,7 @@
 port module Ports exposing
     ( Payload
     , fromJs
+    , logout
     , payload
     , send
     , withId
@@ -77,6 +78,11 @@ send { name, props } =
     ]
         |> Encode.object
         |> toJs
+
+
+logout : Cmd msg
+logout =
+    withNoProps "log out"
 
 
 

@@ -1,8 +1,11 @@
 module Page.Home exposing
     ( Model
     , Msg
+    , getAccount
     , getSession
     , init
+    , listeners
+    , mapSession
     , track
     , update
     , view
@@ -12,10 +15,13 @@ import Css
 import Data.Account exposing (Account)
 import Data.Document exposing (Document)
 import Data.Drawing as Drawing exposing (Drawing)
+import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
+import Db exposing (Db)
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Id exposing (Id)
+import Json.Decode as Decode
 import Ports
 import Route
 import Session exposing (Session)
@@ -23,8 +29,13 @@ import Style
 import Ui.InitDrawing as InitDrawing
 import Util.Cmd as CmdUtil
 import View.Body as Body
+import View.Button as Button
+import View.ButtonRow as ButtonRow
+import View.Card as Card
+import View.CardHeader as CardHeader
 import View.Image as Image
-import View.Text as Text
+import View.SingleCardPage as SingleCardPage
+import View.Spinner as Spinner
 
 
 
@@ -34,8 +45,10 @@ import View.Text as Text
 
 
 type alias Model =
-    { session : Session Account
+    { session : Session
+    , account : Account
     , state : State
+    , drawings : Db Drawing
     }
 
 
@@ -54,6 +67,7 @@ type Msg
     | RefreshClicked
     | BackToDrawingsClicked
     | TryAgainClicked
+    | GotAllDrawings (Listener.Response String (Db Drawing))
 
 
 type State
@@ -61,6 +75,7 @@ type State
     | DeleteDrawing (Id Drawing)
     | LoadingAllDrawings
     | LoadingDrawing
+    | LoadingFailed (Listener.Error String)
     | Drawings
     | Deleting
     | DeleteFailed (Id Drawing) String
@@ -74,12 +89,14 @@ type State
 -------------------------------------------------------------------------------
 
 
-init : Session Account -> ( Model, Cmd msg )
-init session =
+init : Session -> Account -> ( Model, Cmd msg )
+init session account =
     ( { session = session
+      , account = account
       , state = LoadingAllDrawings
+      , drawings = Db.empty
       }
-    , getDrawings
+    , allDrawingsRequest
     )
 
 
@@ -89,9 +106,19 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session Account
+getSession : Model -> Session
 getSession =
     .session
+
+
+getAccount : Model -> Account
+getAccount =
+    .account
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 
@@ -100,8 +127,26 @@ getSession =
 -------------------------------------------------------------------------------
 
 
-getDrawings : Cmd msg
+getDrawings : Model -> List ( Id Drawing, Drawing )
 getDrawings =
+    .drawings >> Db.toList
+
+
+loadingFailed : Listener.Error String -> Model -> Model
+loadingFailed error model =
+    { model | state = LoadingFailed error }
+
+
+receiveDrawings : Db Drawing -> Model -> Model
+receiveDrawings drawings model =
+    { model
+        | state = Drawings
+        , drawings = drawings
+    }
+
+
+allDrawingsRequest : Cmd msg
+allDrawingsRequest =
     Ports.payload "get drawings"
         |> Ports.send
 
@@ -127,57 +172,131 @@ setState newState model =
 view : Model -> Document Msg
 view model =
     { title = Nothing
-    , body =
-        Body.view
-            [ Grid.column
-                [ Grid.exactWidthColumn (Style.sizePx 8)
-                , Style.padding 1
-                , Css.flexDirection Css.column
-                ]
-                (leftSide <| Session.getUser model.session)
-            , Grid.column
-                [ Style.padding 1 ]
-                [ Grid.box
-                    [ Style.pit
-                    , Style.fullWidth
-                    ]
-                    []
-                ]
-            ]
+    , body = viewBody model
     }
 
 
-leftSide : Account -> List (Html msg)
-leftSide account =
-    let
-        profilePicView : String -> Html msg
-        profilePicView url =
-            Image.config
-                (Image.thirdParty url)
-                |> Image.toHtml
+viewBody : Model -> List (Html Msg)
+viewBody model =
+    case model.state of
+        SpecificDrawing id ->
+            []
 
-        noProfilePic : Html msg
-        noProfilePic =
-            Text.fromString "no profile pic"
-    in
-    [ Grid.row
-        [ Style.pit
-        , Style.fullWidth
-        , Css.paddingTop (Css.pct 100)
-        , Style.noOverflow
-        , Style.relative
-        ]
+        DeleteDrawing id ->
+            []
+
+        LoadingAllDrawings ->
+            Card.view
+                []
+                [ CardHeader.config
+                    { title = "loading drawings" }
+                    |> CardHeader.toHtml
+                , Spinner.row
+                ]
+                |> SingleCardPage.view
+
+        LoadingDrawing ->
+            []
+
+        Drawings ->
+            drawingsView (getDrawings model)
+
+        Deleting ->
+            []
+
+        DeleteFailed id string ->
+            []
+
+        Deleted string ->
+            []
+
+        NewDrawing initDrawingModel ->
+            []
+
+        LoadingFailed string ->
+            []
+
+
+drawingsView : List ( Id Drawing, Drawing ) -> List (Html Msg)
+drawingsView drawings =
+    if List.isEmpty drawings then
+        Card.view
+            []
+            [ Card.textRow [] "you have no drawings"
+            , ButtonRow.view
+                [ Button.config
+                    RefreshClicked
+                    "reload drawings"
+                , Button.config
+                    MakeADrawingClicked
+                    "make a drawing"
+                ]
+            ]
+            |> SingleCardPage.view
+
+    else
+        let
+            drawingView : ( Id Drawing, Drawing ) -> Grid.Column Msg
+            drawingView ( id, drawing ) =
+                Grid.column
+                    []
+                    [ Card.view
+                        [ Style.width 8
+                        , Style.height 8
+                        , Css.displayFlex
+                        , Css.flexDirection Css.column
+                        ]
+                        [ CardHeader.config
+                            { title = drawing.name }
+                            |> CardHeader.toHtml
+                        , Grid.row
+                            [ Style.fullWidth
+                            , Style.pit
+                            , Css.flex (Css.int 1)
+                            , Style.noOverflow
+                            ]
+                            [ Grid.column
+                                [ Style.fullWidth
+                                , Css.displayFlex
+                                , Style.centerContent
+                                , Css.flexDirection Css.column
+                                ]
+                                [ Image.config
+                                    (Image.drawing drawing)
+                                    |> Image.withStyles
+                                        [ Style.fullWidth ]
+                                    |> Image.toHtml
+                                ]
+                            ]
+                        ]
+                    ]
+        in
         [ Grid.column
-            [ Css.position Css.absolute
-            , Css.left Css.zero
-            , Css.top Css.zero
+            [ Style.padding 2
+            , Css.flexDirection Css.column
             ]
-            [ account.profilePic
-                |> Maybe.map profilePicView
-                |> Maybe.withDefault noProfilePic
+            [ Grid.row
+                [ Style.paddingBottom 2 ]
+                [ Grid.column
+                    []
+                    [ ButtonRow.view
+                        [ Button.config
+                            NewDrawingClicked
+                            "new drawing"
+                            |> Button.asDoubleWidth
+                        ]
+                    ]
+                ]
+            , Grid.row
+                [ Style.pit
+                , Style.fullWidth
+                , Style.padding 3
+                , Css.flex (Css.int 1)
+                ]
+                (List.map drawingView drawings)
             ]
         ]
-    ]
+            |> Body.view
 
 
 
@@ -271,7 +390,7 @@ update msg model =
 
         RefreshClicked ->
             ( setState LoadingAllDrawings model
-            , getDrawings
+            , allDrawingsRequest
             )
 
         BackToDrawingsClicked ->
@@ -287,6 +406,16 @@ update msg model =
 
                 _ ->
                     model
+                        |> CmdUtil.withNoCmd
+
+        GotAllDrawings response ->
+            case response of
+                Ok drawings ->
+                    receiveDrawings drawings model
+                        |> CmdUtil.withNoCmd
+
+                Err err ->
+                    loadingFailed err model
                         |> CmdUtil.withNoCmd
 
 
@@ -346,3 +475,30 @@ track msg =
 
         TryAgainClicked ->
             Tracking.event "try again clicked"
+
+        GotAllDrawings response ->
+            Tracking.event "got all drawings"
+                |> Tracking.withListenerResponse response
+
+
+
+-------------------------------------------------------------------------------
+-- PORTS --
+-------------------------------------------------------------------------------
+
+
+listeners : List (Listener Msg)
+listeners =
+    [ Listener.for
+        { name = "drawings"
+        , decoder =
+            [ Decode.list Drawing.decoder
+                |> Decode.map Db.fromList
+                |> Decode.map Ok
+            , Decode.field "name" Decode.string
+                |> Decode.map Err
+            ]
+                |> Decode.oneOf
+        , handler = GotAllDrawings
+        }
+    ]

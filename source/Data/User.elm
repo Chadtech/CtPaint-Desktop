@@ -1,9 +1,11 @@
 module Data.User exposing
     ( User(..)
+    , account
     , decoder
     , getEmail
     , isLoggedIn
     , loggedIn
+    , noAccount
     )
 
 import Data.Account as Account exposing (Account)
@@ -26,6 +28,16 @@ type User
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+account : Account -> User
+account =
+    Account
+
+
+noAccount : User
+noAccount =
+    User
 
 
 decoder : Decoder User

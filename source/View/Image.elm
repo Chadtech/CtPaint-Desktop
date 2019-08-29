@@ -2,13 +2,16 @@ module View.Image exposing
     ( Image
     , Option
     , config
+    , drawing
     , logo
     , thirdParty
     , toHtml
+    , withStyles
     , withWidth
     )
 
 import Css
+import Data.Drawing as Drawing exposing (Drawing)
 import Data.MountPath as MountPath exposing (MountPath)
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attrs
@@ -28,6 +31,7 @@ type Image
 
 type Source
     = Asset AssetSource MountPath
+    | Drawing Drawing
     | ThirdParty String
 
 
@@ -37,10 +41,12 @@ type AssetSource
 
 type Option
     = Width Float
+    | Styles (List Css.Style)
 
 
 type alias Summary =
     { width : Maybe Float
+    , extraStyles : List Css.Style
     }
 
 
@@ -48,6 +54,11 @@ type alias Summary =
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+drawing : Drawing -> Source
+drawing =
+    Drawing
 
 
 logo : MountPath -> Source
@@ -63,6 +74,11 @@ thirdParty =
 withWidth : Float -> Image -> Image
 withWidth width =
     addOption (Width width)
+
+
+withStyles : List Css.Style -> Image -> Image
+withStyles =
+    addOption << Styles
 
 
 
@@ -84,10 +100,14 @@ optionsToSummary =
             case option of
                 Width width ->
                     { summary | width = Just width }
+
+                Styles list ->
+                    { summary | extraStyles = list ++ summary.extraStyles }
     in
     List.foldr
         modifySummary
         { width = Nothing
+        , extraStyles = []
         }
 
 
@@ -106,6 +126,11 @@ sourceToString source =
 
         ThirdParty url ->
             url
+
+        Drawing drawing_ ->
+            drawing_
+                |> Drawing.getPublicId
+                |> Drawing.toUrl
 
 
 
@@ -133,6 +158,7 @@ toHtml (Image src options) =
                 Style.exactWidth
                 summary.width
             , Css.margin Css.auto
+            , Css.batch summary.extraStyles
             ]
         ]
         []

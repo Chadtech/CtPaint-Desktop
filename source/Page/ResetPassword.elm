@@ -4,6 +4,7 @@ module Page.ResetPassword exposing
     , getSession
     , init
     , listener
+    , mapSession
     , track
     , update
     , view
@@ -13,7 +14,6 @@ import Data.Account as User
 import Data.Document exposing (Document)
 import Data.Field as Field exposing (Field)
 import Data.Listener as Listener exposing (Listener)
-import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode
@@ -23,7 +23,6 @@ import Session exposing (Session)
 import Style
 import Util.Cmd as CmdUtil
 import Util.Function as FunctionUtil
-import Util.Html as HtmlUtil
 import Util.Json.Decode as DecodeUtil
 import Util.Maybe as MaybeUtil
 import Util.String as StringUtil
@@ -35,7 +34,6 @@ import View.Input as Input exposing (Input)
 import View.InputGroup as InputGroup
 import View.SingleCardPage as SingleCardPage
 import View.Spinner as Spinner
-import View.TextArea as TextArea
 
 
 
@@ -45,7 +43,7 @@ import View.TextArea as TextArea
 
 
 type alias Model =
-    { session : Session User.None
+    { session : Session
     , email : Field
     , code : Field
     , password : Field
@@ -84,15 +82,17 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session User.None -> Model
+init : Session -> ( Model, Cmd msg )
 init session =
-    { session = session
-    , email = Field.init
-    , code = Field.init
-    , password = Field.init
-    , passwordConfirm = Field.init
-    , status = Ready
-    }
+    ( { session = session
+      , email = Field.init
+      , code = Field.init
+      , password = Field.init
+      , passwordConfirm = Field.init
+      , status = Ready
+      }
+    , Ports.logout
+    )
 
 
 
@@ -101,9 +101,14 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session User.None
+getSession : Model -> Session
 getSession =
     .session
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 
@@ -232,7 +237,6 @@ update msg model =
 
         TryAgainClicked ->
             init model.session
-                |> CmdUtil.withNoCmd
 
         EmailUpdated newEmail ->
             setEmail newEmail model

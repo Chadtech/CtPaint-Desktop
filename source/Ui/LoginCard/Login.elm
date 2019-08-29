@@ -13,13 +13,10 @@ module Ui.LoginCard.Login exposing
     , view
     )
 
-import Chadtech.Colors as Colors
-import Css
 import Data.Account as User exposing (Account)
 import Data.Field as Field exposing (Field)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
-import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode
 import Style
@@ -32,8 +29,6 @@ import View.Input as Input exposing (Input)
 import View.InputGroup as InputGroup
 import View.Link as Link
 import View.Spinner as Spinner
-import View.Text as Text
-import View.TextArea as TextArea
 
 
 

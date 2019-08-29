@@ -3,12 +3,12 @@ module Page.Logout exposing
     , Msg
     , getSession
     , init
+    , mapSession
     , track
     , update
     , view
     )
 
-import Data.Account as User
 import Data.Document exposing (Document)
 import Data.Listener as Listener
 import Data.Tracking as Tracking
@@ -25,7 +25,7 @@ import Util.Cmd as CmdUtil
 
 
 type alias Model =
-    { session : Session User.None
+    { session : Session
     , status : HttpStatus
     }
 
@@ -45,12 +45,12 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session User.None -> ( Model, Cmd msg )
+init : Session -> ( Model, Cmd msg )
 init session =
     ( { session = session
       , status = Waiting
       }
-    , Ports.withNoProps "log out"
+    , Ports.logout
     )
 
 
@@ -60,9 +60,14 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session User.None
+getSession : Model -> Session
 getSession =
     .session
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 

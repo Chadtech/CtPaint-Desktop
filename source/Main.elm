@@ -7,6 +7,7 @@ import Data.Document as Document exposing (Document)
 import Data.Listener as Listener exposing (Listener)
 import Data.NavKey as NavKey
 import Data.SessionId as SessionId
+import Data.Size exposing (Size)
 import Data.Tracking as Tracking
 import Data.User as Viewer exposing (User)
 import Html.Styled as Html exposing (Html)
@@ -61,11 +62,16 @@ onNavigation =
 
 
 type Msg
-    = UrlChanged (Result String Route)
+    = NavMsg Nav.Msg
+      -- Browser Things
+    | UrlChanged (Result String Route)
     | UrlRequested UrlRequest
+    | WindowResized Size
+      -- JS Message Decoding
     | ListenerNotFound String
     | FailedToDecodeJsMsg
-    | NavMsg Nav.Msg
+    | JsMsg Decode.Value
+      -- Pages
     | PageNotFoundMsg PageNotFound.Msg
     | SplashMsg Splash.Msg
     | LoginMsg Login.Msg
@@ -89,13 +95,13 @@ init :
 init json url key =
     case
         Decode.decodeValue
-            (Session.decoder <| NavKey.fromNativeKey key)
+            (Model.decoder <| NavKey.fromNativeKey key)
             json
     of
-        Ok session ->
+        Ok model ->
             update
                 (onNavigation url)
-                (Ok <| Model.Blank session)
+                (Ok model)
 
         Err decodeError ->
             ( Err decodeError
@@ -178,7 +184,7 @@ viewPage model =
                 |> Document.map SplashMsg
                 |> viewInFrame model
 
-        Model.About session ->
+        Model.About { session } ->
             About.view
                 (Session.getBuildNumber session)
                 (Session.getMountPath session)
@@ -197,6 +203,10 @@ viewPage model =
                 |> Document.map SettingsMsg
 
         Model.Home subModel ->
+            let
+                _ =
+                    Debug.log "VIEW HOME" ()
+            in
             Home.view subModel
                 |> Document.map HomeMsg
                 |> viewInFrame model
@@ -238,13 +248,17 @@ update msg result =
 updateFromOk : Msg -> Model -> ( Model, Cmd Msg )
 updateFromOk msg model =
     let
-        session : Session User
+        session : Session
         session =
             Model.getSession model
+
+        user : User
+        user =
+            Model.getUser model
     in
     case msg of
         UrlChanged routeResult ->
-            handleRoute routeResult session
+            handleRoute session user routeResult
 
         UrlRequested _ ->
             model
@@ -350,68 +364,78 @@ updateFromOk msg model =
                     model
                         |> CmdUtil.withNoCmd
 
+        WindowResized size ->
+            model
+                |> Model.mapSession (Session.setWindowSize size)
+                |> CmdUtil.withNoCmd
 
-handleRoute : Result String Route -> Session User -> ( Model, Cmd Msg )
-handleRoute routeResult session =
+        JsMsg json ->
+            updateFromOk (decodeMsg model json) model
+
+
+handleRoute : Session -> User -> Result String Route -> ( Model, Cmd Msg )
+handleRoute session user routeResult =
     case routeResult of
         Ok route ->
-            handleRouteFromOk route session
+            handleRouteFromOk session user route
 
         Err _ ->
-            Model.PageNotFound session
+            Model.PageNotFound
+                { session = session
+                , user = user
+                }
                 |> CmdUtil.withNoCmd
 
 
-handleRouteFromOk : Route -> Session User -> ( Model, Cmd Msg )
-handleRouteFromOk route session =
+handleRouteFromOk : Session -> User -> Route -> ( Model, Cmd Msg )
+handleRouteFromOk session user route =
     case route of
         Route.PaintApp subRoute ->
             Model.PaintApp
-                (PaintApp.init session)
+                (PaintApp.init session user)
                 |> CmdUtil.withNoCmd
 
         Route.Landing ->
-            case Session.getUser session of
+            case user of
                 Viewer.User ->
-                    Session.removeAccount session
-                        |> Model.Splash
+                    Model.Splash session
                         |> CmdUtil.withNoCmd
 
-                Viewer.Account user ->
-                    Session.setUser user session
-                        |> Home.init
+                Viewer.Account account ->
+                    Home.init session account
                         |> Tuple.mapFirst Model.Home
                         |> CmdUtil.mapCmd HomeMsg
 
         Route.About ->
-            Model.About session
+            Model.About
+                { session = session
+                , user = user
+                }
                 |> CmdUtil.withNoCmd
 
         Route.Login ->
-            Model.Login
-                (Login.init session)
-                |> CmdUtil.withNoCmd
+            Login.init session
+                |> Tuple.mapFirst Model.Login
 
         Route.ResetPassword ->
-            ResetPassword.init
-                (Session.removeAccount session)
-                |> Model.ResetPassword
-                |> CmdUtil.withNoCmd
+            ResetPassword.init session
+                |> Tuple.mapFirst Model.ResetPassword
 
         Route.Logout ->
-            Logout.init
-                (Session.removeAccount session)
+            Logout.init session
                 |> Tuple.mapFirst Model.Logout
 
         Route.Settings ->
-            case Session.getUser session of
+            case user of
                 Viewer.User ->
-                    Model.PageNotFound session
+                    Model.PageNotFound
+                        { session = session
+                        , user = user
+                        }
                         |> CmdUtil.withNoCmd
 
-                Viewer.Account user ->
-                    Settings.init
-                        (Session.setUser user session)
+                Viewer.Account account ->
+                    Settings.init session account
                         |> Model.Settings
                         |> CmdUtil.withNoCmd
 
@@ -419,7 +443,7 @@ handleRouteFromOk route session =
 track : Msg -> Model -> Cmd Msg
 track msg model =
     let
-        session : Session User
+        session : Session
         session =
             Model.getSession model
     in
@@ -475,6 +499,12 @@ trackPage msg =
         ContactMsg subMsg ->
             Contact.track subMsg
 
+        WindowResized _ ->
+            Nothing
+
+        JsMsg _ ->
+            Nothing
+
 
 
 -------------------------------------------------------------------------------
@@ -483,14 +513,16 @@ trackPage msg =
 
 
 subscriptions : Result Decode.Error Model -> Sub Msg
-subscriptions =
-    Result.map subscriptionsFromOk
-        >> Result.withDefault Sub.none
+subscriptions result =
+    result
+        |> Result.map subscriptionsFromOk
+        |> Result.withDefault Sub.none
 
 
 subscriptionsFromOk : Model -> Sub Msg
 subscriptionsFromOk model =
-    Ports.fromJs (decodeMsg model)
+    --    Ports.fromJs (decodeMsg model)
+    Ports.fromJs JsMsg
 
 
 decodeMsg : Model -> Decode.Value -> Msg
@@ -535,6 +567,13 @@ listeners model =
             [ ResetPassword.listener
                 |> Listener.map ResetPasswordMsg
             ]
+
+        Model.Home _ ->
+            let
+                _ =
+                    Debug.log "SET HOME" ()
+            in
+            Listener.mapMany HomeMsg Home.listeners
 
         _ ->
             []

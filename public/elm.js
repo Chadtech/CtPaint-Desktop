@@ -8415,109 +8415,6 @@ var author$project$Page$Contact$track = function (msg) {
 		return elm$core$Maybe$Nothing;
 	}
 };
-var author$project$Data$BackgroundColor$toString = function (color) {
-	if (color.$ === 'Black') {
-		return 'black';
-	} else {
-		return 'white';
-	}
-};
-var elm$json$Json$Encode$bool = _Json_wrap;
-var author$project$Data$Tracking$withBool = function (propName) {
-	return A2(
-		elm$core$Basics$composeR,
-		elm$json$Json$Encode$bool,
-		author$project$Data$Tracking$withProp(propName));
-};
-var author$project$Ui$InitDrawing$track = function (msg) {
-	switch (msg.$) {
-		case 'FromUrlClicked':
-			var disabled = msg.a;
-			return A3(
-				author$project$Data$Tracking$withBool,
-				'disabled',
-				disabled,
-				author$project$Data$Tracking$event('from-url click'));
-		case 'ColorClicked':
-			var bgColor = msg.a;
-			return A3(
-				author$project$Data$Tracking$withString,
-				'color',
-				author$project$Data$BackgroundColor$toString(bgColor),
-				author$project$Data$Tracking$event('color click'));
-		case 'StartNewDrawingClicked':
-			return author$project$Data$Tracking$event('submit click');
-		case 'UrlUpdated':
-			return elm$core$Maybe$Nothing;
-		case 'WidthUpdated':
-			return elm$core$Maybe$Nothing;
-		case 'HeightUpdated':
-			return elm$core$Maybe$Nothing;
-		default:
-			return elm$core$Maybe$Nothing;
-	}
-};
-var author$project$Page$Home$track = function (msg) {
-	switch (msg.$) {
-		case 'DrawingClicked':
-			return author$project$Data$Tracking$event('drawing clicked');
-		case 'NewDrawingClicked':
-			return author$project$Data$Tracking$event('new drawing clicked');
-		case 'CloseDrawingClicked':
-			return author$project$Data$Tracking$event('close drawing clicked');
-		case 'CloseNewDrawingClicked':
-			return author$project$Data$Tracking$event('close new drawing clicked');
-		case 'InitDrawingMsg':
-			var subMsg = msg.a;
-			return author$project$Ui$InitDrawing$track(subMsg);
-		case 'OpenDrawingInPaintAppClicked':
-			return author$project$Data$Tracking$event('open drawing in paint app clicked');
-		case 'OpenDrawingLinkClicked':
-			return author$project$Data$Tracking$event('open drawing link clicked');
-		case 'DeleteDrawingClicked':
-			return author$project$Data$Tracking$event('delete drawing clicked');
-		case 'DeleteYesClicked':
-			return author$project$Data$Tracking$event('delete yes clicked');
-		case 'DeleteNoClicked':
-			return author$project$Data$Tracking$event('delete no clicked');
-		case 'MakeADrawingClicked':
-			return author$project$Data$Tracking$event('make a drawing clicked');
-		case 'RefreshClicked':
-			return author$project$Data$Tracking$event('refresh clicked');
-		case 'BackToDrawingsClicked':
-			return author$project$Data$Tracking$event('back to drawings clicked');
-		default:
-			return author$project$Data$Tracking$event('try again clicked');
-	}
-};
-var author$project$Data$Tracking$tag = function (propName) {
-	return A2(author$project$Data$Tracking$withProp, propName, elm$json$Json$Encode$null);
-};
-var author$project$Data$Listener$DecodeError = function (a) {
-	return {$: 'DecodeError', a: a};
-};
-var author$project$Data$Listener$Error = function (a) {
-	return {$: 'Error', a: a};
-};
-var author$project$Data$Listener$mapError = F2(
-	function (f, response) {
-		if (response.$ === 'Ok') {
-			var value = response.a;
-			return elm$core$Result$Ok(value);
-		} else {
-			var error = response.a;
-			if (error.$ === 'DecodeError') {
-				var decodeError = error.a;
-				return elm$core$Result$Err(
-					author$project$Data$Listener$DecodeError(decodeError));
-			} else {
-				var customError = error.a;
-				return elm$core$Result$Err(
-					author$project$Data$Listener$Error(
-						f(customError)));
-			}
-		}
-	});
 var author$project$Util$Json$Decode$errorToSanitizedString = function (error) {
 	switch (error.$) {
 		case 'Field':
@@ -8591,6 +8488,115 @@ var author$project$Data$Tracking$withResult = F2(
 	});
 var author$project$Data$Tracking$withListenerResponse = author$project$Data$Tracking$withResult(
 	author$project$Data$Listener$errorToString(elm$core$Basics$identity));
+var author$project$Data$BackgroundColor$toString = function (color) {
+	if (color.$ === 'Black') {
+		return 'black';
+	} else {
+		return 'white';
+	}
+};
+var elm$json$Json$Encode$bool = _Json_wrap;
+var author$project$Data$Tracking$withBool = function (propName) {
+	return A2(
+		elm$core$Basics$composeR,
+		elm$json$Json$Encode$bool,
+		author$project$Data$Tracking$withProp(propName));
+};
+var author$project$Ui$InitDrawing$track = function (msg) {
+	switch (msg.$) {
+		case 'FromUrlClicked':
+			var disabled = msg.a;
+			return A3(
+				author$project$Data$Tracking$withBool,
+				'disabled',
+				disabled,
+				author$project$Data$Tracking$event('from-url click'));
+		case 'ColorClicked':
+			var bgColor = msg.a;
+			return A3(
+				author$project$Data$Tracking$withString,
+				'color',
+				author$project$Data$BackgroundColor$toString(bgColor),
+				author$project$Data$Tracking$event('color click'));
+		case 'StartNewDrawingClicked':
+			return author$project$Data$Tracking$event('submit click');
+		case 'UrlUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'WidthUpdated':
+			return elm$core$Maybe$Nothing;
+		case 'HeightUpdated':
+			return elm$core$Maybe$Nothing;
+		default:
+			return elm$core$Maybe$Nothing;
+	}
+};
+var author$project$Page$Home$track = function (msg) {
+	switch (msg.$) {
+		case 'DrawingClicked':
+			return author$project$Data$Tracking$event('drawing clicked');
+		case 'NewDrawingClicked':
+			return author$project$Data$Tracking$event('new drawing clicked');
+		case 'CloseDrawingClicked':
+			return author$project$Data$Tracking$event('close drawing clicked');
+		case 'CloseNewDrawingClicked':
+			return author$project$Data$Tracking$event('close new drawing clicked');
+		case 'InitDrawingMsg':
+			var subMsg = msg.a;
+			return author$project$Ui$InitDrawing$track(subMsg);
+		case 'OpenDrawingInPaintAppClicked':
+			return author$project$Data$Tracking$event('open drawing in paint app clicked');
+		case 'OpenDrawingLinkClicked':
+			return author$project$Data$Tracking$event('open drawing link clicked');
+		case 'DeleteDrawingClicked':
+			return author$project$Data$Tracking$event('delete drawing clicked');
+		case 'DeleteYesClicked':
+			return author$project$Data$Tracking$event('delete yes clicked');
+		case 'DeleteNoClicked':
+			return author$project$Data$Tracking$event('delete no clicked');
+		case 'MakeADrawingClicked':
+			return author$project$Data$Tracking$event('make a drawing clicked');
+		case 'RefreshClicked':
+			return author$project$Data$Tracking$event('refresh clicked');
+		case 'BackToDrawingsClicked':
+			return author$project$Data$Tracking$event('back to drawings clicked');
+		case 'TryAgainClicked':
+			return author$project$Data$Tracking$event('try again clicked');
+		default:
+			var response = msg.a;
+			return A2(
+				author$project$Data$Tracking$withListenerResponse,
+				response,
+				author$project$Data$Tracking$event('got all drawings'));
+	}
+};
+var author$project$Data$Tracking$tag = function (propName) {
+	return A2(author$project$Data$Tracking$withProp, propName, elm$json$Json$Encode$null);
+};
+var author$project$Data$Listener$DecodeError = function (a) {
+	return {$: 'DecodeError', a: a};
+};
+var author$project$Data$Listener$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var author$project$Data$Listener$mapError = F2(
+	function (f, response) {
+		if (response.$ === 'Ok') {
+			var value = response.a;
+			return elm$core$Result$Ok(value);
+		} else {
+			var error = response.a;
+			if (error.$ === 'DecodeError') {
+				var decodeError = error.a;
+				return elm$core$Result$Err(
+					author$project$Data$Listener$DecodeError(decodeError));
+			} else {
+				var customError = error.a;
+				return elm$core$Result$Err(
+					author$project$Data$Listener$Error(
+						f(customError)));
+			}
+		}
+	});
 var author$project$Ui$LoginCard$ForgotPassword$errorToId = function (error) {
 	return 'user doesnt exist';
 };
@@ -8721,8 +8727,6 @@ var author$project$Page$Settings$track = function (msg) {
 				author$project$Data$Tracking$event('tab clicked'));
 		case 'NameUpdated':
 			return elm$core$Maybe$Nothing;
-		case 'ProfilePicUrlUpdated':
-			return elm$core$Maybe$Nothing;
 		case 'SaveClicked':
 			return author$project$Data$Tracking$event('save clicked');
 		default:
@@ -8801,15 +8805,15 @@ var author$project$Main$trackPage = function (msg) {
 		case 'SettingsMsg':
 			var subMsg = msg.a;
 			return author$project$Page$Settings$track(subMsg);
-		default:
+		case 'ContactMsg':
 			var subMsg = msg.a;
 			return author$project$Page$Contact$track(subMsg);
+		case 'WindowResized':
+			return elm$core$Maybe$Nothing;
+		default:
+			return elm$core$Maybe$Nothing;
 	}
 };
-var author$project$Data$User$Account = function (a) {
-	return {$: 'Account', a: a};
-};
-var author$project$Data$User$User = {$: 'User'};
 var author$project$Page$Contact$getSession = function ($) {
 	return $.session;
 };
@@ -8831,78 +8835,38 @@ var author$project$Page$ResetPassword$getSession = function ($) {
 var author$project$Page$Settings$getSession = function ($) {
 	return $.session;
 };
-var author$project$Session$getBuildNumber = function ($) {
-	return $.buildNumber;
-};
-var author$project$Session$getMountPath = function ($) {
-	return $.mountPath;
-};
-var author$project$Session$getNavKey = function ($) {
-	return $.navKey;
-};
-var author$project$Session$getSessionId = function ($) {
-	return $.sessionId;
-};
-var author$project$Session$mapViewer = F2(
-	function (f, session) {
-		return {
-			buildNumber: author$project$Session$getBuildNumber(session),
-			mountPath: author$project$Session$getMountPath(session),
-			navKey: author$project$Session$getNavKey(session),
-			seed: session.seed,
-			sessionId: author$project$Session$getSessionId(session),
-			user: f(session.user)
-		};
-	});
-var elm$core$Basics$always = F2(
-	function (a, _n0) {
-		return a;
-	});
-var author$project$Session$setUser = A2(elm$core$Basics$composeL, author$project$Session$mapViewer, elm$core$Basics$always);
 var author$project$Model$getSession = function (model) {
 	switch (model.$) {
 		case 'Blank':
-			var session = model.a;
+			var session = model.a.session;
 			return session;
 		case 'PageNotFound':
-			var session = model.a;
+			var session = model.a.session;
 			return session;
 		case 'PaintApp':
 			var subModel = model.a;
 			return author$project$Page$PaintApp$getSession(subModel);
 		case 'Splash':
 			var session = model.a;
-			return A2(author$project$Session$setUser, author$project$Data$User$User, session);
+			return session;
 		case 'About':
-			var session = model.a;
+			var session = model.a.session;
 			return session;
 		case 'Login':
 			var subModel = model.a;
 			return author$project$Page$Login$getSession(subModel);
 		case 'ResetPassword':
 			var subModel = model.a;
-			return A2(
-				author$project$Session$setUser,
-				author$project$Data$User$User,
-				author$project$Page$ResetPassword$getSession(subModel));
+			return author$project$Page$ResetPassword$getSession(subModel);
 		case 'Settings':
 			var subModel = model.a;
-			return A2(
-				author$project$Session$mapViewer,
-				author$project$Data$User$Account,
-				author$project$Page$Settings$getSession(subModel));
+			return author$project$Page$Settings$getSession(subModel);
 		case 'Home':
 			var subModel = model.a;
-			return A2(
-				author$project$Session$mapViewer,
-				author$project$Data$User$Account,
-				author$project$Page$Home$getSession(subModel));
+			return author$project$Page$Home$getSession(subModel);
 		case 'Logout':
 			var subModel = model.a;
-			return A2(
-				author$project$Session$setUser,
-				author$project$Data$User$User,
-				author$project$Page$Logout$getSession(subModel));
+			return author$project$Page$Logout$getSession(subModel);
 		default:
 			var subModel = model.a;
 			return author$project$Page$Contact$getSession(subModel);
@@ -8933,6 +8897,12 @@ var author$project$Model$pageId = function (model) {
 		default:
 			return 'contact';
 	}
+};
+var author$project$Session$getBuildNumber = function ($) {
+	return $.buildNumber;
+};
+var author$project$Session$getSessionId = function ($) {
+	return $.sessionId;
 };
 var author$project$Main$track = F2(
 	function (msg, model) {
@@ -8975,6 +8945,370 @@ var author$project$Main$SettingsMsg = function (a) {
 var author$project$Main$SplashMsg = function (a) {
 	return {$: 'SplashMsg', a: a};
 };
+var author$project$Data$Listener$getName = function (_n0) {
+	var name = _n0.a;
+	return name;
+};
+var author$project$Data$Listener$handle = F2(
+	function (_n0, json) {
+		var handler = _n0.b;
+		return handler(json);
+	});
+var author$project$Main$FailedToDecodeJsMsg = {$: 'FailedToDecodeJsMsg'};
+var author$project$Main$ListenerNotFound = function (a) {
+	return {$: 'ListenerNotFound', a: a};
+};
+var author$project$Data$Listener$Listener = F2(
+	function (a, b) {
+		return {$: 'Listener', a: a, b: b};
+	});
+var author$project$Data$Listener$map = F2(
+	function (f, _n0) {
+		var name = _n0.a;
+		var handler = _n0.b;
+		return A2(
+			author$project$Data$Listener$Listener,
+			name,
+			A2(elm$core$Basics$composeL, f, handler));
+	});
+var author$project$Data$Listener$mapMany = function (f) {
+	return elm$core$List$map(
+		author$project$Data$Listener$map(f));
+};
+var Chadtech$elm_relational_database$Db$Db = function (a) {
+	return {$: 'Db', a: a};
+};
+var Chadtech$elm_relational_database$Id$toString = function (_n0) {
+	var str = _n0.a;
+	return str;
+};
+var elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, dict) {
+				var key = _n0.a;
+				var value = _n0.b;
+				return A3(elm$core$Dict$insert, key, value, dict);
+			}),
+		elm$core$Dict$empty,
+		assocs);
+};
+var elm$core$Tuple$mapFirst = F2(
+	function (func, _n0) {
+		var x = _n0.a;
+		var y = _n0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var Chadtech$elm_relational_database$Db$fromList = function (items) {
+	return Chadtech$elm_relational_database$Db$Db(
+		elm$core$Dict$fromList(
+			A2(
+				elm$core$List$map,
+				elm$core$Tuple$mapFirst(Chadtech$elm_relational_database$Id$toString),
+				items)));
+};
+var elm$json$Json$Decode$string = _Json_decodeString;
+var Chadtech$elm_relational_database$Id$decoder = A2(elm$json$Json$Decode$map, Chadtech$elm_relational_database$Id$Id, elm$json$Json$Decode$string);
+var author$project$Data$Drawing$Drawing = F5(
+	function (publicId, data, name, createdAt, updatedAt) {
+		return {createdAt: createdAt, data: data, name: name, publicId: publicId, updatedAt: updatedAt};
+	});
+var author$project$Data$Drawing$PublicId = function (a) {
+	return {$: 'PublicId', a: a};
+};
+var author$project$Util$Json$Decode$apply = function () {
+	var applyHelp = F2(
+		function (v, f) {
+			return f(v);
+		});
+	return elm$json$Json$Decode$map2(applyHelp);
+}();
+var elm$json$Json$Decode$field = _Json_decodeField;
+var author$project$Util$Json$Decode$applyField = F2(
+	function (fieldName, decoder) {
+		return author$project$Util$Json$Decode$apply(
+			A2(elm$json$Json$Decode$field, fieldName, decoder));
+	});
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var author$project$Util$Posix$decoder = A2(elm$json$Json$Decode$map, elm$time$Time$millisToPosix, elm$json$Json$Decode$int);
+var author$project$Data$Drawing$decoder = function () {
+	var contentDecoder = A3(
+		author$project$Util$Json$Decode$applyField,
+		'updatedAt',
+		author$project$Util$Posix$decoder,
+		A3(
+			author$project$Util$Json$Decode$applyField,
+			'createdAt',
+			author$project$Util$Posix$decoder,
+			A3(
+				author$project$Util$Json$Decode$applyField,
+				'name',
+				elm$json$Json$Decode$string,
+				A3(
+					author$project$Util$Json$Decode$applyField,
+					'canvas',
+					elm$json$Json$Decode$string,
+					A3(
+						author$project$Util$Json$Decode$applyField,
+						'publicId',
+						A2(elm$json$Json$Decode$map, author$project$Data$Drawing$PublicId, elm$json$Json$Decode$string),
+						elm$json$Json$Decode$succeed(author$project$Data$Drawing$Drawing))))));
+	return A3(
+		elm$json$Json$Decode$map2,
+		elm$core$Tuple$pair,
+		A2(elm$json$Json$Decode$field, 'drawingId', Chadtech$elm_relational_database$Id$decoder),
+		contentDecoder);
+}();
+var elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return elm$core$Result$Err(
+				f(e));
+		}
+	});
+var elm$json$Json$Decode$decodeValue = _Json_run;
+var author$project$Data$Listener$for = function (_n0) {
+	var name = _n0.name;
+	var decoder = _n0.decoder;
+	var handler = _n0.handler;
+	var fromJson = function (json) {
+		var _n1 = A2(elm$json$Json$Decode$decodeValue, decoder, json);
+		if (_n1.$ === 'Ok') {
+			var v = _n1.a;
+			return A2(elm$core$Result$mapError, author$project$Data$Listener$Error, v);
+		} else {
+			var decodeError = _n1.a;
+			return elm$core$Result$Err(
+				author$project$Data$Listener$DecodeError(decodeError));
+		}
+	};
+	return A2(
+		author$project$Data$Listener$Listener,
+		name,
+		A2(elm$core$Basics$composeR, fromJson, handler));
+};
+var author$project$Page$Home$GotAllDrawings = function (a) {
+	return {$: 'GotAllDrawings', a: a};
+};
+var elm$json$Json$Decode$list = _Json_decodeList;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var author$project$Page$Home$listeners = _List_fromArray(
+	[
+		author$project$Data$Listener$for(
+		{
+			decoder: elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						A2(
+						elm$json$Json$Decode$map,
+						elm$core$Result$Ok,
+						A2(
+							elm$json$Json$Decode$map,
+							Chadtech$elm_relational_database$Db$fromList,
+							elm$json$Json$Decode$list(author$project$Data$Drawing$decoder))),
+						A2(
+						elm$json$Json$Decode$map,
+						elm$core$Result$Err,
+						A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string))
+					])),
+			handler: author$project$Page$Home$GotAllDrawings,
+			name: 'drawings'
+		})
+	]);
+var author$project$Page$Login$LoginCardMsg = function (a) {
+	return {$: 'LoginCardMsg', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPasswordMsg = function (a) {
+	return {$: 'ForgotPasswordMsg', a: a};
+};
+var author$project$Ui$LoginCard$LoginMsg = function (a) {
+	return {$: 'LoginMsg', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$GotForgetPasswordResponse = function (a) {
+	return {$: 'GotForgetPasswordResponse', a: a};
+};
+var author$project$Ui$LoginCard$ForgotPassword$UserDoesntExist = {$: 'UserDoesntExist'};
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$fail = _Json_fail;
+var author$project$Util$Json$Decode$matchString = F2(
+	function (str, value) {
+		var fromString = function (decodedStr) {
+			return _Utils_eq(decodedStr, str) ? elm$json$Json$Decode$succeed(value) : elm$json$Json$Decode$fail('String is not ' + str);
+		};
+		return A2(elm$json$Json$Decode$andThen, fromString, elm$json$Json$Decode$string);
+	});
+var author$project$Util$Json$Decode$matchStringMany = function () {
+	var matchThis = function (_n0) {
+		var str = _n0.a;
+		var value = _n0.b;
+		return A2(author$project$Util$Json$Decode$matchString, str, value);
+	};
+	return A2(
+		elm$core$Basics$composeR,
+		elm$core$List$map(matchThis),
+		elm$json$Json$Decode$oneOf);
+}();
+var elm$json$Json$Decode$null = _Json_decodeNull;
+var author$project$Ui$LoginCard$ForgotPassword$listener = author$project$Data$Listener$for(
+	{
+		decoder: elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Ok,
+					elm$json$Json$Decode$null(_Utils_Tuple0)),
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Err,
+					A2(
+						elm$json$Json$Decode$field,
+						'name',
+						author$project$Util$Json$Decode$matchStringMany(
+							_List_fromArray(
+								[
+									_Utils_Tuple2('UserNotFoundException', author$project$Ui$LoginCard$ForgotPassword$UserDoesntExist)
+								]))))
+				])),
+		handler: author$project$Ui$LoginCard$ForgotPassword$GotForgetPasswordResponse,
+		name: 'forgot password'
+	});
+var author$project$Data$Account$Account = F2(
+	function (email, name) {
+		return {email: email, name: name};
+	});
+var author$project$Data$Account$decoder = A2(
+	author$project$Util$Json$Decode$apply,
+	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+	A2(
+		author$project$Util$Json$Decode$apply,
+		A2(elm$json$Json$Decode$field, 'email', elm$json$Json$Decode$string),
+		elm$json$Json$Decode$succeed(author$project$Data$Account$Account)));
+var author$project$Ui$LoginCard$Login$GotLoginResponse = function (a) {
+	return {$: 'GotLoginResponse', a: a};
+};
+var author$project$Ui$LoginCard$Login$IncorrectCredentials = {$: 'IncorrectCredentials'};
+var author$project$Ui$LoginCard$Login$PasswordResetRequired = {$: 'PasswordResetRequired'};
+var author$project$Ui$LoginCard$Login$listener = author$project$Data$Listener$for(
+	{
+		decoder: elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(elm$json$Json$Decode$map, elm$core$Result$Ok, author$project$Data$Account$decoder),
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Err,
+					A2(
+						elm$json$Json$Decode$field,
+						'name',
+						author$project$Util$Json$Decode$matchStringMany(
+							_List_fromArray(
+								[
+									_Utils_Tuple2('UserNotFoundException', author$project$Ui$LoginCard$Login$IncorrectCredentials),
+									_Utils_Tuple2('NotAuthorizedException', author$project$Ui$LoginCard$Login$IncorrectCredentials),
+									_Utils_Tuple2('PasswordResetRequiredException', author$project$Ui$LoginCard$Login$PasswordResetRequired)
+								]))))
+				])),
+		handler: author$project$Ui$LoginCard$Login$GotLoginResponse,
+		name: 'login'
+	});
+var author$project$Ui$LoginCard$listeners = _List_fromArray(
+	[
+		A2(author$project$Data$Listener$map, author$project$Ui$LoginCard$LoginMsg, author$project$Ui$LoginCard$Login$listener),
+		A2(author$project$Data$Listener$map, author$project$Ui$LoginCard$ForgotPasswordMsg, author$project$Ui$LoginCard$ForgotPassword$listener)
+	]);
+var author$project$Page$Login$listeners = A2(author$project$Data$Listener$mapMany, author$project$Page$Login$LoginCardMsg, author$project$Ui$LoginCard$listeners);
+var author$project$Page$ResetPassword$GotResetPasswordResponse = function (a) {
+	return {$: 'GotResetPasswordResponse', a: a};
+};
+var author$project$Page$ResetPassword$InvalidCode = {$: 'InvalidCode'};
+var author$project$Page$ResetPassword$listener = author$project$Data$Listener$for(
+	{
+		decoder: elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Ok,
+					elm$json$Json$Decode$null(_Utils_Tuple0)),
+					A2(
+					elm$json$Json$Decode$map,
+					elm$core$Result$Err,
+					A2(
+						elm$json$Json$Decode$field,
+						'name',
+						A2(author$project$Util$Json$Decode$matchString, 'ExpiredCodeException', author$project$Page$ResetPassword$InvalidCode)))
+				])),
+		handler: author$project$Page$ResetPassword$GotResetPasswordResponse,
+		name: 'reset password'
+	});
+var elm$core$Debug$log = _Debug_log;
+var author$project$Main$listeners = function (model) {
+	switch (model.$) {
+		case 'Login':
+			return A2(author$project$Data$Listener$mapMany, author$project$Main$LoginMsg, author$project$Page$Login$listeners);
+		case 'ResetPassword':
+			return _List_fromArray(
+				[
+					A2(author$project$Data$Listener$map, author$project$Main$ResetPasswordMsg, author$project$Page$ResetPassword$listener)
+				]);
+		case 'Home':
+			var _n1 = A2(elm$core$Debug$log, 'SET HOME', _Utils_Tuple0);
+			return A2(author$project$Data$Listener$mapMany, author$project$Main$HomeMsg, author$project$Page$Home$listeners);
+		default:
+			return _List_Nil;
+	}
+};
+var elm$json$Json$Decode$value = _Json_decodeValue;
+var author$project$Main$decodeMsg = F2(
+	function (model, json) {
+		var incomingMsgDecoder = A3(
+			elm$json$Json$Decode$map2,
+			elm$core$Tuple$pair,
+			A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+			A2(elm$json$Json$Decode$field, 'props', elm$json$Json$Decode$value));
+		var _n0 = A2(elm$json$Json$Decode$decodeValue, incomingMsgDecoder, json);
+		if (_n0.$ === 'Ok') {
+			var _n1 = _n0.a;
+			var name = _n1.a;
+			var props = _n1.b;
+			var checkListeners = function (remainingListeners) {
+				checkListeners:
+				while (true) {
+					if (!remainingListeners.b) {
+						return author$project$Main$ListenerNotFound(name);
+					} else {
+						var first = remainingListeners.a;
+						var rest = remainingListeners.b;
+						if (_Utils_eq(
+							author$project$Data$Listener$getName(first),
+							name)) {
+							return A2(author$project$Data$Listener$handle, first, props);
+						} else {
+							var $temp$remainingListeners = rest;
+							remainingListeners = $temp$remainingListeners;
+							continue checkListeners;
+						}
+					}
+				}
+			};
+			return checkListeners(
+				author$project$Main$listeners(model));
+		} else {
+			return author$project$Main$FailedToDecodeJsMsg;
+		}
+	});
 var author$project$Model$About = function (a) {
 	return {$: 'About', a: a};
 };
@@ -9002,65 +9336,67 @@ var author$project$Model$Settings = function (a) {
 var author$project$Model$Splash = function (a) {
 	return {$: 'Splash', a: a};
 };
+var Chadtech$elm_relational_database$Db$empty = Chadtech$elm_relational_database$Db$Db(elm$core$Dict$empty);
 var author$project$Page$Home$LoadingAllDrawings = {$: 'LoadingAllDrawings'};
-var author$project$Page$Home$getDrawings = author$project$Ports$send(
+var author$project$Page$Home$allDrawingsRequest = author$project$Ports$send(
 	author$project$Ports$payload('get drawings'));
-var author$project$Page$Home$init = function (session) {
-	return _Utils_Tuple2(
-		{session: session, state: author$project$Page$Home$LoadingAllDrawings},
-		author$project$Page$Home$getDrawings);
-};
+var author$project$Page$Home$init = F2(
+	function (session, account) {
+		return _Utils_Tuple2(
+			{account: account, drawings: Chadtech$elm_relational_database$Db$empty, session: session, state: author$project$Page$Home$LoadingAllDrawings},
+			author$project$Page$Home$allDrawingsRequest);
+	});
+var author$project$Data$User$User = {$: 'User'};
+var author$project$Data$User$noAccount = author$project$Data$User$User;
+var author$project$Ports$withNoProps = A2(elm$core$Basics$composeR, author$project$Ports$payload, author$project$Ports$send);
+var author$project$Ports$logout = author$project$Ports$withNoProps('log out');
 var author$project$Ui$LoginCard$Login = function (a) {
 	return {$: 'Login', a: a};
 };
-var author$project$Data$Field$init = {error: elm$core$Maybe$Nothing, value: ''};
+var author$project$Data$Field$initWithValue = function (str) {
+	return {error: elm$core$Maybe$Nothing, value: str};
+};
+var author$project$Data$Field$init = author$project$Data$Field$initWithValue('');
 var author$project$Ui$LoginCard$Login$Ready = {$: 'Ready'};
 var author$project$Ui$LoginCard$Login$init = {email: author$project$Data$Field$init, httpStatus: author$project$Ui$LoginCard$Login$Ready, password: author$project$Data$Field$init};
 var author$project$Ui$LoginCard$init = author$project$Ui$LoginCard$Login(author$project$Ui$LoginCard$Login$init);
 var author$project$Page$Login$init = function (session) {
-	return {loginCard: author$project$Ui$LoginCard$init, session: session};
+	return _Utils_Tuple2(
+		{loginCard: author$project$Ui$LoginCard$init, session: session, user: author$project$Data$User$noAccount},
+		author$project$Ports$logout);
 };
 var author$project$Page$Logout$Waiting = {$: 'Waiting'};
-var author$project$Ports$withNoProps = A2(elm$core$Basics$composeR, author$project$Ports$payload, author$project$Ports$send);
 var author$project$Page$Logout$init = function (session) {
 	return _Utils_Tuple2(
 		{session: session, status: author$project$Page$Logout$Waiting},
-		author$project$Ports$withNoProps('log out'));
+		author$project$Ports$logout);
 };
-var author$project$Page$PaintApp$init = function (session) {
-	return {pendingNavigation: elm$core$Maybe$Nothing, session: session};
-};
+var author$project$Page$PaintApp$init = F2(
+	function (session, user) {
+		return {pendingNavigation: elm$core$Maybe$Nothing, session: session, user: user};
+	});
 var author$project$Page$ResetPassword$Ready = {$: 'Ready'};
 var author$project$Page$ResetPassword$init = function (session) {
-	return {code: author$project$Data$Field$init, email: author$project$Data$Field$init, password: author$project$Data$Field$init, passwordConfirm: author$project$Data$Field$init, session: session, status: author$project$Page$ResetPassword$Ready};
+	return _Utils_Tuple2(
+		{code: author$project$Data$Field$init, email: author$project$Data$Field$init, password: author$project$Data$Field$init, passwordConfirm: author$project$Data$Field$init, session: session, status: author$project$Page$ResetPassword$Ready},
+		author$project$Ports$logout);
 };
 var author$project$Data$Account$getName = function ($) {
 	return $.name;
 };
-var author$project$Data$Account$getProfilePic = function ($) {
-	return $.profilePic;
-};
 var author$project$Page$Settings$Account = {$: 'Account'};
 var author$project$Page$Settings$Ready = {$: 'Ready'};
-var author$project$Session$getUser = function ($) {
-	return $.user;
-};
-var author$project$Page$Settings$init = function (session) {
-	var user = author$project$Session$getUser(session);
-	return {
-		name: author$project$Data$Account$getName(user),
-		profilePicUrl: A2(
-			elm$core$Maybe$withDefault,
-			'',
-			author$project$Data$Account$getProfilePic(user)),
-		session: session,
-		status: author$project$Page$Settings$Ready,
-		tab: author$project$Page$Settings$Account
-	};
-};
-var author$project$Data$Account$None = {$: 'None'};
-var author$project$Data$Account$none = author$project$Data$Account$None;
-var author$project$Session$removeAccount = author$project$Session$setUser(author$project$Data$Account$none);
+var author$project$Page$Settings$init = F2(
+	function (session, account) {
+		return {
+			account: account,
+			nameField: author$project$Data$Field$initWithValue(
+				author$project$Data$Account$getName(account)),
+			session: session,
+			status: author$project$Page$Settings$Ready,
+			tab: author$project$Page$Settings$Account
+		};
+	});
 var elm$core$Platform$Cmd$map = _Platform_map;
 var author$project$Util$Cmd$mapCmd = F2(
 	function (f, _n0) {
@@ -9073,84 +9409,249 @@ var author$project$Util$Cmd$mapCmd = F2(
 var author$project$Util$Cmd$withNoCmd = function (model) {
 	return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 };
-var elm$core$Tuple$mapFirst = F2(
-	function (func, _n0) {
-		var x = _n0.a;
-		var y = _n0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var author$project$Main$handleRouteFromOk = F2(
-	function (route, session) {
+var author$project$Main$handleRouteFromOk = F3(
+	function (session, user, route) {
 		switch (route.$) {
 			case 'PaintApp':
 				var subRoute = route.a;
 				return author$project$Util$Cmd$withNoCmd(
 					author$project$Model$PaintApp(
-						author$project$Page$PaintApp$init(session)));
+						A2(author$project$Page$PaintApp$init, session, user)));
 			case 'Landing':
-				var _n1 = author$project$Session$getUser(session);
-				if (_n1.$ === 'User') {
+				if (user.$ === 'User') {
 					return author$project$Util$Cmd$withNoCmd(
-						author$project$Model$Splash(
-							author$project$Session$removeAccount(session)));
+						author$project$Model$Splash(session));
 				} else {
-					var user = _n1.a;
+					var account = user.a;
 					return A2(
 						author$project$Util$Cmd$mapCmd,
 						author$project$Main$HomeMsg,
 						A2(
 							elm$core$Tuple$mapFirst,
 							author$project$Model$Home,
-							author$project$Page$Home$init(
-								A2(author$project$Session$setUser, user, session))));
+							A2(author$project$Page$Home$init, session, account)));
 				}
 			case 'About':
 				return author$project$Util$Cmd$withNoCmd(
-					author$project$Model$About(session));
+					author$project$Model$About(
+						{session: session, user: user}));
 			case 'Login':
-				return author$project$Util$Cmd$withNoCmd(
-					author$project$Model$Login(
-						author$project$Page$Login$init(session)));
+				return A2(
+					elm$core$Tuple$mapFirst,
+					author$project$Model$Login,
+					author$project$Page$Login$init(session));
 			case 'ResetPassword':
-				return author$project$Util$Cmd$withNoCmd(
-					author$project$Model$ResetPassword(
-						author$project$Page$ResetPassword$init(
-							author$project$Session$removeAccount(session))));
+				return A2(
+					elm$core$Tuple$mapFirst,
+					author$project$Model$ResetPassword,
+					author$project$Page$ResetPassword$init(session));
 			case 'Logout':
 				return A2(
 					elm$core$Tuple$mapFirst,
 					author$project$Model$Logout,
-					author$project$Page$Logout$init(
-						author$project$Session$removeAccount(session)));
+					author$project$Page$Logout$init(session));
 			default:
-				var _n2 = author$project$Session$getUser(session);
-				if (_n2.$ === 'User') {
+				if (user.$ === 'User') {
 					return author$project$Util$Cmd$withNoCmd(
-						author$project$Model$PageNotFound(session));
+						author$project$Model$PageNotFound(
+							{session: session, user: user}));
 				} else {
-					var user = _n2.a;
+					var account = user.a;
 					return author$project$Util$Cmd$withNoCmd(
 						author$project$Model$Settings(
-							author$project$Page$Settings$init(
-								A2(author$project$Session$setUser, user, session))));
+							A2(author$project$Page$Settings$init, session, account)));
 				}
 		}
 	});
-var author$project$Main$handleRoute = F2(
-	function (routeResult, session) {
+var author$project$Main$handleRoute = F3(
+	function (session, user, routeResult) {
 		if (routeResult.$ === 'Ok') {
 			var route = routeResult.a;
-			return A2(author$project$Main$handleRouteFromOk, route, session);
+			return A3(author$project$Main$handleRouteFromOk, session, user, route);
 		} else {
 			return author$project$Util$Cmd$withNoCmd(
-				author$project$Model$PageNotFound(session));
+				author$project$Model$PageNotFound(
+					{session: session, user: user}));
 		}
 	});
 var author$project$Model$Contact = function (a) {
 	return {$: 'Contact', a: a};
 };
+var author$project$Data$User$Account = function (a) {
+	return {$: 'Account', a: a};
+};
+var author$project$Data$User$account = author$project$Data$User$Account;
+var author$project$Page$Contact$getUser = function ($) {
+	return $.user;
+};
+var author$project$Page$Home$getAccount = function ($) {
+	return $.account;
+};
+var author$project$Page$Login$getUser = function ($) {
+	return $.user;
+};
+var author$project$Page$PaintApp$getUser = function ($) {
+	return $.user;
+};
+var author$project$Page$Settings$getAccount = function ($) {
+	return $.account;
+};
+var author$project$Model$getUser = function (model) {
+	switch (model.$) {
+		case 'Blank':
+			var user = model.a.user;
+			return user;
+		case 'PageNotFound':
+			var user = model.a.user;
+			return user;
+		case 'PaintApp':
+			var subModel = model.a;
+			return author$project$Page$PaintApp$getUser(subModel);
+		case 'Splash':
+			return author$project$Data$User$noAccount;
+		case 'About':
+			var user = model.a.user;
+			return user;
+		case 'Login':
+			var subModel = model.a;
+			return author$project$Page$Login$getUser(subModel);
+		case 'ResetPassword':
+			return author$project$Data$User$noAccount;
+		case 'Settings':
+			var subModel = model.a;
+			return author$project$Data$User$account(
+				author$project$Page$Settings$getAccount(subModel));
+		case 'Home':
+			var subModel = model.a;
+			return author$project$Data$User$account(
+				author$project$Page$Home$getAccount(subModel));
+		case 'Logout':
+			return author$project$Data$User$noAccount;
+		default:
+			var subModel = model.a;
+			return author$project$Page$Contact$getUser(subModel);
+	}
+};
+var author$project$Model$Blank = function (a) {
+	return {$: 'Blank', a: a};
+};
+var author$project$Page$Contact$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Page$Home$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Page$Login$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Page$Logout$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Page$PaintApp$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Page$ResetPassword$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Page$Settings$mapSession = F2(
+	function (f, model) {
+		return _Utils_update(
+			model,
+			{
+				session: f(model.session)
+			});
+	});
+var author$project$Model$mapSession = F2(
+	function (f, model) {
+		switch (model.$) {
+			case 'Blank':
+				var user = model.a.user;
+				var session = model.a.session;
+				return author$project$Model$Blank(
+					{
+						session: f(session),
+						user: user
+					});
+			case 'PageNotFound':
+				var user = model.a.user;
+				var session = model.a.session;
+				return author$project$Model$PageNotFound(
+					{
+						session: f(session),
+						user: user
+					});
+			case 'PaintApp':
+				var subModel = model.a;
+				return author$project$Model$PaintApp(
+					A2(author$project$Page$PaintApp$mapSession, f, subModel));
+			case 'Splash':
+				var session = model.a;
+				return author$project$Model$Splash(
+					f(session));
+			case 'About':
+				var user = model.a.user;
+				var session = model.a.session;
+				return author$project$Model$About(
+					{
+						session: f(session),
+						user: user
+					});
+			case 'Login':
+				var subModel = model.a;
+				return author$project$Model$Login(
+					A2(author$project$Page$Login$mapSession, f, subModel));
+			case 'ResetPassword':
+				var subModel = model.a;
+				return author$project$Model$ResetPassword(
+					A2(author$project$Page$ResetPassword$mapSession, f, subModel));
+			case 'Settings':
+				var subModel = model.a;
+				return author$project$Model$Settings(
+					A2(author$project$Page$Settings$mapSession, f, subModel));
+			case 'Home':
+				var subModel = model.a;
+				return author$project$Model$Home(
+					A2(author$project$Page$Home$mapSession, f, subModel));
+			case 'Logout':
+				var subModel = model.a;
+				return author$project$Model$Logout(
+					A2(author$project$Page$Logout$mapSession, f, subModel));
+			default:
+				var subModel = model.a;
+				return author$project$Model$Contact(
+					A2(author$project$Page$Contact$mapSession, f, subModel));
+		}
+	});
 var author$project$Page$Contact$sent = function (model) {
 	return _Utils_update(
 		model,
@@ -9261,6 +9762,23 @@ var author$project$Page$Home$initNewDrawing = A2(
 	author$project$Page$Home$setState(
 		author$project$Page$Home$NewDrawing(author$project$Ui$InitDrawing$init)),
 	author$project$Util$Cmd$withNoCmd);
+var author$project$Page$Home$LoadingFailed = function (a) {
+	return {$: 'LoadingFailed', a: a};
+};
+var author$project$Page$Home$loadingFailed = F2(
+	function (error, model) {
+		return _Utils_update(
+			model,
+			{
+				state: author$project$Page$Home$LoadingFailed(error)
+			});
+	});
+var author$project$Page$Home$receiveDrawings = F2(
+	function (drawings, model) {
+		return _Utils_update(
+			model,
+			{drawings: drawings, state: author$project$Page$Home$Drawings});
+	});
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
 };
@@ -9493,10 +10011,6 @@ var author$project$Data$NavKey$goTo = F2(
 			return elm$core$Platform$Cmd$none;
 		}
 	});
-var Chadtech$elm_relational_database$Id$toString = function (_n0) {
-	var str = _n0.a;
-	return str;
-};
 var elm$core$String$concat = function (strings) {
 	return A2(elm$core$String$join, '', strings);
 };
@@ -9623,6 +10137,9 @@ var author$project$Route$goTo = function (key) {
 		author$project$Route$toUrl);
 };
 var author$project$Route$paintAppFromDrawing = A2(elm$core$Basics$composeL, author$project$Route$PaintApp, author$project$Route$PaintApp$FromDrawing);
+var author$project$Session$getNavKey = function ($) {
+	return $.navKey;
+};
 var author$project$Route$paintAppWithParams = A2(elm$core$Basics$composeL, author$project$Route$PaintApp, author$project$Route$PaintApp$WithParams);
 var author$project$Route$paintAppFromUrl = A2(
 	elm$core$Basics$composeL,
@@ -9853,11 +10370,11 @@ var author$project$Page$Home$update = F2(
 			case 'RefreshClicked':
 				return _Utils_Tuple2(
 					A2(author$project$Page$Home$setState, author$project$Page$Home$LoadingAllDrawings, model),
-					author$project$Page$Home$getDrawings);
+					author$project$Page$Home$allDrawingsRequest);
 			case 'BackToDrawingsClicked':
 				return author$project$Util$Cmd$withNoCmd(
 					A2(author$project$Page$Home$setState, author$project$Page$Home$Drawings, model));
-			default:
+			case 'TryAgainClicked':
 				var _n5 = model.state;
 				if (_n5.$ === 'DeleteFailed') {
 					var id = _n5.a;
@@ -9867,17 +10384,25 @@ var author$project$Page$Home$update = F2(
 				} else {
 					return author$project$Util$Cmd$withNoCmd(model);
 				}
+			default:
+				var response = msg.a;
+				if (response.$ === 'Ok') {
+					var drawings = response.a;
+					return author$project$Util$Cmd$withNoCmd(
+						A2(author$project$Page$Home$receiveDrawings, drawings, model));
+				} else {
+					var err = response.a;
+					return author$project$Util$Cmd$withNoCmd(
+						A2(author$project$Page$Home$loadingFailed, err, model));
+				}
 		}
 	});
-var author$project$Page$Login$LoginCardMsg = function (a) {
-	return {$: 'LoginCardMsg', a: a};
-};
-var author$project$Page$Login$mapSession = F2(
-	function (f, model) {
+var author$project$Page$Login$loggedIn = F2(
+	function (account, model) {
 		return _Utils_update(
 			model,
 			{
-				session: f(model.session)
+				user: author$project$Data$User$account(account)
 			});
 	});
 var author$project$Page$Login$setLoginCard = F2(
@@ -9886,19 +10411,8 @@ var author$project$Page$Login$setLoginCard = F2(
 			model,
 			{loginCard: newLoginCard});
 	});
-var author$project$Session$userLoggedIn = F2(
-	function (account, session) {
-		return _Utils_update(
-			session,
-			{
-				user: author$project$Data$User$Account(account)
-			});
-	});
 var author$project$Ui$LoginCard$ForgotPassword = function (a) {
 	return {$: 'ForgotPassword', a: a};
-};
-var author$project$Ui$LoginCard$ForgotPasswordMsg = function (a) {
-	return {$: 'ForgotPasswordMsg', a: a};
 };
 var author$project$Ui$LoginCard$Login$LoggingIn = {$: 'LoggingIn'};
 var author$project$Ui$LoginCard$Login$loggingIn = function (model) {
@@ -10331,10 +10845,7 @@ var author$project$Page$Login$update = F2(
 		if (maybeUser.$ === 'Just') {
 			var newUser = maybeUser.a;
 			return _Utils_Tuple2(
-				A2(
-					author$project$Page$Login$mapSession,
-					author$project$Session$userLoggedIn(newUser),
-					modelWithCard),
+				A2(author$project$Page$Login$loggedIn, newUser, modelWithCard),
 				elm$core$Platform$Cmd$batch(
 					_List_fromArray(
 						[
@@ -10497,8 +11008,7 @@ var author$project$Page$ResetPassword$update = F2(
 						author$project$Session$getNavKey(model.session),
 						author$project$Route$Login));
 			case 'TryAgainClicked':
-				return author$project$Util$Cmd$withNoCmd(
-					author$project$Page$ResetPassword$init(model.session));
+				return author$project$Page$ResetPassword$init(model.session);
 			case 'EmailUpdated':
 				var newEmail = msg.a;
 				return author$project$Util$Cmd$withNoCmd(
@@ -10526,25 +11036,16 @@ var author$project$Page$Settings$becomeReady = function (model) {
 		model,
 		{status: author$project$Page$Settings$Ready});
 };
-var author$project$Page$Settings$toUser = function (model) {
-	var user = author$project$Session$getUser(model.session);
+var author$project$Page$Settings$toAccount = function (model) {
 	return {
-		email: user.email,
-		name: model.name,
-		profilePic: function () {
-			var _n0 = model.profilePicUrl;
-			if (_n0 === '') {
-				return elm$core$Maybe$Nothing;
-			} else {
-				return elm$core$Maybe$Just(model.profilePicUrl);
-			}
-		}()
+		email: model.account.email,
+		name: author$project$Data$Field$getValue(model.nameField)
 	};
 };
 var author$project$Page$Settings$hasChanges = function (model) {
 	return !_Utils_eq(
-		author$project$Page$Settings$toUser(model),
-		author$project$Session$getUser(model.session));
+		author$project$Page$Settings$toAccount(model),
+		model.account);
 };
 var author$project$Page$Settings$canSave = function (model) {
 	return _Utils_eq(model.status, author$project$Page$Settings$Ready) && (!author$project$Page$Settings$hasChanges(model));
@@ -10570,13 +11071,9 @@ var author$project$Page$Settings$setName = F2(
 	function (newName, model) {
 		return _Utils_update(
 			model,
-			{name: newName});
-	});
-var author$project$Page$Settings$setProfilePicUrl = F2(
-	function (newUrl, model) {
-		return _Utils_update(
-			model,
-			{profilePicUrl: newUrl});
+			{
+				nameField: A2(author$project$Data$Field$setValue, newName, model.nameField)
+			});
 	});
 var author$project$Page$Settings$setTab = F2(
 	function (tab, model) {
@@ -10595,34 +11092,19 @@ var author$project$Page$Settings$update = F2(
 				var nameField = msg.a;
 				return author$project$Util$Cmd$withNoCmd(
 					A2(author$project$Page$Settings$setName, nameField, model));
-			case 'ProfilePicUrlUpdated':
-				var newUrl = msg.a;
-				return author$project$Util$Cmd$withNoCmd(
-					A2(author$project$Page$Settings$setProfilePicUrl, newUrl, model));
 			case 'SaveClicked':
 				return author$project$Page$Settings$canSave(model) ? _Utils_Tuple2(
 					author$project$Page$Settings$saving(model),
 					author$project$Ports$send(
 						A3(
 							author$project$Ports$withString,
-							'profilePicUrl',
-							function () {
-								var _n1 = model.profilePicUrl;
-								if (_n1 === '') {
-									return 'NONE';
-								} else {
-									return model.profilePicUrl;
-								}
-							}(),
+							'name',
+							author$project$Data$Field$getValue(model.nameField),
 							A3(
 								author$project$Ports$withString,
-								'name',
-								model.name,
-								A3(
-									author$project$Ports$withString,
-									'email',
-									author$project$Session$getUser(model.session).email,
-									author$project$Ports$payload('update user')))))) : author$project$Util$Cmd$withNoCmd(model);
+								'email',
+								model.account.email,
+								author$project$Ports$payload('update user'))))) : author$project$Util$Cmd$withNoCmd(model);
 			default:
 				var response = msg.a;
 				if (response.$ === 'Ok') {
@@ -10643,6 +11125,12 @@ var author$project$Page$Splash$update = F2(
 		} else {
 			return A2(author$project$Route$goTo, key, author$project$Route$paintApp);
 		}
+	});
+var author$project$Session$setWindowSize = F2(
+	function (newSize, session) {
+		return _Utils_update(
+			session,
+			{windowSize: newSize});
 	});
 var author$project$Ui$Nav$Option$toRoute = function (option) {
 	switch (option.$) {
@@ -10670,125 +11158,143 @@ var author$project$Ui$Nav$update = F2(
 	});
 var author$project$Main$updateFromOk = F2(
 	function (msg, model) {
-		var session = author$project$Model$getSession(model);
-		switch (msg.$) {
-			case 'UrlChanged':
-				var routeResult = msg.a;
-				return A2(author$project$Main$handleRoute, routeResult, session);
-			case 'UrlRequested':
-				return author$project$Util$Cmd$withNoCmd(model);
-			case 'NavMsg':
-				var navMsg = msg.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						elm$core$Platform$Cmd$map,
-						author$project$Main$NavMsg,
-						A2(
-							author$project$Ui$Nav$update,
-							author$project$Session$getNavKey(session),
-							navMsg)));
-			case 'SplashMsg':
-				var subMsg = msg.a;
-				if (model.$ === 'Splash') {
+		updateFromOk:
+		while (true) {
+			var user = author$project$Model$getUser(model);
+			var session = author$project$Model$getSession(model);
+			switch (msg.$) {
+				case 'UrlChanged':
+					var routeResult = msg.a;
+					return A3(author$project$Main$handleRoute, session, user, routeResult);
+				case 'UrlRequested':
+					return author$project$Util$Cmd$withNoCmd(model);
+				case 'NavMsg':
+					var navMsg = msg.a;
 					return _Utils_Tuple2(
 						model,
 						A2(
 							elm$core$Platform$Cmd$map,
-							author$project$Main$SplashMsg,
+							author$project$Main$NavMsg,
 							A2(
-								author$project$Page$Splash$update,
+								author$project$Ui$Nav$update,
 								author$project$Session$getNavKey(session),
-								subMsg)));
-				} else {
-					return author$project$Util$Cmd$withNoCmd(model);
-				}
-			case 'LoginMsg':
-				var subMsg = msg.a;
-				if (model.$ === 'Login') {
-					var subModel = model.a;
-					return A2(
-						author$project$Util$Cmd$mapCmd,
-						author$project$Main$LoginMsg,
-						A2(
-							author$project$Util$Cmd$mapModel,
-							author$project$Model$Login,
-							A2(author$project$Page$Login$update, subMsg, subModel)));
-				} else {
-					return author$project$Util$Cmd$withNoCmd(model);
-				}
-			case 'ResetPasswordMsg':
-				var subMsg = msg.a;
-				if (model.$ === 'ResetPassword') {
-					var subModel = model.a;
-					return A2(
-						author$project$Util$Cmd$mapCmd,
-						author$project$Main$ResetPasswordMsg,
-						A2(
-							author$project$Util$Cmd$mapModel,
-							author$project$Model$ResetPassword,
-							A2(author$project$Page$ResetPassword$update, subMsg, subModel)));
-				} else {
-					return author$project$Util$Cmd$withNoCmd(model);
-				}
-			case 'PageNotFoundMsg':
-				var subMsg = msg.a;
-				if (model.$ === 'PageNotFound') {
-					return _Utils_Tuple2(
-						model,
-						A2(
-							elm$core$Platform$Cmd$map,
-							author$project$Main$PageNotFoundMsg,
+								navMsg)));
+				case 'SplashMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'Splash') {
+						return _Utils_Tuple2(
+							model,
 							A2(
-								author$project$Page$PageNotFound$update,
-								author$project$Session$getNavKey(session),
-								subMsg)));
-				} else {
+								elm$core$Platform$Cmd$map,
+								author$project$Main$SplashMsg,
+								A2(
+									author$project$Page$Splash$update,
+									author$project$Session$getNavKey(session),
+									subMsg)));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'LoginMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'Login') {
+						var subModel = model.a;
+						return A2(
+							author$project$Util$Cmd$mapCmd,
+							author$project$Main$LoginMsg,
+							A2(
+								author$project$Util$Cmd$mapModel,
+								author$project$Model$Login,
+								A2(author$project$Page$Login$update, subMsg, subModel)));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'ResetPasswordMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'ResetPassword') {
+						var subModel = model.a;
+						return A2(
+							author$project$Util$Cmd$mapCmd,
+							author$project$Main$ResetPasswordMsg,
+							A2(
+								author$project$Util$Cmd$mapModel,
+								author$project$Model$ResetPassword,
+								A2(author$project$Page$ResetPassword$update, subMsg, subModel)));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'PageNotFoundMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'PageNotFound') {
+						return _Utils_Tuple2(
+							model,
+							A2(
+								elm$core$Platform$Cmd$map,
+								author$project$Main$PageNotFoundMsg,
+								A2(
+									author$project$Page$PageNotFound$update,
+									author$project$Session$getNavKey(session),
+									subMsg)));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'ListenerNotFound':
 					return author$project$Util$Cmd$withNoCmd(model);
-				}
-			case 'ListenerNotFound':
-				return author$project$Util$Cmd$withNoCmd(model);
-			case 'FailedToDecodeJsMsg':
-				return author$project$Util$Cmd$withNoCmd(model);
-			case 'HomeMsg':
-				var subMsg = msg.a;
-				if (model.$ === 'Home') {
-					var subModel = model.a;
-					return A2(
-						author$project$Util$Cmd$mapCmd,
-						author$project$Main$HomeMsg,
-						A2(
+				case 'FailedToDecodeJsMsg':
+					return author$project$Util$Cmd$withNoCmd(model);
+				case 'HomeMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'Home') {
+						var subModel = model.a;
+						return A2(
+							author$project$Util$Cmd$mapCmd,
+							author$project$Main$HomeMsg,
+							A2(
+								elm$core$Tuple$mapFirst,
+								author$project$Model$Home,
+								A2(author$project$Page$Home$update, subMsg, subModel)));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'SettingsMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'Settings') {
+						var subModel = model.a;
+						return A2(
+							author$project$Util$Cmd$mapCmd,
+							author$project$Main$SettingsMsg,
+							A2(
+								elm$core$Tuple$mapFirst,
+								author$project$Model$Settings,
+								A2(author$project$Page$Settings$update, subMsg, subModel)));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'ContactMsg':
+					var subMsg = msg.a;
+					if (model.$ === 'Contact') {
+						var subModel = model.a;
+						return A2(
 							elm$core$Tuple$mapFirst,
-							author$project$Model$Home,
-							A2(author$project$Page$Home$update, subMsg, subModel)));
-				} else {
-					return author$project$Util$Cmd$withNoCmd(model);
-				}
-			case 'SettingsMsg':
-				var subMsg = msg.a;
-				if (model.$ === 'Settings') {
-					var subModel = model.a;
-					return A2(
-						author$project$Util$Cmd$mapCmd,
-						author$project$Main$SettingsMsg,
+							author$project$Model$Contact,
+							A2(author$project$Page$Contact$update, subMsg, subModel));
+					} else {
+						return author$project$Util$Cmd$withNoCmd(model);
+					}
+				case 'WindowResized':
+					var size = msg.a;
+					return author$project$Util$Cmd$withNoCmd(
 						A2(
-							elm$core$Tuple$mapFirst,
-							author$project$Model$Settings,
-							A2(author$project$Page$Settings$update, subMsg, subModel)));
-				} else {
-					return author$project$Util$Cmd$withNoCmd(model);
-				}
-			default:
-				var subMsg = msg.a;
-				if (model.$ === 'Contact') {
-					var subModel = model.a;
-					return A2(
-						elm$core$Tuple$mapFirst,
-						author$project$Model$Contact,
-						A2(author$project$Page$Contact$update, subMsg, subModel));
-				} else {
-					return author$project$Util$Cmd$withNoCmd(model);
-				}
+							author$project$Model$mapSession,
+							author$project$Session$setWindowSize(size),
+							model));
+				default:
+					var json = msg.a;
+					var $temp$msg = A2(author$project$Main$decodeMsg, model, json),
+						$temp$model = model;
+					msg = $temp$msg;
+					model = $temp$model;
+					continue updateFromOk;
+			}
 		}
 	});
 var author$project$Util$Cmd$addCmd = F2(
@@ -10819,18 +11325,20 @@ var author$project$Main$update = F2(
 				elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Model$Blank = function (a) {
-	return {$: 'Blank', a: a};
-};
+var author$project$Data$User$decoder = elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			elm$json$Json$Decode$null(author$project$Data$User$User),
+			A2(author$project$Util$Json$Decode$matchString, 'offline', author$project$Data$User$User),
+			A2(elm$json$Json$Decode$map, author$project$Data$User$Account, author$project$Data$Account$decoder)
+		]));
 var author$project$Data$BuildNumber$BuildNumber = function (a) {
 	return {$: 'BuildNumber', a: a};
 };
-var elm$json$Json$Decode$int = _Json_decodeInt;
 var author$project$Data$BuildNumber$decoder = A2(elm$json$Json$Decode$map, author$project$Data$BuildNumber$BuildNumber, elm$json$Json$Decode$int);
 var author$project$Data$MountPath$MountPath = function (a) {
 	return {$: 'MountPath', a: a};
 };
-var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Data$MountPath$decoder = A2(elm$json$Json$Decode$map, author$project$Data$MountPath$MountPath, elm$json$Json$Decode$string);
 var elm$core$Char$fromCode = _Char_fromCode;
 var Chadtech$elm_relational_database$Id$toChar = function (_int) {
@@ -10944,76 +11452,9 @@ var author$project$Data$SessionId$SessionId = function (a) {
 	return {$: 'SessionId', a: a};
 };
 var author$project$Data$SessionId$generator = A2(elm$random$Random$map, author$project$Data$SessionId$SessionId, Chadtech$elm_relational_database$Id$generator);
-var author$project$Data$Account$Account = F3(
-	function (email, name, profilePic) {
-		return {email: email, name: name, profilePic: profilePic};
-	});
-var elm$json$Json$Decode$andThen = _Json_andThen;
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$oneOf = _Json_oneOf;
-var author$project$Data$Account$profilePicDecoder = function () {
-	var fromString = function (str) {
-		switch (str) {
-			case '':
-				return elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing);
-			case 'NONE':
-				return elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing);
-			default:
-				return elm$json$Json$Decode$succeed(
-					elm$core$Maybe$Just(str));
-		}
-	};
-	return elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2(
-				elm$json$Json$Decode$andThen,
-				fromString,
-				A2(elm$json$Json$Decode$field, 'picture', elm$json$Json$Decode$string)),
-				elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing)
-			]));
-}();
-var author$project$Util$Json$Decode$apply = function () {
-	var applyHelp = F2(
-		function (v, f) {
-			return f(v);
-		});
-	return elm$json$Json$Decode$map2(applyHelp);
-}();
-var author$project$Data$Account$decoder = A2(
-	author$project$Util$Json$Decode$apply,
-	author$project$Data$Account$profilePicDecoder,
-	A2(
-		author$project$Util$Json$Decode$apply,
-		A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-		A2(
-			author$project$Util$Json$Decode$apply,
-			A2(elm$json$Json$Decode$field, 'email', elm$json$Json$Decode$string),
-			elm$json$Json$Decode$succeed(author$project$Data$Account$Account))));
-var elm$json$Json$Decode$fail = _Json_fail;
-var author$project$Util$Json$Decode$matchString = F2(
-	function (str, value) {
-		var fromString = function (decodedStr) {
-			return _Utils_eq(decodedStr, str) ? elm$json$Json$Decode$succeed(value) : elm$json$Json$Decode$fail('String is not ' + str);
-		};
-		return A2(elm$json$Json$Decode$andThen, fromString, elm$json$Json$Decode$string);
-	});
-var elm$json$Json$Decode$null = _Json_decodeNull;
-var author$project$Data$User$decoder = elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			elm$json$Json$Decode$null(author$project$Data$User$User),
-			A2(author$project$Util$Json$Decode$matchString, 'offline', author$project$Data$User$User),
-			A2(elm$json$Json$Decode$map, author$project$Data$User$Account, author$project$Data$Account$decoder)
-		]));
 var author$project$Session$Session = F6(
-	function (mountPath, navKey, buildNumber, user, sessionId, seed) {
-		return {buildNumber: buildNumber, mountPath: mountPath, navKey: navKey, seed: seed, sessionId: sessionId, user: user};
-	});
-var author$project$Util$Json$Decode$applyField = F2(
-	function (fieldName, decoder) {
-		return author$project$Util$Json$Decode$apply(
-			A2(elm$json$Json$Decode$field, fieldName, decoder));
+	function (mountPath, navKey, buildNumber, sessionId, seed, windowSize) {
+		return {buildNumber: buildNumber, mountPath: mountPath, navKey: navKey, seed: seed, sessionId: sessionId, windowSize: windowSize};
 	});
 var author$project$Util$Json$Decode$set = function (value) {
 	return author$project$Util$Json$Decode$apply(
@@ -11034,20 +11475,28 @@ var elm$random$Random$step = F2(
 		return generator(seed);
 	});
 var author$project$Session$decoder = function (navKey) {
+	var windowSizeDecoder = A3(
+		author$project$Util$Json$Decode$applyField,
+		'windowWidth',
+		elm$json$Json$Decode$int,
+		A3(
+			author$project$Util$Json$Decode$applyField,
+			'windowHeight',
+			elm$json$Json$Decode$int,
+			elm$json$Json$Decode$succeed(author$project$Data$Size$Size)));
 	var fromSeed = function (seed0) {
 		var _n0 = A2(elm$random$Random$step, author$project$Data$SessionId$generator, seed0);
 		var sessionId = _n0.a;
 		var seed1 = _n0.b;
 		return A2(
-			author$project$Util$Json$Decode$set,
-			seed1,
+			author$project$Util$Json$Decode$apply,
+			windowSizeDecoder,
 			A2(
 				author$project$Util$Json$Decode$set,
-				sessionId,
-				A3(
-					author$project$Util$Json$Decode$applyField,
-					'viewer',
-					author$project$Data$User$decoder,
+				seed1,
+				A2(
+					author$project$Util$Json$Decode$set,
+					sessionId,
 					A3(
 						author$project$Util$Json$Decode$applyField,
 						'buildNumber',
@@ -11069,21 +11518,30 @@ var author$project$Session$decoder = function (navKey) {
 			'seed',
 			A2(elm$json$Json$Decode$map, elm$random$Random$initialSeed, elm$json$Json$Decode$int)));
 };
-var elm$json$Json$Decode$decodeValue = _Json_run;
+var author$project$Model$decoder = function (navKey) {
+	return A3(
+		elm$json$Json$Decode$map2,
+		F2(
+			function (user, session) {
+				return author$project$Model$Blank(
+					{session: session, user: user});
+			}),
+		A2(elm$json$Json$Decode$field, 'user', author$project$Data$User$decoder),
+		author$project$Session$decoder(navKey));
+};
 var author$project$Main$init = F3(
 	function (json, url, key) {
 		var _n0 = A2(
 			elm$json$Json$Decode$decodeValue,
-			author$project$Session$decoder(
+			author$project$Model$decoder(
 				author$project$Data$NavKey$fromNativeKey(key)),
 			json);
 		if (_n0.$ === 'Ok') {
-			var session = _n0.a;
+			var model = _n0.a;
 			return A2(
 				author$project$Main$update,
 				author$project$Main$onNavigation(url),
-				elm$core$Result$Ok(
-					author$project$Model$Blank(session)));
+				elm$core$Result$Ok(model));
 		} else {
 			var decodeError = _n0.a;
 			return _Utils_Tuple2(
@@ -11096,223 +11554,12 @@ var author$project$Main$init = F3(
 						author$project$Data$Tracking$event('init failed'))));
 		}
 	});
-var author$project$Data$Listener$getName = function (_n0) {
-	var name = _n0.a;
-	return name;
+var author$project$Main$JsMsg = function (a) {
+	return {$: 'JsMsg', a: a};
 };
-var author$project$Data$Listener$handle = F2(
-	function (_n0, json) {
-		var handler = _n0.b;
-		return handler(json);
-	});
-var author$project$Main$FailedToDecodeJsMsg = {$: 'FailedToDecodeJsMsg'};
-var author$project$Main$ListenerNotFound = function (a) {
-	return {$: 'ListenerNotFound', a: a};
-};
-var author$project$Data$Listener$Listener = F2(
-	function (a, b) {
-		return {$: 'Listener', a: a, b: b};
-	});
-var author$project$Data$Listener$map = F2(
-	function (f, _n0) {
-		var name = _n0.a;
-		var handler = _n0.b;
-		return A2(
-			author$project$Data$Listener$Listener,
-			name,
-			A2(elm$core$Basics$composeL, f, handler));
-	});
-var author$project$Data$Listener$mapMany = function (f) {
-	return elm$core$List$map(
-		author$project$Data$Listener$map(f));
-};
-var author$project$Ui$LoginCard$LoginMsg = function (a) {
-	return {$: 'LoginMsg', a: a};
-};
-var elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return elm$core$Result$Err(
-				f(e));
-		}
-	});
-var author$project$Data$Listener$for = function (_n0) {
-	var name = _n0.name;
-	var decoder = _n0.decoder;
-	var handler = _n0.handler;
-	var fromJson = function (json) {
-		var _n1 = A2(elm$json$Json$Decode$decodeValue, decoder, json);
-		if (_n1.$ === 'Ok') {
-			var v = _n1.a;
-			return A2(elm$core$Result$mapError, author$project$Data$Listener$Error, v);
-		} else {
-			var decodeError = _n1.a;
-			return elm$core$Result$Err(
-				author$project$Data$Listener$DecodeError(decodeError));
-		}
-	};
-	return A2(
-		author$project$Data$Listener$Listener,
-		name,
-		A2(elm$core$Basics$composeR, fromJson, handler));
-};
-var author$project$Ui$LoginCard$ForgotPassword$GotForgetPasswordResponse = function (a) {
-	return {$: 'GotForgetPasswordResponse', a: a};
-};
-var author$project$Ui$LoginCard$ForgotPassword$UserDoesntExist = {$: 'UserDoesntExist'};
-var author$project$Util$Json$Decode$matchStringMany = function () {
-	var matchThis = function (_n0) {
-		var str = _n0.a;
-		var value = _n0.b;
-		return A2(author$project$Util$Json$Decode$matchString, str, value);
-	};
-	return A2(
-		elm$core$Basics$composeR,
-		elm$core$List$map(matchThis),
-		elm$json$Json$Decode$oneOf);
-}();
-var author$project$Ui$LoginCard$ForgotPassword$listener = author$project$Data$Listener$for(
-	{
-		decoder: elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(
-					elm$json$Json$Decode$map,
-					elm$core$Result$Ok,
-					elm$json$Json$Decode$null(_Utils_Tuple0)),
-					A2(
-					elm$json$Json$Decode$map,
-					elm$core$Result$Err,
-					A2(
-						elm$json$Json$Decode$field,
-						'name',
-						author$project$Util$Json$Decode$matchStringMany(
-							_List_fromArray(
-								[
-									_Utils_Tuple2('UserNotFoundException', author$project$Ui$LoginCard$ForgotPassword$UserDoesntExist)
-								]))))
-				])),
-		handler: author$project$Ui$LoginCard$ForgotPassword$GotForgetPasswordResponse,
-		name: 'forgot password'
-	});
-var author$project$Ui$LoginCard$Login$GotLoginResponse = function (a) {
-	return {$: 'GotLoginResponse', a: a};
-};
-var author$project$Ui$LoginCard$Login$IncorrectCredentials = {$: 'IncorrectCredentials'};
-var author$project$Ui$LoginCard$Login$PasswordResetRequired = {$: 'PasswordResetRequired'};
-var author$project$Ui$LoginCard$Login$listener = author$project$Data$Listener$for(
-	{
-		decoder: elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(elm$json$Json$Decode$map, elm$core$Result$Ok, author$project$Data$Account$decoder),
-					A2(
-					elm$json$Json$Decode$map,
-					elm$core$Result$Err,
-					A2(
-						elm$json$Json$Decode$field,
-						'name',
-						author$project$Util$Json$Decode$matchStringMany(
-							_List_fromArray(
-								[
-									_Utils_Tuple2('UserNotFoundException', author$project$Ui$LoginCard$Login$IncorrectCredentials),
-									_Utils_Tuple2('NotAuthorizedException', author$project$Ui$LoginCard$Login$IncorrectCredentials),
-									_Utils_Tuple2('PasswordResetRequiredException', author$project$Ui$LoginCard$Login$PasswordResetRequired)
-								]))))
-				])),
-		handler: author$project$Ui$LoginCard$Login$GotLoginResponse,
-		name: 'login'
-	});
-var author$project$Ui$LoginCard$listeners = _List_fromArray(
-	[
-		A2(author$project$Data$Listener$map, author$project$Ui$LoginCard$LoginMsg, author$project$Ui$LoginCard$Login$listener),
-		A2(author$project$Data$Listener$map, author$project$Ui$LoginCard$ForgotPasswordMsg, author$project$Ui$LoginCard$ForgotPassword$listener)
-	]);
-var author$project$Page$Login$listeners = A2(author$project$Data$Listener$mapMany, author$project$Page$Login$LoginCardMsg, author$project$Ui$LoginCard$listeners);
-var author$project$Page$ResetPassword$GotResetPasswordResponse = function (a) {
-	return {$: 'GotResetPasswordResponse', a: a};
-};
-var author$project$Page$ResetPassword$InvalidCode = {$: 'InvalidCode'};
-var author$project$Page$ResetPassword$listener = author$project$Data$Listener$for(
-	{
-		decoder: elm$json$Json$Decode$oneOf(
-			_List_fromArray(
-				[
-					A2(
-					elm$json$Json$Decode$map,
-					elm$core$Result$Ok,
-					elm$json$Json$Decode$null(_Utils_Tuple0)),
-					A2(
-					elm$json$Json$Decode$map,
-					elm$core$Result$Err,
-					A2(
-						elm$json$Json$Decode$field,
-						'name',
-						A2(author$project$Util$Json$Decode$matchString, 'ExpiredCodeException', author$project$Page$ResetPassword$InvalidCode)))
-				])),
-		handler: author$project$Page$ResetPassword$GotResetPasswordResponse,
-		name: 'reset password'
-	});
-var author$project$Main$listeners = function (model) {
-	switch (model.$) {
-		case 'Login':
-			return A2(author$project$Data$Listener$mapMany, author$project$Main$LoginMsg, author$project$Page$Login$listeners);
-		case 'ResetPassword':
-			return _List_fromArray(
-				[
-					A2(author$project$Data$Listener$map, author$project$Main$ResetPasswordMsg, author$project$Page$ResetPassword$listener)
-				]);
-		default:
-			return _List_Nil;
-	}
-};
-var elm$json$Json$Decode$value = _Json_decodeValue;
-var author$project$Main$decodeMsg = F2(
-	function (model, json) {
-		var incomingMsgDecoder = A3(
-			elm$json$Json$Decode$map2,
-			elm$core$Tuple$pair,
-			A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-			A2(elm$json$Json$Decode$field, 'props', elm$json$Json$Decode$value));
-		var _n0 = A2(elm$json$Json$Decode$decodeValue, incomingMsgDecoder, json);
-		if (_n0.$ === 'Ok') {
-			var _n1 = _n0.a;
-			var name = _n1.a;
-			var props = _n1.b;
-			var checkListeners = function (remainingListeners) {
-				checkListeners:
-				while (true) {
-					if (!remainingListeners.b) {
-						return author$project$Main$ListenerNotFound(name);
-					} else {
-						var first = remainingListeners.a;
-						var rest = remainingListeners.b;
-						if (_Utils_eq(
-							author$project$Data$Listener$getName(first),
-							name)) {
-							return A2(author$project$Data$Listener$handle, first, props);
-						} else {
-							var $temp$remainingListeners = rest;
-							remainingListeners = $temp$remainingListeners;
-							continue checkListeners;
-						}
-					}
-				}
-			};
-			return checkListeners(
-				author$project$Main$listeners(model));
-		} else {
-			return author$project$Main$FailedToDecodeJsMsg;
-		}
-	});
 var author$project$Ports$fromJs = _Platform_incomingPort('fromJs', elm$json$Json$Decode$value);
 var author$project$Main$subscriptionsFromOk = function (model) {
-	return author$project$Ports$fromJs(
-		author$project$Main$decodeMsg(model));
+	return author$project$Ports$fromJs(author$project$Main$JsMsg);
 };
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
@@ -11336,10 +11583,12 @@ var elm$core$Result$withDefault = F2(
 			return def;
 		}
 	});
-var author$project$Main$subscriptions = A2(
-	elm$core$Basics$composeR,
-	elm$core$Result$map(author$project$Main$subscriptionsFromOk),
-	elm$core$Result$withDefault(elm$core$Platform$Sub$none));
+var author$project$Main$subscriptions = function (result) {
+	return A2(
+		elm$core$Result$withDefault,
+		elm$core$Platform$Sub$none,
+		A2(elm$core$Result$map, author$project$Main$subscriptionsFromOk, result));
+};
 var elm$core$Basics$pow = _Basics_pow;
 var author$project$Style$scale = function (degree) {
 	return A2(elm$core$Basics$pow, 2, degree);
@@ -12880,8 +13129,7 @@ var author$project$Ui$Nav$view = function (model) {
 					]));
 		});
 	var userOptions = function () {
-		var _n0 = author$project$Session$getUser(
-			author$project$Model$getSession(model));
+		var _n0 = author$project$Model$getUser(model);
 		if (_n0.$ === 'User') {
 			return _List_fromArray(
 				[
@@ -13018,18 +13266,30 @@ var author$project$Style$exactWidth = function (flWidth) {
 var author$project$View$Image$optionsToSummary = function () {
 	var modifySummary = F2(
 		function (option, summary) {
-			var width = option.a;
-			return _Utils_update(
-				summary,
-				{
-					width: elm$core$Maybe$Just(width)
-				});
+			if (option.$ === 'Width') {
+				var width = option.a;
+				return _Utils_update(
+					summary,
+					{
+						width: elm$core$Maybe$Just(width)
+					});
+			} else {
+				var list = option.a;
+				return _Utils_update(
+					summary,
+					{
+						extraStyles: _Utils_ap(list, summary.extraStyles)
+					});
+			}
 		});
 	return A2(
 		elm$core$List$foldr,
 		modifySummary,
-		{width: elm$core$Maybe$Nothing});
+		{extraStyles: _List_Nil, width: elm$core$Maybe$Nothing});
 }();
+var author$project$Data$Drawing$getPublicId = function ($) {
+	return $.publicId;
+};
 var author$project$Data$MountPath$path = F2(
 	function (_n0, extra) {
 		var mountpath = _n0.a;
@@ -13039,20 +13299,25 @@ var author$project$Data$MountPath$path = F2(
 			A2(elm$core$List$cons, mountpath, extra));
 	});
 var author$project$View$Image$sourceToString = function (source) {
-	if (source.$ === 'Asset') {
-		var assetSource = source.a;
-		var mountPath = source.b;
-		var mount = function (path) {
-			return A2(
-				author$project$Data$MountPath$path,
-				mountPath,
-				_List_fromArray(
-					[path]));
-		};
-		return mount('splash-image.png');
-	} else {
-		var url = source.a;
-		return url;
+	switch (source.$) {
+		case 'Asset':
+			var assetSource = source.a;
+			var mountPath = source.b;
+			var mount = function (path) {
+				return A2(
+					author$project$Data$MountPath$path,
+					mountPath,
+					_List_fromArray(
+						[path]));
+			};
+			return mount('splash-image.png');
+		case 'ThirdParty':
+			var url = source.a;
+			return url;
+		default:
+			var drawing_ = source.a;
+			return author$project$Data$Drawing$toUrl(
+				author$project$Data$Drawing$getPublicId(drawing_));
 	}
 };
 var rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, cursor: rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: rtfeldman$elm_css$Css$Structure$Compatible, overflow: rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: rtfeldman$elm_css$Css$Structure$Compatible, textRendering: rtfeldman$elm_css$Css$Structure$Compatible, touchAction: rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
@@ -13075,7 +13340,8 @@ var author$project$View$Image$toHtml = function (_n0) {
 				_List_fromArray(
 					[
 						A2(author$project$Util$Css$styleMaybe, author$project$Style$exactWidth, summary.width),
-						rtfeldman$elm_css$Css$margin(rtfeldman$elm_css$Css$auto)
+						rtfeldman$elm_css$Css$margin(rtfeldman$elm_css$Css$auto),
+						rtfeldman$elm_css$Css$batch(summary.extraStyles)
 					]))
 			]),
 		_List_Nil);
@@ -13168,99 +13434,302 @@ var author$project$Page$Contact$view = function (model) {
 		title: elm$core$Maybe$Just('contact')
 	};
 };
-var Chadtech$elm_css_grid$Html$Grid$exactWidthColumn = function (width_) {
-	return rtfeldman$elm_css$Css$batch(
-		_List_fromArray(
-			[
-				rtfeldman$elm_css$Css$flex(rtfeldman$elm_css$Css$none),
-				rtfeldman$elm_css$Css$width(width_)
-			]));
-};
+var author$project$Page$Home$MakeADrawingClicked = {$: 'MakeADrawingClicked'};
+var author$project$Page$Home$NewDrawingClicked = {$: 'NewDrawingClicked'};
+var author$project$Page$Home$RefreshClicked = {$: 'RefreshClicked'};
 var rtfeldman$elm_css$Css$hidden = {borderStyle: rtfeldman$elm_css$Css$Structure$Compatible, overflow: rtfeldman$elm_css$Css$Structure$Compatible, value: 'hidden', visibility: rtfeldman$elm_css$Css$Structure$Compatible};
 var rtfeldman$elm_css$Css$overflow = rtfeldman$elm_css$Css$prop1('overflow');
 var author$project$Style$noOverflow = rtfeldman$elm_css$Css$overflow(rtfeldman$elm_css$Css$hidden);
+var rtfeldman$elm_css$Css$paddingBottom = rtfeldman$elm_css$Css$prop1('padding-bottom');
+var author$project$Style$paddingBottom = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$paddingBottom, author$project$Style$sizePx);
+var author$project$View$Button$DoubleWidth = {$: 'DoubleWidth'};
+var author$project$View$Button$Width = function (a) {
+	return {$: 'Width', a: a};
+};
+var author$project$View$Button$withWidth = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Width);
+var author$project$View$Button$asDoubleWidth = author$project$View$Button$withWidth(author$project$View$Button$DoubleWidth);
+var author$project$View$ButtonRow$buttonColumn = function (button) {
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$column,
+		_List_fromArray(
+			[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
+		_List_fromArray(
+			[
+				author$project$View$Button$toHtml(button)
+			]));
+};
+var author$project$View$ButtonRow$view = function (buttons) {
+	return A2(
+		Chadtech$elm_css_grid$Html$Grid$row,
+		_List_fromArray(
+			[author$project$Style$centerContent]),
+		A2(elm$core$List$map, author$project$View$ButtonRow$buttonColumn, buttons));
+};
+var author$project$View$Image$Drawing = function (a) {
+	return {$: 'Drawing', a: a};
+};
+var author$project$View$Image$drawing = author$project$View$Image$Drawing;
+var author$project$View$Image$Styles = function (a) {
+	return {$: 'Styles', a: a};
+};
+var author$project$View$Image$withStyles = A2(elm$core$Basics$composeL, author$project$View$Image$addOption, author$project$View$Image$Styles);
+var author$project$Page$Home$drawingsView = function (drawings) {
+	if (elm$core$List$isEmpty(drawings)) {
+		return author$project$View$SingleCardPage$view(
+			A2(
+				author$project$View$Card$view,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(author$project$View$Card$textRow, _List_Nil, 'you have no drawings'),
+						author$project$View$ButtonRow$view(
+						_List_fromArray(
+							[
+								A2(author$project$View$Button$config, author$project$Page$Home$RefreshClicked, 'reload drawings'),
+								A2(author$project$View$Button$config, author$project$Page$Home$MakeADrawingClicked, 'make a drawing')
+							]))
+					])));
+	} else {
+		var drawingView = function (_n0) {
+			var id = _n0.a;
+			var drawing = _n0.b;
+			return A2(
+				Chadtech$elm_css_grid$Html$Grid$column,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						author$project$View$Card$view,
+						_List_fromArray(
+							[
+								author$project$Style$width(8),
+								author$project$Style$height(8),
+								rtfeldman$elm_css$Css$displayFlex,
+								rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
+							]),
+						_List_fromArray(
+							[
+								author$project$View$CardHeader$toHtml(
+								author$project$View$CardHeader$config(
+									{title: drawing.name})),
+								A2(
+								Chadtech$elm_css_grid$Html$Grid$row,
+								_List_fromArray(
+									[
+										author$project$Style$fullWidth,
+										author$project$Style$pit,
+										rtfeldman$elm_css$Css$flex(
+										rtfeldman$elm_css$Css$int(1)),
+										author$project$Style$noOverflow
+									]),
+								_List_fromArray(
+									[
+										A2(
+										Chadtech$elm_css_grid$Html$Grid$column,
+										_List_fromArray(
+											[
+												author$project$Style$fullWidth,
+												rtfeldman$elm_css$Css$displayFlex,
+												author$project$Style$centerContent,
+												rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
+											]),
+										_List_fromArray(
+											[
+												author$project$View$Image$toHtml(
+												A2(
+													author$project$View$Image$withStyles,
+													_List_fromArray(
+														[author$project$Style$fullWidth]),
+													author$project$View$Image$config(
+														author$project$View$Image$drawing(drawing))))
+											]))
+									]))
+							]))
+					]));
+		};
+		return author$project$View$Body$view(
+			_List_fromArray(
+				[
+					A2(
+					Chadtech$elm_css_grid$Html$Grid$column,
+					_List_fromArray(
+						[
+							author$project$Style$padding(2),
+							rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
+						]),
+					_List_fromArray(
+						[
+							A2(
+							Chadtech$elm_css_grid$Html$Grid$row,
+							_List_fromArray(
+								[
+									author$project$Style$paddingBottom(2)
+								]),
+							_List_fromArray(
+								[
+									A2(
+									Chadtech$elm_css_grid$Html$Grid$column,
+									_List_Nil,
+									_List_fromArray(
+										[
+											author$project$View$ButtonRow$view(
+											_List_fromArray(
+												[
+													author$project$View$Button$asDoubleWidth(
+													A2(author$project$View$Button$config, author$project$Page$Home$NewDrawingClicked, 'new drawing'))
+												]))
+										]))
+								])),
+							A2(
+							Chadtech$elm_css_grid$Html$Grid$row,
+							_List_fromArray(
+								[
+									author$project$Style$pit,
+									author$project$Style$fullWidth,
+									author$project$Style$padding(3),
+									rtfeldman$elm_css$Css$flex(
+									rtfeldman$elm_css$Css$int(1))
+								]),
+							A2(elm$core$List$map, drawingView, drawings))
+						]))
+				]));
+	}
+};
+var Chadtech$elm_relational_database$Db$toList = function (_n0) {
+	var dict = _n0.a;
+	return A2(
+		elm$core$List$map,
+		elm$core$Tuple$mapFirst(Chadtech$elm_relational_database$Id$fromString),
+		elm$core$Dict$toList(dict));
+};
+var author$project$Page$Home$getDrawings = A2(
+	elm$core$Basics$composeR,
+	function ($) {
+		return $.drawings;
+	},
+	Chadtech$elm_relational_database$Db$toList);
+var author$project$Style$pxStr = function (i) {
+	return elm$core$String$fromInt(
+		author$project$Style$scale(i)) + 'px';
+};
 var rtfeldman$elm_css$Css$position = rtfeldman$elm_css$Css$prop1('position');
 var rtfeldman$elm_css$Css$relative = {position: rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
 var author$project$Style$relative = rtfeldman$elm_css$Css$position(rtfeldman$elm_css$Css$relative);
-var author$project$View$Image$ThirdParty = function (a) {
-	return {$: 'ThirdParty', a: a};
-};
-var author$project$View$Image$thirdParty = author$project$View$Image$ThirdParty;
+var rtfeldman$elm_css$Css$Animations$property = F2(
+	function (key, value) {
+		return rtfeldman$elm_css$Css$Internal$Property(key + (':' + value));
+	});
+var author$project$View$Spinner$left = F2(
+	function (percent, pxs) {
+		return _Utils_Tuple2(
+			percent,
+			_List_fromArray(
+				[
+					A2(rtfeldman$elm_css$Css$Animations$property, 'left', pxs)
+				]));
+	});
 var rtfeldman$elm_css$Css$absolute = {position: rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
-var rtfeldman$elm_css$Css$left = rtfeldman$elm_css$Css$prop1('left');
-var rtfeldman$elm_css$Css$paddingTop = rtfeldman$elm_css$Css$prop1('padding-top');
 var rtfeldman$elm_css$Css$top = rtfeldman$elm_css$Css$prop1('top');
-var author$project$Page$Home$leftSide = function (account) {
-	var profilePicView = function (url) {
-		return author$project$View$Image$toHtml(
-			author$project$View$Image$config(
-				author$project$View$Image$thirdParty(url)));
-	};
-	var noProfilePic = author$project$View$Text$fromString('no profile pic');
-	return _List_fromArray(
+var author$project$View$Spinner$view = A2(
+	Chadtech$elm_css_grid$Html$Grid$box,
+	_List_fromArray(
+		[
+			author$project$Style$pit,
+			author$project$Style$width(8),
+			author$project$Style$height(5),
+			author$project$Style$relative,
+			author$project$Style$noOverflow
+		]),
+	_List_fromArray(
 		[
 			A2(
-			Chadtech$elm_css_grid$Html$Grid$row,
+			Chadtech$elm_css_grid$Html$Grid$box,
 			_List_fromArray(
 				[
-					author$project$Style$pit,
-					author$project$Style$fullWidth,
-					rtfeldman$elm_css$Css$paddingTop(
-					rtfeldman$elm_css$Css$pct(100)),
-					author$project$Style$noOverflow,
-					author$project$Style$relative
+					A2(rtfeldman$elm_css$Css$property, 'animation-duration', '1000ms'),
+					A2(rtfeldman$elm_css$Css$property, 'animation-iteration-count', 'infinite'),
+					A2(rtfeldman$elm_css$Css$property, 'animation-timing-function', 'linear'),
+					rtfeldman$elm_css$Css$animationName(
+					rtfeldman$elm_css$Css$Animations$keyframes(
+						_List_fromArray(
+							[
+								A2(
+								author$project$View$Spinner$left,
+								0,
+								'-' + author$project$Style$pxStr(7)),
+								A2(
+								author$project$View$Spinner$left,
+								100,
+								author$project$Style$pxStr(8))
+							]))),
+					author$project$Style$width(6),
+					author$project$Style$height(5),
+					rtfeldman$elm_css$Css$top(
+					rtfeldman$elm_css$Css$px(0)),
+					rtfeldman$elm_css$Css$position(rtfeldman$elm_css$Css$absolute),
+					rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4)
 				]),
+			_List_Nil)
+		]));
+var author$project$View$Spinner$row = A2(
+	Chadtech$elm_css_grid$Html$Grid$row,
+	_List_fromArray(
+		[author$project$Style$centerContent]),
+	_List_fromArray(
+		[
+			A2(
+			Chadtech$elm_css_grid$Html$Grid$column,
 			_List_fromArray(
-				[
-					A2(
-					Chadtech$elm_css_grid$Html$Grid$column,
+				[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
+			_List_fromArray(
+				[author$project$View$Spinner$view]))
+		]));
+var author$project$Page$Home$viewBody = function (model) {
+	var _n0 = model.state;
+	switch (_n0.$) {
+		case 'SpecificDrawing':
+			var id = _n0.a;
+			return _List_Nil;
+		case 'DeleteDrawing':
+			var id = _n0.a;
+			return _List_Nil;
+		case 'LoadingAllDrawings':
+			return author$project$View$SingleCardPage$view(
+				A2(
+					author$project$View$Card$view,
+					_List_Nil,
 					_List_fromArray(
 						[
-							rtfeldman$elm_css$Css$position(rtfeldman$elm_css$Css$absolute),
-							rtfeldman$elm_css$Css$left(rtfeldman$elm_css$Css$zero),
-							rtfeldman$elm_css$Css$top(rtfeldman$elm_css$Css$zero)
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$core$Maybe$withDefault,
-							noProfilePic,
-							A2(elm$core$Maybe$map, profilePicView, account.profilePic))
-						]))
-				]))
-		]);
+							author$project$View$CardHeader$toHtml(
+							author$project$View$CardHeader$config(
+								{title: 'loading drawings'})),
+							author$project$View$Spinner$row
+						])));
+		case 'LoadingDrawing':
+			return _List_Nil;
+		case 'Drawings':
+			return author$project$Page$Home$drawingsView(
+				author$project$Page$Home$getDrawings(model));
+		case 'Deleting':
+			return _List_Nil;
+		case 'DeleteFailed':
+			var id = _n0.a;
+			var string = _n0.b;
+			return _List_Nil;
+		case 'Deleted':
+			var string = _n0.a;
+			return _List_Nil;
+		case 'NewDrawing':
+			var initDrawingModel = _n0.a;
+			return _List_Nil;
+		default:
+			var string = _n0.a;
+			return _List_Nil;
+	}
 };
 var author$project$Page$Home$view = function (model) {
 	return {
-		body: author$project$View$Body$view(
-			_List_fromArray(
-				[
-					A2(
-					Chadtech$elm_css_grid$Html$Grid$column,
-					_List_fromArray(
-						[
-							Chadtech$elm_css_grid$Html$Grid$exactWidthColumn(
-							author$project$Style$sizePx(8)),
-							author$project$Style$padding(1),
-							rtfeldman$elm_css$Css$flexDirection(rtfeldman$elm_css$Css$column)
-						]),
-					author$project$Page$Home$leftSide(
-						author$project$Session$getUser(model.session))),
-					A2(
-					Chadtech$elm_css_grid$Html$Grid$column,
-					_List_fromArray(
-						[
-							author$project$Style$padding(1)
-						]),
-					_List_fromArray(
-						[
-							A2(
-							Chadtech$elm_css_grid$Html$Grid$box,
-							_List_fromArray(
-								[author$project$Style$pit, author$project$Style$fullWidth]),
-							_List_Nil)
-						]))
-				])),
+		body: author$project$Page$Home$viewBody(model),
 		title: elm$core$Maybe$Nothing
 	};
 };
@@ -13294,29 +13763,6 @@ var author$project$Ui$LoginCard$ForgotPassword$ResetPasswordClicked = {$: 'Reset
 var author$project$Util$Html$mapList = function (f) {
 	return elm$core$List$map(
 		rtfeldman$elm_css$Html$Styled$map(f));
-};
-var author$project$View$Button$DoubleWidth = {$: 'DoubleWidth'};
-var author$project$View$Button$Width = function (a) {
-	return {$: 'Width', a: a};
-};
-var author$project$View$Button$withWidth = A2(elm$core$Basics$composeL, author$project$View$Button$addOption, author$project$View$Button$Width);
-var author$project$View$Button$asDoubleWidth = author$project$View$Button$withWidth(author$project$View$Button$DoubleWidth);
-var author$project$View$ButtonRow$buttonColumn = function (button) {
-	return A2(
-		Chadtech$elm_css_grid$Html$Grid$column,
-		_List_fromArray(
-			[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
-		_List_fromArray(
-			[
-				author$project$View$Button$toHtml(button)
-			]));
-};
-var author$project$View$ButtonRow$view = function (buttons) {
-	return A2(
-		Chadtech$elm_css_grid$Html$Grid$row,
-		_List_fromArray(
-			[author$project$Style$centerContent]),
-		A2(elm$core$List$map, author$project$View$ButtonRow$buttonColumn, buttons));
 };
 var author$project$View$Input$Input = F2(
 	function (a, b) {
@@ -13478,6 +13924,14 @@ var author$project$View$InputGroup$text = function (_n0) {
 			label: label
 		});
 };
+var Chadtech$elm_css_grid$Html$Grid$exactWidthColumn = function (width_) {
+	return rtfeldman$elm_css$Css$batch(
+		_List_fromArray(
+			[
+				rtfeldman$elm_css$Css$flex(rtfeldman$elm_css$Css$none),
+				rtfeldman$elm_css$Css$width(width_)
+			]));
+};
 var rtfeldman$elm_css$Css$paddingLeft = rtfeldman$elm_css$Css$prop1('padding-left');
 var author$project$Style$paddingLeft = A2(elm$core$Basics$composeL, rtfeldman$elm_css$Css$paddingLeft, author$project$Style$sizePx);
 var author$project$View$InputGroup$errorView = function (maybeError) {
@@ -13608,77 +14062,6 @@ var author$project$View$InputGroup$ExtraStyles = function (a) {
 	return {$: 'ExtraStyles', a: a};
 };
 var author$project$View$InputGroup$withStyles = A2(elm$core$Basics$composeL, author$project$View$InputGroup$addOption, author$project$View$InputGroup$ExtraStyles);
-var author$project$Style$pxStr = function (i) {
-	return elm$core$String$fromInt(
-		author$project$Style$scale(i)) + 'px';
-};
-var rtfeldman$elm_css$Css$Animations$property = F2(
-	function (key, value) {
-		return rtfeldman$elm_css$Css$Internal$Property(key + (':' + value));
-	});
-var author$project$View$Spinner$left = F2(
-	function (percent, pxs) {
-		return _Utils_Tuple2(
-			percent,
-			_List_fromArray(
-				[
-					A2(rtfeldman$elm_css$Css$Animations$property, 'left', pxs)
-				]));
-	});
-var author$project$View$Spinner$view = A2(
-	Chadtech$elm_css_grid$Html$Grid$box,
-	_List_fromArray(
-		[
-			author$project$Style$pit,
-			author$project$Style$width(8),
-			author$project$Style$height(5),
-			author$project$Style$relative,
-			author$project$Style$noOverflow
-		]),
-	_List_fromArray(
-		[
-			A2(
-			Chadtech$elm_css_grid$Html$Grid$box,
-			_List_fromArray(
-				[
-					A2(rtfeldman$elm_css$Css$property, 'animation-duration', '1000ms'),
-					A2(rtfeldman$elm_css$Css$property, 'animation-iteration-count', 'infinite'),
-					A2(rtfeldman$elm_css$Css$property, 'animation-timing-function', 'linear'),
-					rtfeldman$elm_css$Css$animationName(
-					rtfeldman$elm_css$Css$Animations$keyframes(
-						_List_fromArray(
-							[
-								A2(
-								author$project$View$Spinner$left,
-								0,
-								'-' + author$project$Style$pxStr(7)),
-								A2(
-								author$project$View$Spinner$left,
-								100,
-								author$project$Style$pxStr(8))
-							]))),
-					author$project$Style$width(6),
-					author$project$Style$height(5),
-					rtfeldman$elm_css$Css$top(
-					rtfeldman$elm_css$Css$px(0)),
-					rtfeldman$elm_css$Css$position(rtfeldman$elm_css$Css$absolute),
-					rtfeldman$elm_css$Css$backgroundColor(Chadtech$ct_colors$Chadtech$Colors$content4)
-				]),
-			_List_Nil)
-		]));
-var author$project$View$Spinner$row = A2(
-	Chadtech$elm_css_grid$Html$Grid$row,
-	_List_fromArray(
-		[author$project$Style$centerContent]),
-	_List_fromArray(
-		[
-			A2(
-			Chadtech$elm_css_grid$Html$Grid$column,
-			_List_fromArray(
-				[Chadtech$elm_css_grid$Html$Grid$columnShrink]),
-			_List_fromArray(
-				[author$project$View$Spinner$view]))
-		]));
 var rtfeldman$elm_css$Html$Styled$form = rtfeldman$elm_css$Html$Styled$node('form');
 var author$project$Ui$LoginCard$ForgotPassword$view = function (model) {
 	switch (model.$) {
@@ -14311,6 +14694,9 @@ var author$project$Page$Splash$view = function (mountPath) {
 		title: elm$core$Maybe$Nothing
 	};
 };
+var author$project$Session$getMountPath = function ($) {
+	return $.mountPath;
+};
 var author$project$Main$viewPage = function (model) {
 	switch (model.$) {
 		case 'Blank':
@@ -14331,7 +14717,7 @@ var author$project$Main$viewPage = function (model) {
 					author$project$Page$Splash$view(
 						author$project$Session$getMountPath(session))));
 		case 'About':
-			var session = model.a;
+			var session = model.a.session;
 			return A2(
 				author$project$Main$viewInFrame,
 				model,
@@ -14359,6 +14745,7 @@ var author$project$Main$viewPage = function (model) {
 				author$project$Page$Settings$view(subModel));
 		case 'Home':
 			var subModel = model.a;
+			var _n1 = A2(elm$core$Debug$log, 'VIEW HOME', _Utils_Tuple0);
 			return A2(
 				author$project$Main$viewInFrame,
 				model,

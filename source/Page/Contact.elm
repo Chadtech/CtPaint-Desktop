@@ -2,7 +2,9 @@ module Page.Contact exposing
     ( Model
     , Msg
     , getSession
+    , getUser
     , init
+    , mapSession
     , track
     , update
     , view
@@ -28,7 +30,8 @@ type Msg
 
 
 type alias Model =
-    { session : Session User
+    { session : Session
+    , user : User
     , field : String
     , sent : Bool
     }
@@ -40,9 +43,10 @@ type alias Model =
 -------------------------------------------------------------------------------
 
 
-init : Session User -> Model
-init session =
+init : Session -> User -> Model
+init session user =
     { session = session
+    , user = user
     , field = ""
     , sent = False
     }
@@ -54,9 +58,19 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session User
+getSession : Model -> Session
 getSession =
     .session
+
+
+getUser : Model -> User
+getUser =
+    .user
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 

@@ -1,15 +1,18 @@
 module Page.Settings exposing
     ( Model
     , Msg
+    , getAccount
     , getSession
     , init
+    , mapSession
     , track
     , update
     , view
     )
 
-import Data.Account as User exposing (Account)
+import Data.Account as Account exposing (Account)
 import Data.Document exposing (Document)
+import Data.Field as Field exposing (Field)
 import Data.Listener as Listener
 import Data.Tracking as Tracking
 import Ports
@@ -24,10 +27,10 @@ import Util.Cmd as CmdUtil
 
 
 type alias Model =
-    { session : Session Account
+    { session : Session
+    , account : Account
     , tab : Tab
-    , name : String
-    , profilePicUrl : String
+    , nameField : Field
     , status : HttpStatus
     }
 
@@ -46,7 +49,6 @@ type Tab
 type Msg
     = TabClickedOn Tab
     | NameUpdated String
-    | ProfilePicUrlUpdated String
     | SaveClicked
     | GotSaveResponse (Listener.Response String ())
 
@@ -57,19 +59,15 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session Account -> Model
-init session =
-    let
-        user : Account
-        user =
-            Session.getUser session
-    in
+init : Session -> Account -> Model
+init session account =
     { session = session
+    , account = account
     , tab = Account
-    , name = User.getName user
-    , profilePicUrl =
-        User.getProfilePic user
-            |> Maybe.withDefault ""
+    , nameField =
+        account
+            |> Account.getName
+            |> Field.initWithValue
     , status = Ready
     }
 
@@ -80,9 +78,19 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session Account
+getSession : Model -> Session
 getSession =
     .session
+
+
+getAccount : Model -> Account
+getAccount =
+    .account
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 
@@ -123,36 +131,22 @@ setTab tab model =
 
 setName : String -> Model -> Model
 setName newName model =
-    { model | name = newName }
+    { model
+        | nameField =
+            Field.setValue newName model.nameField
+    }
 
 
-setProfilePicUrl : String -> Model -> Model
-setProfilePicUrl newUrl model =
-    { model | profilePicUrl = newUrl }
-
-
-toUser : Model -> Account
-toUser model =
-    let
-        user : Account
-        user =
-            Session.getUser model.session
-    in
-    { email = user.email
-    , name = model.name
-    , profilePic =
-        case model.profilePicUrl of
-            "" ->
-                Nothing
-
-            _ ->
-                Just model.profilePicUrl
+toAccount : Model -> Account
+toAccount model =
+    { email = model.account.email
+    , name = Field.getValue model.nameField
     }
 
 
 hasChanges : Model -> Bool
 hasChanges model =
-    toUser model /= Session.getUser model.session
+    toAccount model /= model.account
 
 
 canSave : Model -> Bool
@@ -192,24 +186,12 @@ update msg model =
             setName nameField model
                 |> CmdUtil.withNoCmd
 
-        ProfilePicUrlUpdated newUrl ->
-            setProfilePicUrl newUrl model
-                |> CmdUtil.withNoCmd
-
         SaveClicked ->
             if canSave model then
                 ( saving model
                 , Ports.payload "update user"
-                    |> Ports.withString "email" (Session.getUser model.session).email
-                    |> Ports.withString "name" model.name
-                    |> Ports.withString "profilePicUrl"
-                        (case model.profilePicUrl of
-                            "" ->
-                                "NONE"
-
-                            _ ->
-                                model.profilePicUrl
-                        )
+                    |> Ports.withString "email" model.account.email
+                    |> Ports.withString "name" (Field.getValue model.nameField)
                     |> Ports.send
                 )
 
@@ -236,9 +218,6 @@ track msg =
                 |> Tracking.withString "tab" (tabToLabel tab)
 
         NameUpdated _ ->
-            Nothing
-
-        ProfilePicUrlUpdated _ ->
             Nothing
 
         SaveClicked ->

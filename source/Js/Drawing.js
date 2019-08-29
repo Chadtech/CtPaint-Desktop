@@ -1,10 +1,10 @@
 function getAll(Client, toElm, payload) {
     Client.getDrawings({
         onSuccess: function(result) {
-            toElm("drawings loaded", result.data)
+            toElm("drawings", result.data);
         },
         onFailure: function(err) {
-            console.log("Error!", err);
+            toElm("drawings", err);
         }
     });
 }

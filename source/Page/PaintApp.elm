@@ -1,7 +1,9 @@
 module Page.PaintApp exposing
     ( Model
     , getSession
+    , getUser
     , init
+    , mapSession
     , navigationIsOkay
     , view
     )
@@ -20,7 +22,8 @@ import View.Text as Text
 
 
 type alias Model =
-    { session : Session User
+    { session : Session
+    , user : User
     , pendingNavigation : Maybe Route
     }
 
@@ -31,9 +34,10 @@ type alias Model =
 -------------------------------------------------------------------------------
 
 
-init : Session User -> Model
-init session =
+init : Session -> User -> Model
+init session user =
     { session = session
+    , user = user
     , pendingNavigation = Nothing
     }
 
@@ -44,9 +48,19 @@ init session =
 -------------------------------------------------------------------------------
 
 
-getSession : Model -> Session User
+getSession : Model -> Session
 getSession =
     .session
+
+
+getUser : Model -> User
+getUser =
+    .user
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
 
 
 navigationIsOkay : Model -> Bool
