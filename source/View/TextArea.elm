@@ -1,8 +1,11 @@
 module View.TextArea exposing
     ( config
+    , isDisabled
     , readOnly
     , toHtml
+    , withFullHeight
     , withHeight
+    , withPlaceholder
     )
 
 import Chadtech.Colors as Colors
@@ -28,6 +31,9 @@ type alias Model =
 type Option msg
     = OnInput (String -> msg)
     | Height Int
+    | Disabled Bool
+    | Placeholder String
+    | FullHeight
 
 
 type TextArea msg
@@ -37,6 +43,9 @@ type TextArea msg
 type alias Summary msg =
     { onInput : Maybe (String -> msg)
     , fixedHeight : Maybe Int
+    , placeholder : Maybe String
+    , disabled : Bool
+    , fullheight : Bool
     }
 
 
@@ -49,6 +58,21 @@ type alias Summary msg =
 withHeight : Int -> TextArea msg -> TextArea msg
 withHeight =
     addOption << Height
+
+
+withPlaceholder : String -> TextArea msg -> TextArea msg
+withPlaceholder =
+    addOption << Placeholder
+
+
+isDisabled : Bool -> TextArea msg -> TextArea msg
+isDisabled =
+    addOption << Disabled
+
+
+withFullHeight : TextArea msg -> TextArea msg
+withFullHeight =
+    addOption FullHeight
 
 
 
@@ -73,11 +97,23 @@ optionsToSummary =
 
                 Height int ->
                     { summary | fixedHeight = Just int }
+
+                Disabled disabled ->
+                    { summary | disabled = disabled }
+
+                Placeholder str ->
+                    { summary | placeholder = Just str }
+
+                FullHeight ->
+                    { summary | fullheight = True }
     in
     List.foldr
         modifySummary
         { onInput = Nothing
         , fixedHeight = Nothing
+        , placeholder = Nothing
+        , disabled = False
+        , fullheight = False
         }
 
 
@@ -117,9 +153,15 @@ toHtml (TextArea { value } options) =
                 , Style.padding 2
                 , Style.noOutline
                 , Style.pit
+                , CssUtil.styleIf
+                    summary.disabled
+                    (Css.backgroundColor Colors.content2)
                 , CssUtil.styleMaybe
                     Style.height
                     summary.fixedHeight
+                , CssUtil.styleIf
+                    summary.fullheight
+                    Style.fullHeight
                 ]
             , Attrs.spellcheck False
             , Attrs.value value
@@ -129,6 +171,8 @@ toHtml (TextArea { value } options) =
         conditionalAttributes =
             [ summary.onInput
                 |> Maybe.map Events.onInput
+            , summary.placeholder
+                |> Maybe.map Attrs.placeholder
             ]
                 |> List.filterMap identity
     in

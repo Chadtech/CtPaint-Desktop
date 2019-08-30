@@ -203,10 +203,6 @@ viewPage model =
                 |> Document.map SettingsMsg
 
         Model.Home subModel ->
-            let
-                _ =
-                    Debug.log "VIEW HOME" ()
-            in
             Home.view subModel
                 |> Document.map HomeMsg
                 |> viewInFrame model
@@ -217,6 +213,7 @@ viewPage model =
         Model.Contact subModel ->
             Contact.view subModel
                 |> Document.map ContactMsg
+                |> viewInFrame model
 
 
 viewInFrame : Model -> Document Msg -> Document Msg
@@ -438,6 +435,11 @@ handleRouteFromOk session user route =
                     Settings.init session account
                         |> Model.Settings
                         |> CmdUtil.withNoCmd
+
+        Route.Contact ->
+            Model.Contact
+                (Contact.init session user)
+                |> CmdUtil.withNoCmd
 
 
 track : Msg -> Model -> Cmd Msg

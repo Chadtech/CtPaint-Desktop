@@ -14,7 +14,6 @@ import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Model exposing (Model)
 import Route
-import Session
 import Style
 import Ui.Nav.Option as Option exposing (Option)
 import View.Button as Button
@@ -62,7 +61,7 @@ view model =
 
                 User.Account _ ->
                     [ optionView [] Option.Logout
-                    , optionView [] Option.Settings
+                    , optionView [] Option.Account
                     ]
     in
     Grid.row
@@ -83,6 +82,7 @@ view model =
             []
          , optionView [] Option.Title
          , optionView [] Option.About
+         , optionView [] Option.Contact
          , Grid.column [] []
          ]
             ++ userOptions
@@ -102,6 +102,12 @@ optionIsCurrentPage model option =
             True
 
         ( Model.Login _, Option.Login ) ->
+            True
+
+        ( Model.Contact _, Option.Contact ) ->
+            True
+
+        ( Model.Settings _, Option.Account ) ->
             True
 
         _ ->

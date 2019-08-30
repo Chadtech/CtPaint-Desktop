@@ -1,14 +1,16 @@
 module View.Text exposing
     ( Model
+    , asColor
+    , colorSegments
     , concat
     , config
     , fromString
     , withStyles
     )
 
-import Css exposing (Style)
+import Css exposing (Color, Style)
 import Html.Styled as Html exposing (Attribute, Html)
-import Html.Styled.Attributes as Attr
+import Html.Styled.Attributes as Attrs
 
 
 type alias Model =
@@ -20,7 +22,7 @@ type alias Model =
 config : Model -> Html msg
 config { styles, value } =
     Html.p
-        [ Attr.css styles ]
+        [ Attrs.css styles ]
         [ Html.text value ]
 
 
@@ -34,9 +36,31 @@ concat =
     withStyles [] << String.concat
 
 
+asColor : Color -> String -> Html msg
+asColor color =
+    withStyles [ Css.color color ]
+
+
 withStyles : List Style -> String -> Html msg
 withStyles styles str =
     config
         { styles = styles
         , value = str
         }
+
+
+colorSegments : List ( String, Maybe Color ) -> Html msg
+colorSegments =
+    let
+        segmentView : ( String, Maybe Color ) -> Html msg
+        segmentView ( text, maybeColor ) =
+            case maybeColor of
+                Just color ->
+                    Html.span
+                        [ Attrs.css [ Css.color color ] ]
+                        [ Html.text text ]
+
+                Nothing ->
+                    Html.text text
+    in
+    Html.p [] << List.map segmentView

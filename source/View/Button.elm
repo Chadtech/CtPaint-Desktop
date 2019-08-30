@@ -192,7 +192,6 @@ toHtml (Button { onClick } options) =
                 |> Css.backgroundColor
             , Css.color Colors.content4
             , Css.active [ Style.indent ]
-            , Css.hover [ Css.color Colors.content5 ]
             , buttonWidth summary
             , disabledStyle summary.disabled
             ]
@@ -204,13 +203,16 @@ toHtml (Button { onClick } options) =
 disabledStyle : Bool -> Style
 disabledStyle disabled =
     if disabled then
-        [ Css.backgroundColor Colors.content0
+        [ Css.backgroundColor Colors.content2
         , Css.active [ Style.outdent ]
         ]
             |> Css.batch
 
     else
-        CssUtil.noStyle
+        [ Css.hover [ Css.color Colors.content5 ]
+        , Style.pointer
+        ]
+            |> Css.batch
 
 
 indentStyle : Maybe Bool -> Style

@@ -44,12 +44,12 @@ type Route
     | ResetPassword
     | Logout
     | Settings
+    | Contact
 
 
 
 --    | InitDrawing
 --    | Documentation
---    | Contact
 --    | Pricing
 --    | RoadMap
 --    | Login
@@ -79,10 +79,10 @@ parser =
     , Url.map ResetPassword (Url.s "resetpassword")
     , Url.map Logout (Url.s "logout")
     , Url.map Settings (Url.s "settings")
+    , Url.map Contact (Url.s "contact")
 
     --    , Url.map InitDrawing (s "init")
     --    , Url.map Documentation (s "documentation")
-    --    , Url.map Contact (s "contact")
     --    , Url.map Pricing (s "pricing")
     --    , Url.map RoadMap (s "roadmap")
     --    , Url.map Register (s "register")
@@ -121,6 +121,9 @@ toPieces route =
         Settings ->
             [ "settings" ]
 
+        Contact ->
+            [ "contact" ]
+
 
 
 --        InitDrawing ->
@@ -130,8 +133,6 @@ toPieces route =
 --        Documentation ->
 --            [ "documentation" ]
 --
---        Contact ->
---            [ "contact" ]
 --
 --        Pricing ->
 --            [ "pricing" ]

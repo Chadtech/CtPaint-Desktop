@@ -19,9 +19,10 @@ type Option
     = Draw
     | Title
     | About
+    | Contact
     | Login
     | Logout
-    | Settings
+    | Account
 
 
 
@@ -48,8 +49,11 @@ toLabel option =
         Logout ->
             "log out"
 
-        Settings ->
-            "settings"
+        Account ->
+            "account"
+
+        Contact ->
+            "contact"
 
 
 toRoute : Option -> Route
@@ -70,8 +74,11 @@ toRoute option =
         Logout ->
             Route.Logout
 
-        Settings ->
+        Account ->
             Route.Settings
+
+        Contact ->
+            Route.Contact
 
 
 encode : Option -> Encode.Value

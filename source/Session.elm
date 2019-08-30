@@ -2,6 +2,7 @@ module Session exposing
     ( Session
     , decoder
     , getBuildNumber
+    , getContactEmail
     , getMountPath
     , getNavKey
     , getSessionId
@@ -31,6 +32,7 @@ type alias Session =
     , sessionId : SessionId
     , seed : Seed
     , windowSize : Size
+    , contactEmail : String
     }
 
 
@@ -69,10 +71,16 @@ decoder navKey =
                 |> DecodeUtil.set sessionId
                 |> DecodeUtil.set seed1
                 |> DecodeUtil.apply windowSizeDecoder
+                |> DecodeUtil.set "ctpaint@programhouse.us"
     in
     Decode.map Random.initialSeed Decode.int
         |> Decode.field "seed"
         |> Decode.andThen fromSeed
+
+
+getContactEmail : Session -> String
+getContactEmail =
+    .contactEmail
 
 
 getBuildNumber : Session -> BuildNumber

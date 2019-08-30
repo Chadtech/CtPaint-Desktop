@@ -52,7 +52,6 @@ globals =
     , Css.Global.button
         [ font
         , noOutline
-        , pointer
         , fontSmoothingNone
         ]
     , Css.Global.everything
