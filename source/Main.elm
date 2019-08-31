@@ -15,7 +15,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Model exposing (Model)
 import Page.About as About
 import Page.Contact as Contact
-import Page.Home as Home
+import Page.Drawings as Drawings
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.PageNotFound as PageNotFound
@@ -30,6 +30,7 @@ import Style
 import Ui.Nav as Nav
 import Url exposing (Url)
 import Util.Cmd as CmdUtil
+import Util.Html as HtmlUtil
 import View.Card as Card
 import View.CardHeader as CardHeader
 import View.SingleCardPage as SingleCardPage
@@ -76,7 +77,7 @@ type Msg
     | SplashMsg Splash.Msg
     | LoginMsg Login.Msg
     | ResetPasswordMsg ResetPassword.Msg
-    | HomeMsg Home.Msg
+    | HomeMsg Drawings.Msg
     | SettingsMsg Settings.Msg
     | ContactMsg Contact.Msg
 
@@ -164,6 +165,15 @@ viewError decodeError =
 
 viewPage : Model -> Document Msg
 viewPage model =
+    let
+        viewInFrame : (msg -> Msg) -> Document msg -> Document Msg
+        viewInFrame msgCtor { title, body } =
+            { title = title
+            , body =
+                Html.map NavMsg (Nav.view model)
+                    :: HtmlUtil.mapList msgCtor body
+            }
+    in
     case model of
         Model.Blank _ ->
             { title = Nothing
@@ -181,14 +191,13 @@ viewPage model =
             session
                 |> Session.getMountPath
                 |> Splash.view
-                |> Document.map SplashMsg
-                |> viewInFrame model
+                |> viewInFrame SplashMsg
 
         Model.About { session } ->
             About.view
                 (Session.getBuildNumber session)
                 (Session.getMountPath session)
-                |> viewInFrame model
+                |> viewInFrame identity
 
         Model.Login subModel ->
             Login.view subModel
@@ -200,28 +209,18 @@ viewPage model =
 
         Model.Settings subModel ->
             Settings.view subModel
-                |> Document.map SettingsMsg
+                |> viewInFrame SettingsMsg
 
-        Model.Home subModel ->
-            Home.view subModel
-                |> Document.map HomeMsg
-                |> viewInFrame model
+        Model.Drawings subModel ->
+            Drawings.view subModel
+                |> viewInFrame HomeMsg
 
         Model.Logout subModel ->
             Logout.view subModel
 
         Model.Contact subModel ->
             Contact.view subModel
-                |> Document.map ContactMsg
-                |> viewInFrame model
-
-
-viewInFrame : Model -> Document Msg -> Document Msg
-viewInFrame model { title, body } =
-    { title = title
-    , body =
-        Html.map NavMsg (Nav.view model) :: body
-    }
+                |> viewInFrame ContactMsg
 
 
 
@@ -331,9 +330,9 @@ updateFromOk msg model =
 
         HomeMsg subMsg ->
             case model of
-                Model.Home subModel ->
-                    Home.update subMsg subModel
-                        |> Tuple.mapFirst Model.Home
+                Model.Drawings subModel ->
+                    Drawings.update subMsg subModel
+                        |> Tuple.mapFirst Model.Drawings
                         |> CmdUtil.mapCmd HomeMsg
 
                 _ ->
@@ -399,8 +398,8 @@ handleRouteFromOk session user route =
                         |> CmdUtil.withNoCmd
 
                 Viewer.Account account ->
-                    Home.init session account
-                        |> Tuple.mapFirst Model.Home
+                    Drawings.init session account
+                        |> Tuple.mapFirst Model.Drawings
                         |> CmdUtil.mapCmd HomeMsg
 
         Route.About ->
@@ -493,7 +492,7 @@ trackPage msg =
             PageNotFound.track subMsg
 
         HomeMsg subMsg ->
-            Home.track subMsg
+            Drawings.track subMsg
 
         SettingsMsg subMsg ->
             Settings.track subMsg
@@ -570,12 +569,8 @@ listeners model =
                 |> Listener.map ResetPasswordMsg
             ]
 
-        Model.Home _ ->
-            let
-                _ =
-                    Debug.log "SET HOME" ()
-            in
-            Listener.mapMany HomeMsg Home.listeners
+        Model.Drawings _ ->
+            Listener.mapMany HomeMsg Drawings.listeners
 
         _ ->
             []

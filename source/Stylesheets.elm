@@ -1,4 +1,4 @@
-port module Stylesheets exposing (..)
+port module Stylesheets exposing (files, main)
 
 import Css.File exposing (CssCompilerProgram, CssFileStructure)
 import Html.Custom
@@ -9,9 +9,9 @@ import Page.About
 import Page.AllowanceExceeded
 import Page.Contact
 import Page.Documentation
+import Page.Drawings
 import Page.Error
 import Page.ForgotPassword
-import Page.Home
 import Page.Login
 import Page.Offline
 import Page.Pricing
@@ -43,7 +43,7 @@ main =
     , Nav.css
     , Html.Custom.css
     , Page.Documentation.css
-    , Page.Home.css
+    , Page.Drawings.css
     , Page.Offline.css
     , Page.About.css
     , Page.Pricing.css

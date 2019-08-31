@@ -10,7 +10,6 @@ module Ui.LoginCard exposing
     , viewBody
     )
 
-import Css exposing (Style)
 import Data.Account exposing (Account)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking

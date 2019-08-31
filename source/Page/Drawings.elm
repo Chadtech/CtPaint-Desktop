@@ -1,4 +1,4 @@
-module Page.Home exposing
+module Page.Drawings exposing
     ( Model
     , Msg
     , getAccount

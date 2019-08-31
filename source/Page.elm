@@ -1,15 +1,14 @@
-module Page
-    exposing
-        ( Page(..)
-        , Problem(..)
-        , toString
-        )
+module Page exposing
+    ( Page(..)
+    , Problem(..)
+    , toString
+    )
 
 import Html.InitDrawing as InitDrawing
 import Page.Contact as Contact
 import Page.Documentation as Documentation
+import Page.Drawings as Home
 import Page.ForgotPassword as ForgotPassword
-import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Register as Register
@@ -17,6 +16,7 @@ import Page.ResetPassword as ResetPassword
 import Page.RoadMap as RoadMap
 import Page.Settings as Settings
 import Page.Verify as Verify
+
 
 
 -- TYPES --

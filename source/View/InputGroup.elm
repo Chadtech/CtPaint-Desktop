@@ -5,6 +5,7 @@ import Css exposing (Style)
 import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Style
+import Style.Animation
 import View.Input as Input exposing (Input)
 import View.Label as Label
 import View.Text as Text
@@ -157,7 +158,9 @@ errorView maybeError =
     case maybeError of
         Just error ->
             Grid.row
-                [ Css.backgroundColor Colors.problem0 ]
+                [ Css.backgroundColor Colors.problem0
+                , Style.Animation.popin
+                ]
                 [ Grid.column
                     [ Style.centerContent
                     , Css.flexDirection Css.column

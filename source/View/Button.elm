@@ -2,6 +2,7 @@ module View.Button exposing
     ( Button
     , Option
     , asDoubleWidth
+    , asFullWidth
     , asHalfWidth
     , config
     , indent
@@ -17,7 +18,6 @@ import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
 import Html.Styled.Events as Events
 import Style
-import Util.Css as CssUtil
 
 
 

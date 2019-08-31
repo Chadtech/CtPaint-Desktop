@@ -26,6 +26,7 @@ module Style exposing
     , paddingHorizontal
     , paddingLeft
     , paddingRight
+    , paddingTop
     , pit
     , pointer
     , problemBackground
@@ -81,6 +82,11 @@ paddingRight =
 paddingBottom : Int -> Style
 paddingBottom =
     Css.paddingBottom << sizePx
+
+
+paddingTop : Int -> Style
+paddingTop =
+    Css.paddingTop << sizePx
 
 
 margin : Int -> Style

@@ -11,7 +11,7 @@ import Data.NavKey exposing (NavKey)
 import Data.User as User exposing (User)
 import Json.Decode as Decode exposing (Decoder)
 import Page.Contact as Contact
-import Page.Home as Home
+import Page.Drawings as Drawings
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.PaintApp as PaintApp
@@ -35,7 +35,7 @@ type Model
     | Login Login.Model
     | ResetPassword ResetPassword.Model
     | Settings Settings.Model
-    | Home Home.Model
+    | Drawings Drawings.Model
     | Logout Logout.Model
     | Contact Contact.Model
 
@@ -86,8 +86,8 @@ getUser model =
         Settings subModel ->
             User.account (Settings.getAccount subModel)
 
-        Home subModel ->
-            User.account (Home.getAccount subModel)
+        Drawings subModel ->
+            User.account (Drawings.getAccount subModel)
 
         Logout _ ->
             User.noAccount
@@ -132,8 +132,8 @@ mapSession f model =
         Settings subModel ->
             Settings (Settings.mapSession f subModel)
 
-        Home subModel ->
-            Home (Home.mapSession f subModel)
+        Drawings subModel ->
+            Drawings (Drawings.mapSession f subModel)
 
         Logout subModel ->
             Logout (Logout.mapSession f subModel)
@@ -170,8 +170,8 @@ getSession model =
             subModel
                 |> Settings.getSession
 
-        Home subModel ->
-            Home.getSession subModel
+        Drawings subModel ->
+            Drawings.getSession subModel
 
         Logout subModel ->
             Logout.getSession subModel
@@ -207,7 +207,7 @@ pageId model =
         Settings _ ->
             "settings"
 
-        Home _ ->
+        Drawings _ ->
             "home"
 
         Logout _ ->

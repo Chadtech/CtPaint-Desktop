@@ -10,8 +10,8 @@ import Nav
 import Page exposing (Page(..), Problem(..))
 import Page.Contact as Contact
 import Page.Documentation as Documentation
+import Page.Drawings as Home
 import Page.ForgotPassword as ForgotPassword
-import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline

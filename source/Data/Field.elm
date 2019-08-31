@@ -4,20 +4,24 @@ module Data.Field exposing
     , clearError
     , getError
     , getValue
+    , hasError
     , init
     , initWithValue
     , setError
     , setValue
     , validate
     , validateEmail
+    , validateIsNotBlank
     , validatePassword
     )
+
+import Util.String as StringUtil
+
+
 
 -------------------------------------------------------------------------------
 -- TYPES --
 -------------------------------------------------------------------------------
-
-import Util.String as StringUtil
 
 
 type alias Field =
@@ -69,6 +73,11 @@ getError =
     .error
 
 
+hasError : Field -> Bool
+hasError =
+    getError >> (/=) Nothing
+
+
 clearError : Field -> Field
 clearError field =
     { field | error = Nothing }
@@ -95,10 +104,8 @@ validate { valid, errorMessage } field =
 
 validateEmail : Field -> Field
 validateEmail =
-    [ validate
-        { valid = not << StringUtil.isBlank
-        , errorMessage = "you must enter your email"
-        }
+    [ validateIsNotBlank
+        { errorMessage = "you must enter your email" }
     , validate
         { valid = StringUtil.isValidEmail
         , errorMessage = "this is not a valid email address"
@@ -107,12 +114,18 @@ validateEmail =
         |> batchValidations
 
 
+validateIsNotBlank : { errorMessage : String } -> Field -> Field
+validateIsNotBlank { errorMessage } =
+    validate
+        { valid = not << StringUtil.isBlank
+        , errorMessage = errorMessage
+        }
+
+
 validatePassword : Field -> Field
 validatePassword =
-    [ validate
-        { valid = not << StringUtil.isBlank
-        , errorMessage = "you must enter your password"
-        }
+    [ validateIsNotBlank
+        { errorMessage = "you must enter your password" }
     , validate
         { valid = StringUtil.containsUppercase
         , errorMessage = "password must contain at least one upper case character"

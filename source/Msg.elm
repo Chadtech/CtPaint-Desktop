@@ -10,8 +10,8 @@ import Html.InitDrawing as InitDrawing
 import Json.Decode as Decode exposing (Decoder)
 import Nav
 import Page.Contact as Contact
+import Page.Drawings as Home
 import Page.Error as Error
-import Page.Home as Home
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.Offline as Offline

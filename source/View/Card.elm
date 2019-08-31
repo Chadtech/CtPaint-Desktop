@@ -6,10 +6,10 @@ module View.Card exposing
 
 import Chadtech.Colors as Colors
 import Css exposing (Style)
-import Css.Animations as Animations
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Style
+import Style.Animation
 import View.Text as Text
 import View.TextArea as TextArea
 
@@ -48,11 +48,6 @@ cardStyles =
     [ Style.outdent
     , Css.backgroundColor Colors.content1
     , Style.padding 1
-    , Css.property "animation-duration" "150ms"
-    , [ ( 0, [ Animations.transform [ Css.scale 0 ] ] )
-      , ( 100, [ Animations.transform [ Css.scale 1 ] ] )
-      ]
-        |> Animations.keyframes
-        |> Css.animationName
+    , Style.Animation.popin
     ]
         |> Css.batch

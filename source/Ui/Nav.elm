@@ -95,7 +95,7 @@ optionIsCurrentPage model option =
         ( Model.Splash _, Option.Title ) ->
             True
 
-        ( Model.Home _, Option.Title ) ->
+        ( Model.Drawings _, Option.Title ) ->
             True
 
         ( Model.About _, Option.About ) ->

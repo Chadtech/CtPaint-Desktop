@@ -100,7 +100,7 @@ sent model =
 
 canSend : Model -> Bool
 canSend model =
-    not <| StringUtil.isBlank model.field
+    not (model.sent || StringUtil.isBlank model.field)
 
 
 
@@ -146,62 +146,6 @@ track msg =
 
 
 
--- STYLES --
---
---
---type Class
---    = TextContainer
---    | CommentBox
---    | Disabled
---    | SendButton
---    | Email
---
---
---css : Stylesheet
---css =
---    [ Css.class TextContainer
---        [ width (px 800)
---        , display block
---        , margin auto
---        ]
---    , (Css.class CommentBox << List.append Html.Custom.indent)
---        [ outline none
---        , fontFamilies [ "hfnss" ]
---        , fontSize (em 2)
---        , backgroundColor Ct.background2
---        , color Ct.point0
---        , width (px 800)
---        , padding (px 8)
---        , height (px 300)
---        , marginBottom (px 8)
---        , property "-webkit-font-smoothing" "none"
---        , display block
---        , margin auto
---        , marginTop (px 8)
---        , resize none
---        , withClass Disabled
---            [ backgroundColor Ct.ignorable1 ]
---        ]
---    , Css.class SendButton
---        [ display block
---        , margin auto
---        , marginTop (px 8)
---        , maxWidth maxContent
---        , withClass Disabled
---            [ hover [ color Ct.point0 ]
---            , backgroundColor Ct.ignorable1
---            ]
---        ]
---    , Css.class Email
---        [ color Ct.important0 ]
---    ]
---        |> namespace contactNamespace
---        |> stylesheet
---
---
---contactNamespace : String
---contactNamespace =
---    Html.Custom.makeNamespace "Contact"
 -------------------------------------------------------------------------------
 -- VIEW --
 -------------------------------------------------------------------------------
@@ -234,8 +178,7 @@ view model =
                 [ Button.config
                     SendClicked
                     "send"
-                    |> Button.isDisabled
-                        (model.sent || (not <| canSend model))
+                    |> Button.isDisabled (not <| canSend model)
                 ]
             ]
     }
@@ -278,37 +221,3 @@ commentBox model =
         |> TextArea.withFullHeight
         |> TextArea.toHtml
     ]
-
-
-
---    [ words
---    , textarea
---        [ classList
---            [ ( CommentBox, True )
---            , ( Disabled, model.sendClicked )
---            ]
---        , onInput FieldUpdated
---        , Attrs.spellcheck False
---        , Attrs.value (commentBoxText model)
---        , Attrs.placeholder "enter your comment here"
---        ]
---        []
---    , a
---        [ classList
---            [ ( SendButton, True )
---            , ( Disabled, model.sendClicked )
---            ]
---        , onClick SendClicked
---        ]
---        [ Html.text "send" ]
---    ]
---
---
---commentBoxText : Model -> String
---commentBoxText model =
---    if model.sendClicked then
---        "Sent! Thank you"
---
---    else
---        model.field
---
