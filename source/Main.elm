@@ -7,22 +7,20 @@ import Data.Document as Document exposing (Document)
 import Data.Listener as Listener exposing (Listener)
 import Data.NavKey as NavKey
 import Data.SessionId as SessionId
-import Data.Size exposing (Size)
 import Data.Tracking as Tracking
 import Data.User as Viewer exposing (User)
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (Model)
 import Page.About as About
-import Page.Contact as Contact
 import Page.Drawings as Drawings
+import Page.InitDrawing as InitDrawing
 import Page.Login as Login
 import Page.Logout as Logout
 import Page.PageNotFound as PageNotFound
 import Page.PaintApp as PaintApp
 import Page.ResetPassword as ResetPassword
 import Page.Settings as Settings
-import Page.Splash as Splash
 import Ports
 import Route exposing (Route)
 import Session exposing (Session)
@@ -64,22 +62,22 @@ onNavigation =
 
 type Msg
     = NavMsg Nav.Msg
+    | SessionMsg Session.Msg
       -- Browser Things
     | UrlChanged (Result String Route)
     | UrlRequested UrlRequest
-    | WindowResized Size
       -- JS Message Decoding
     | ListenerNotFound String
     | FailedToDecodeJsMsg
     | JsMsg Decode.Value
       -- Pages
     | PageNotFoundMsg PageNotFound.Msg
-    | SplashMsg Splash.Msg
     | LoginMsg Login.Msg
     | ResetPasswordMsg ResetPassword.Msg
-    | HomeMsg Drawings.Msg
+    | Drawings Drawings.Msg
     | SettingsMsg Settings.Msg
-    | ContactMsg Contact.Msg
+    | AboutMsg About.Msg
+    | InitDrawingMsg InitDrawing.Msg
 
 
 
@@ -187,17 +185,9 @@ viewPage model =
         Model.PaintApp subModel ->
             PaintApp.view subModel
 
-        Model.Splash session ->
-            session
-                |> Session.getMountPath
-                |> Splash.view
-                |> viewInFrame SplashMsg
-
-        Model.About { session } ->
-            About.view
-                (Session.getBuildNumber session)
-                (Session.getMountPath session)
-                |> viewInFrame identity
+        Model.About subModel ->
+            About.view subModel
+                |> viewInFrame AboutMsg
 
         Model.Login subModel ->
             Login.view subModel
@@ -213,14 +203,14 @@ viewPage model =
 
         Model.Drawings subModel ->
             Drawings.view subModel
-                |> viewInFrame HomeMsg
+                |> viewInFrame Drawings
 
         Model.Logout subModel ->
             Logout.view subModel
 
-        Model.Contact subModel ->
-            Contact.view subModel
-                |> viewInFrame ContactMsg
+        Model.InitDrawing subModel ->
+            InitDrawing.view subModel
+                |> viewInFrame InitDrawingMsg
 
 
 
@@ -247,14 +237,10 @@ updateFromOk msg model =
         session : Session
         session =
             Model.getSession model
-
-        user : User
-        user =
-            Model.getUser model
     in
     case msg of
         UrlChanged routeResult ->
-            handleRoute session user routeResult
+            handleRoute model routeResult
 
         UrlRequested _ ->
             model
@@ -267,20 +253,6 @@ updateFromOk msg model =
                 navMsg
                 |> Cmd.map NavMsg
             )
-
-        SplashMsg subMsg ->
-            case model of
-                Model.Splash _ ->
-                    ( model
-                    , Splash.update
-                        (Session.getNavKey session)
-                        subMsg
-                        |> Cmd.map SplashMsg
-                    )
-
-                _ ->
-                    model
-                        |> CmdUtil.withNoCmd
 
         LoginMsg subMsg ->
             case model of
@@ -328,12 +300,12 @@ updateFromOk msg model =
             model
                 |> CmdUtil.withNoCmd
 
-        HomeMsg subMsg ->
+        Drawings subMsg ->
             case model of
                 Model.Drawings subModel ->
                     Drawings.update subMsg subModel
                         |> Tuple.mapFirst Model.Drawings
-                        |> CmdUtil.mapCmd HomeMsg
+                        |> CmdUtil.mapCmd Drawings
 
                 _ ->
                     model
@@ -350,41 +322,61 @@ updateFromOk msg model =
                     model
                         |> CmdUtil.withNoCmd
 
-        ContactMsg subMsg ->
-            case model of
-                Model.Contact subModel ->
-                    Contact.update subMsg subModel
-                        |> Tuple.mapFirst Model.Contact
-
-                _ ->
-                    model
-                        |> CmdUtil.withNoCmd
-
-        WindowResized size ->
+        SessionMsg subMsg ->
             model
-                |> Model.mapSession (Session.setWindowSize size)
+                |> Model.mapSession (Session.update subMsg)
                 |> CmdUtil.withNoCmd
 
         JsMsg json ->
             updateFromOk (decodeMsg model json) model
 
+        InitDrawingMsg subMsg ->
+            case model of
+                Model.InitDrawing subModel ->
+                    InitDrawing.update subMsg subModel
+                        |> Tuple.mapFirst Model.InitDrawing
+                        |> CmdUtil.mapCmd InitDrawingMsg
 
-handleRoute : Session -> User -> Result String Route -> ( Model, Cmd Msg )
-handleRoute session user routeResult =
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        AboutMsg subMsg ->
+            case model of
+                Model.About subModel ->
+                    About.update subMsg subModel
+                        |> Tuple.mapFirst Model.About
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+
+handleRoute : Model -> Result String Route -> ( Model, Cmd Msg )
+handleRoute model routeResult =
     case routeResult of
         Ok route ->
-            handleRouteFromOk session user route
+            handleRouteFromOk model route
 
         Err _ ->
             Model.PageNotFound
-                { session = session
-                , user = user
+                { session = Model.getSession model
+                , user = Model.getUser model
                 }
                 |> CmdUtil.withNoCmd
 
 
-handleRouteFromOk : Session -> User -> Route -> ( Model, Cmd Msg )
-handleRouteFromOk session user route =
+handleRouteFromOk : Model -> Route -> ( Model, Cmd Msg )
+handleRouteFromOk model route =
+    let
+        session : Session
+        session =
+            Model.getSession model
+
+        user : User
+        user =
+            Model.getUser model
+    in
     case route of
         Route.PaintApp subRoute ->
             Model.PaintApp
@@ -392,22 +384,23 @@ handleRouteFromOk session user route =
                 |> CmdUtil.withNoCmd
 
         Route.Landing ->
-            case user of
-                Viewer.User ->
-                    Model.Splash session
+            ( model
+            , Route.goTo
+                (Session.getNavKey session)
+                Route.paintApp
+            )
+
+        Route.About subRoute ->
+            case model of
+                Model.About subModel ->
+                    About.handleRoute subRoute subModel
+                        |> Model.About
                         |> CmdUtil.withNoCmd
 
-                Viewer.Account account ->
-                    Drawings.init session account
-                        |> Tuple.mapFirst Model.Drawings
-                        |> CmdUtil.mapCmd HomeMsg
-
-        Route.About ->
-            Model.About
-                { session = session
-                , user = user
-                }
-                |> CmdUtil.withNoCmd
+                _ ->
+                    Model.About
+                        (About.init session user subRoute)
+                        |> CmdUtil.withNoCmd
 
         Route.Login ->
             Login.init session
@@ -435,9 +428,33 @@ handleRouteFromOk session user route =
                         |> Model.Settings
                         |> CmdUtil.withNoCmd
 
-        Route.Contact ->
-            Model.Contact
-                (Contact.init session user)
+        Route.Drawings subRoute ->
+            case user of
+                Viewer.User ->
+                    Model.PageNotFound
+                        { session = session
+                        , user = user
+                        }
+                        |> CmdUtil.withNoCmd
+
+                Viewer.Account account ->
+                    case model of
+                        Model.Drawings subModel ->
+                            Drawings.handleRoute subRoute subModel
+                                |> Model.Drawings
+                                |> CmdUtil.withNoCmd
+
+                        _ ->
+                            Drawings.init
+                                session
+                                account
+                                subRoute
+                                |> Tuple.mapFirst Model.Drawings
+                                |> CmdUtil.mapCmd Drawings
+
+        Route.InitDrawing ->
+            Model.InitDrawing
+                (InitDrawing.init session user)
                 |> CmdUtil.withNoCmd
 
 
@@ -479,9 +496,6 @@ trackPage msg =
         NavMsg subMsg ->
             Nav.track subMsg
 
-        SplashMsg subMsg ->
-            Splash.track subMsg
-
         LoginMsg subMsg ->
             Login.track subMsg
 
@@ -491,20 +505,23 @@ trackPage msg =
         PageNotFoundMsg subMsg ->
             PageNotFound.track subMsg
 
-        HomeMsg subMsg ->
+        Drawings subMsg ->
             Drawings.track subMsg
 
         SettingsMsg subMsg ->
             Settings.track subMsg
 
-        ContactMsg subMsg ->
-            Contact.track subMsg
-
-        WindowResized _ ->
-            Nothing
+        SessionMsg subMsg ->
+            Session.track subMsg
 
         JsMsg _ ->
             Nothing
+
+        InitDrawingMsg subMsg ->
+            InitDrawing.track subMsg
+
+        AboutMsg subMsg ->
+            About.track subMsg
 
 
 
@@ -522,8 +539,15 @@ subscriptions result =
 
 subscriptionsFromOk : Model -> Sub Msg
 subscriptionsFromOk model =
+    -- One day, when elm compiler bug #1776
+    -- is solved, this can be uncommented out
+    --                    v
     --    Ports.fromJs (decodeMsg model)
-    Ports.fromJs JsMsg
+    Sub.batch
+        [ Ports.fromJs JsMsg
+        , Session.subscriptions
+            |> Sub.map SessionMsg
+        ]
 
 
 decodeMsg : Model -> Decode.Value -> Msg
@@ -570,7 +594,7 @@ listeners model =
             ]
 
         Model.Drawings _ ->
-            Listener.mapMany HomeMsg Drawings.listeners
+            Listener.mapMany Drawings Drawings.listeners
 
         _ ->
             []

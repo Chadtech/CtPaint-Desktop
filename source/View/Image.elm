@@ -4,6 +4,7 @@ module View.Image exposing
     , config
     , drawing
     , logo
+    , onClick
     , thirdParty
     , toHtml
     , withStyles
@@ -13,8 +14,9 @@ module View.Image exposing
 import Css
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.MountPath as MountPath exposing (MountPath)
-import Html.Styled as Html exposing (Html)
+import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
+import Html.Styled.Events as Events
 import Style
 import Util.Css as CssUtil
 
@@ -25,8 +27,8 @@ import Util.Css as CssUtil
 -------------------------------------------------------------------------------
 
 
-type Image
-    = Image Source (List Option)
+type Image msg
+    = Image Source (List (Option msg))
 
 
 type Source
@@ -39,14 +41,16 @@ type AssetSource
     = Logo
 
 
-type Option
+type Option msg
     = Width Float
     | Styles (List Css.Style)
+    | OnClick msg
 
 
-type alias Summary =
+type alias Summary msg =
     { width : Maybe Float
     , extraStyles : List Css.Style
+    , onClick : Maybe msg
     }
 
 
@@ -71,14 +75,19 @@ thirdParty =
     ThirdParty
 
 
-withWidth : Float -> Image -> Image
+withWidth : Float -> Image msg -> Image msg
 withWidth width =
     addOption (Width width)
 
 
-withStyles : List Css.Style -> Image -> Image
+withStyles : List Css.Style -> Image msg -> Image msg
 withStyles =
     addOption << Styles
+
+
+onClick : msg -> Image msg -> Image msg
+onClick =
+    addOption << OnClick
 
 
 
@@ -87,15 +96,15 @@ withStyles =
 -------------------------------------------------------------------------------
 
 
-addOption : Option -> Image -> Image
+addOption : Option msg -> Image msg -> Image msg
 addOption option (Image params options) =
     Image params (option :: options)
 
 
-optionsToSummary : List Option -> Summary
+optionsToSummary : List (Option msg) -> Summary msg
 optionsToSummary =
     let
-        modifySummary : Option -> Summary -> Summary
+        modifySummary : Option msg -> Summary msg -> Summary msg
         modifySummary option summary =
             case option of
                 Width width ->
@@ -103,11 +112,15 @@ optionsToSummary =
 
                 Styles list ->
                     { summary | extraStyles = list ++ summary.extraStyles }
+
+                OnClick msg ->
+                    { summary | onClick = Just msg }
     in
     List.foldr
         modifySummary
         { width = Nothing
         , extraStyles = []
+        , onClick = Nothing
         }
 
 
@@ -130,7 +143,7 @@ sourceToString source =
         Drawing drawing_ ->
             drawing_
                 |> Drawing.getPublicId
-                |> Drawing.toUrl
+                |> Drawing.getDrawingUrl
 
 
 
@@ -139,26 +152,38 @@ sourceToString source =
 -------------------------------------------------------------------------------
 
 
-config : Source -> Image
+config : Source -> Image msg
 config src =
     Image src []
 
 
-toHtml : Image -> Html msg
+toHtml : Image msg -> Html msg
 toHtml (Image src options) =
     let
-        summary : Summary
+        summary : Summary msg
         summary =
             optionsToSummary options
+
+        attrs : List (Attribute msg)
+        attrs =
+            [ Attrs.src (sourceToString src)
+            , Attrs.css
+                [ CssUtil.styleMaybe
+                    Style.exactWidth
+                    summary.width
+                , Css.margin Css.auto
+                , Css.batch summary.extraStyles
+                , CssUtil.styleIf
+                    (summary.onClick /= Nothing)
+                    Style.pointer
+                ]
+            ]
+
+        conditionalAttrs : List (Attribute msg)
+        conditionalAttrs =
+            [ Maybe.map Events.onClick summary.onClick ]
+                |> List.filterMap identity
     in
     Html.img
-        [ Attrs.src (sourceToString src)
-        , Attrs.css
-            [ CssUtil.styleMaybe
-                Style.exactWidth
-                summary.width
-            , Css.margin Css.auto
-            , Css.batch summary.extraStyles
-            ]
-        ]
+        (attrs ++ conditionalAttrs)
         []

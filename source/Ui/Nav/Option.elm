@@ -16,10 +16,9 @@ import Route exposing (Route)
 
 
 type Option
-    = Draw
-    | Title
+    = NewDrawing
+    | Drawings
     | About
-    | Contact
     | Login
     | Logout
     | Account
@@ -34,11 +33,11 @@ type Option
 toLabel : Option -> String
 toLabel option =
     case option of
-        Draw ->
-            "draw"
+        NewDrawing ->
+            "new drawing"
 
-        Title ->
-            "title"
+        Drawings ->
+            "drawings"
 
         About ->
             "about"
@@ -52,21 +51,18 @@ toLabel option =
         Account ->
             "account"
 
-        Contact ->
-            "contact"
-
 
 toRoute : Option -> Route
 toRoute option =
     case option of
-        Draw ->
-            Route.paintApp
+        NewDrawing ->
+            Route.InitDrawing
 
-        Title ->
-            Route.Landing
+        Drawings ->
+            Route.drawings
 
         About ->
-            Route.About
+            Route.about
 
         Login ->
             Route.Login
@@ -76,9 +72,6 @@ toRoute option =
 
         Account ->
             Route.Settings
-
-        Contact ->
-            Route.Contact
 
 
 encode : Option -> Encode.Value

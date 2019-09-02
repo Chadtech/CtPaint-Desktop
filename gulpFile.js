@@ -10,6 +10,8 @@ function sourceDir(path) {
     return "./source/" + path;
 }
 
+var okayToCompileElm = true;
+
 var paths = {
   public: "./public",
   dist: "./dist",
@@ -29,18 +31,24 @@ gulp.task("js", function () {
 
 
 gulp.task("elm", function () {
-  util.log(util.colors.cyan("Elm"), "starting");
-  cp.spawn("elm", [
-    "make",
-    paths.mainElm,
-    // "--optimize",
-    "--output",
-    paths.public + "/elm.js",
-  ], {
+  if (okayToCompileElm) {
+    okayToCompileElm = false;
+    setTimeout(function(){
+      okayToCompileElm = true;
+    }, 300);
+    util.log(util.colors.cyan("Elm"), "starting");
+    cp.spawn("elm", [
+      "make",
+      paths.mainElm,
+      // "--optimize",
+      "--output",
+      paths.public + "/elm.js",
+    ], {
       stdio: 'inherit'
     }).on("close", function (code) {
       util.log(util.colors.cyan("Elm"), "closed");
     });
+  }
 });
 
 gulp.task("server", function () {

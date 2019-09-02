@@ -1,14 +1,26 @@
 module Style exposing
-    ( borderBottom
+    ( bodyWidth
+    , borderBottom
+    , buttonMarginBottom
+    , buttonMarginLeft
+    , buttonMarginRight
+    , buttonMarginTop
     , centerContent
     , exactWidth
+    , fieldMarginBelow
+    , fieldMarginTop
+    , fieldSeperationSize
     , font
     , fontSmoothingNone
+    , footerPaddingBottom
     , fullHeight
     , fullWidth
     , globals
     , height
+    , horizontalDivider
     , indent
+    , indentWithWidth
+    , leftJustifyContent
     , margin
     , marginBottom
     , marginHorizontal
@@ -16,11 +28,14 @@ module Style exposing
     , marginRight
     , marginTop
     , marginVertical
+    , maxHeight
+    , maxWidth
     , noBackground
     , noBorder
     , noOutline
     , noOverflow
     , outdent
+    , outdentWithWidth
     , padding
     , paddingBottom
     , paddingHorizontal
@@ -32,6 +47,13 @@ module Style exposing
     , problemBackground
     , pxStr
     , relative
+    , scroll
+    , sectionMarginHorizontal
+    , sectionMarginLeft
+    , sectionMarginRight
+    , sectionMarginTop
+    , sectionMarginVertical
+    , sectionPaddingTop
     , sizePx
     , verticalDivider
     , width
@@ -122,6 +144,112 @@ marginHorizontal size =
         |> Css.batch
 
 
+fieldSeperationSize : Int
+fieldSeperationSize =
+    1
+
+
+sectionSeperationSize : Int
+sectionSeperationSize =
+    3
+
+
+footerSize : Int
+footerSize =
+    6
+
+
+footerPaddingBottom : Style
+footerPaddingBottom =
+    paddingBottom footerSize
+
+
+bodySize : Int
+bodySize =
+    10
+
+
+bodyWidth : Style
+bodyWidth =
+    width bodySize
+
+
+sectionMarginLeft : Style
+sectionMarginLeft =
+    marginLeft sectionSeperationSize
+
+
+sectionMarginTop : Style
+sectionMarginTop =
+    marginTop sectionSeperationSize
+
+
+sectionMarginBottom : Style
+sectionMarginBottom =
+    marginBottom sectionSeperationSize
+
+
+sectionMarginRight : Style
+sectionMarginRight =
+    marginRight sectionSeperationSize
+
+
+sectionMarginHorizontal : Style
+sectionMarginHorizontal =
+    [ sectionMarginLeft
+    , sectionMarginRight
+    ]
+        |> Css.batch
+
+
+sectionMarginVertical : Style
+sectionMarginVertical =
+    [ sectionMarginTop
+    , sectionMarginBottom
+    ]
+        |> Css.batch
+
+
+sectionPaddingTop : Style
+sectionPaddingTop =
+    paddingTop sectionSeperationSize
+
+
+fieldMarginTop : Style
+fieldMarginTop =
+    marginTop fieldSeperationSize
+
+
+fieldMarginBelow : Style
+fieldMarginBelow =
+    marginBottom fieldSeperationSize
+
+
+buttonMarginLeft : Style
+buttonMarginLeft =
+    marginLeft buttonSeparationSize
+
+
+buttonMarginRight : Style
+buttonMarginRight =
+    marginRight buttonSeparationSize
+
+
+buttonMarginBottom : Style
+buttonMarginBottom =
+    marginBottom buttonSeparationSize
+
+
+buttonMarginTop : Style
+buttonMarginTop =
+    marginTop buttonSeparationSize
+
+
+buttonSeparationSize : Int
+buttonSeparationSize =
+    2
+
+
 paddingHorizontal : Int -> Style
 paddingHorizontal size =
     [ paddingLeft size
@@ -141,11 +269,6 @@ marginVertical size =
 marginRight : Int -> Style
 marginRight =
     Css.marginRight << sizePx
-
-
-unit : Float
-unit =
-    8
 
 
 font : Style
@@ -176,27 +299,42 @@ fontSmoothingNone =
 
 indent : Style
 indent =
-    [ borderTop3 (sizePx 1) solid Colors.content0
-    , borderLeft3 (sizePx 1) solid Colors.content0
-    , borderRight3 (sizePx 1) solid Colors.content2
-    , borderBottom Colors.content2
+    indentWithWidth 1
+
+
+indentWithWidth : Int -> Style
+indentWithWidth w =
+    [ borderTop3 (sizePx w) solid Colors.content0
+    , borderLeft3 (sizePx w) solid Colors.content0
+    , borderRight3 (sizePx w) solid Colors.content2
+    , borderBottomAtWidth w Colors.content2
     ]
         |> Css.batch
 
 
 outdent : Style
 outdent =
-    [ borderTop3 (sizePx 1) solid Colors.content2
-    , borderLeft3 (sizePx 1) solid Colors.content2
-    , borderRight3 (sizePx 1) solid Colors.content0
-    , borderBottom Colors.content0
+    outdentWithWidth 1
+
+
+outdentWithWidth : Int -> Style
+outdentWithWidth w =
+    [ borderTop3 (sizePx w) solid Colors.content2
+    , borderLeft3 (sizePx w) solid Colors.content2
+    , borderRight3 (sizePx w) solid Colors.content0
+    , borderBottomAtWidth w Colors.content0
     ]
         |> Css.batch
 
 
 borderBottom : Color -> Style
 borderBottom =
-    borderBottom3 (sizePx 1) solid
+    borderBottomAtWidth 1
+
+
+borderBottomAtWidth : Int -> Color -> Style
+borderBottomAtWidth w =
+    borderBottom3 (sizePx w) solid
 
 
 sizePx : Int -> Css.Px
@@ -212,6 +350,16 @@ pxStr i =
 height : Int -> Style
 height =
     Css.height << sizePx
+
+
+maxWidth : Int -> Style
+maxWidth =
+    Css.maxWidth << sizePx
+
+
+maxHeight : Int -> Style
+maxHeight =
+    Css.maxHeight << sizePx
 
 
 width : Int -> Style
@@ -248,20 +396,26 @@ verticalDivider : Style
 verticalDivider =
     [ borderLeft3 (sizePx 1) solid Colors.content0
     , borderRight3 (sizePx 1) solid Colors.content2
-    , Css.width Css.zero
-    , display inline
     ]
         |> Css.batch
 
 
 horizontalDivider : Style
 horizontalDivider =
-    indent
+    [ borderTop3 (sizePx 1) solid Colors.content0
+    , borderBottom3 (sizePx 1) solid Colors.content2
+    ]
+        |> Css.batch
 
 
 centerContent : Style
 centerContent =
     Css.justifyContent Css.center
+
+
+leftJustifyContent : Style
+leftJustifyContent =
+    Css.justifyContent Css.left
 
 
 scale : Int -> Int
@@ -287,6 +441,11 @@ relative =
 noOverflow : Style
 noOverflow =
     Css.overflow Css.hidden
+
+
+scroll : Style
+scroll =
+    Css.overflow Css.scroll
 
 
 problemBackground : Style

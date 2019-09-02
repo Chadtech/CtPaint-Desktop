@@ -119,7 +119,7 @@ update msg model =
 
         OpenDrawingLink id ->
             id
-                |> Drawing.toUrl
+                |> Drawing.getDrawingUrl
                 |> OpenInNewWindow
                 |> Ports.send
                 |> R2.withModel model
@@ -724,7 +724,7 @@ focusedDrawingView drawing =
             , input
                 [ class [ DrawingLink ]
                 , Attrs.disabled True
-                , Attrs.value (Drawing.toUrl drawing.id)
+                , Attrs.value (Drawing.getDrawingUrl drawing.id)
                 , Attrs.autofocus True
                 , Attrs.attribute "onfocus" "this.select()"
                 ]

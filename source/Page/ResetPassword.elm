@@ -10,7 +10,6 @@ module Page.ResetPassword exposing
     , view
     )
 
-import Data.Account as User
 import Data.Document exposing (Document)
 import Data.Field as Field exposing (Field)
 import Data.Listener as Listener exposing (Listener)
@@ -27,11 +26,10 @@ import Util.Json.Decode as DecodeUtil
 import Util.Maybe as MaybeUtil
 import Util.String as StringUtil
 import View.Button as Button
-import View.ButtonRow as ButtonRow
 import View.Card as Card
 import View.CardHeader as CardHeader
 import View.Input as Input exposing (Input)
-import View.InputGroup as InputGroup
+import View.InputGroup as InputGroup exposing (InputGroup)
 import View.SingleCardPage as SingleCardPage
 import View.Spinner as Spinner
 
@@ -349,40 +347,39 @@ viewBody : Model -> List (Html Msg)
 viewBody model =
     case model.status of
         Ready ->
-            [ Html.form
-                []
-                [ inputGroupView
-                    { label = "email"
-                    , onInput = EmailUpdated
-                    , options = [ Input.withAutocomplete "email" ]
-                    , field = model.email
-                    }
-                , inputGroupView
-                    { label = "code"
-                    , onInput = CodeUpdated
-                    , options = []
-                    , field = model.code
-                    }
-                , inputGroupView
-                    { label = "new password"
-                    , onInput = PasswordUpdated
-                    , options =
-                        [ Input.isPassword
-                        , Input.withAutocomplete "new-password"
-                        ]
-                    , field = model.password
-                    }
-                , inputGroupView
-                    { label = "confirm new password"
-                    , onInput = PasswordConfirmUpdated
-                    , options =
-                        [ Input.isPassword
-                        , Input.withAutocomplete "new-password"
-                        ]
-                    , field = model.passwordConfirm
-                    }
-                ]
-            , ButtonRow.view
+            [ [ { label = "email"
+                , onInput = EmailUpdated
+                , options =
+                    [ Input.withAutocomplete "email" ]
+                , field = model.email
+                }
+              , { label = "code"
+                , onInput = CodeUpdated
+                , options = []
+                , field = model.code
+                }
+              , { label = "new password"
+                , onInput = PasswordUpdated
+                , options =
+                    [ Input.isPassword
+                    , Input.withAutocomplete "new-password"
+                    ]
+                , field = model.password
+                }
+              , { label = "confirm new password"
+                , onInput = PasswordConfirmUpdated
+                , options =
+                    [ Input.isPassword
+                    , Input.withAutocomplete "new-password"
+                    ]
+                , field = model.passwordConfirm
+                }
+              ]
+                |> List.map inputGroupView
+                |> InputGroup.manyToHtml
+                |> Html.form []
+            , Button.rowWithStyles
+                [ Style.fieldMarginTop ]
                 [ Button.config
                     ResetPasswordClicked
                     "reset password"
@@ -401,7 +398,7 @@ viewBody model =
                     Now go back to the login in page and use your
                     new password.
                     """
-            , ButtonRow.view
+            , Button.row
                 [ Button.config
                     LoginClicked
                     "go to login"
@@ -461,7 +458,7 @@ inputGroupView :
     , options : List (Input Msg -> Input Msg)
     , field : Field
     }
-    -> Html Msg
+    -> InputGroup Msg
 inputGroupView { label, options, onInput, field } =
     InputGroup.text
         { label = label
@@ -472,10 +469,8 @@ inputGroupView { label, options, onInput, field } =
                 |> FunctionUtil.composeMany options
                 |> Input.onEnter EnterPressed
         }
-        |> InputGroup.withStyles [ Style.marginBottom 1 ]
         |> InputGroup.withError (Field.getError field)
         |> InputGroup.withDoubleWidth
-        |> InputGroup.toHtml
 
 
 

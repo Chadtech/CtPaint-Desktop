@@ -5,6 +5,7 @@ module View.CardHeader exposing
     ,  toHtml
        --    , withCloseButton
 
+    , withCloseButton
     )
 
 import Chadtech.Colors as Colors

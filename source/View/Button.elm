@@ -2,18 +2,25 @@ module View.Button exposing
     ( Button
     , Option
     , asDoubleWidth
+    , asDoubleWidthIf
     , asFullWidth
     , asHalfWidth
+    , column
     , config
     , indent
     , isDisabled
     , makeTaller
     , noLabel
+    , row
+    , rowWithStyles
     , toHtml
+    , withBackgroundColor
+    , withFatBorder
     )
 
 import Chadtech.Colors as Colors
 import Css exposing (Style)
+import Html.Grid as Grid
 import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
 import Html.Styled.Events as Events
@@ -48,6 +55,7 @@ type Option
     | Tall Bool
     | Label String
     | BackgroundColor Css.Color
+    | FatBorder
 
 
 type alias Summary =
@@ -57,6 +65,7 @@ type alias Summary =
     , tall : Bool
     , label : Maybe String
     , backgroundColor : Maybe Css.Color
+    , fatBorder : Bool
     }
 
 
@@ -64,6 +73,11 @@ type alias Summary =
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+withFatBorder : Button msg -> Button msg
+withFatBorder =
+    addOption FatBorder
 
 
 withBackgroundColor : Css.Color -> Button msg -> Button msg
@@ -89,6 +103,15 @@ makeTaller =
 asDoubleWidth : Button msg -> Button msg
 asDoubleWidth =
     withWidth DoubleWidth
+
+
+asDoubleWidthIf : Bool -> Button msg -> Button msg
+asDoubleWidthIf condition =
+    if condition then
+        asDoubleWidth
+
+    else
+        identity
 
 
 asSingleWidth : Button msg -> Button msg
@@ -145,6 +168,9 @@ optionsToSummary =
 
                 BackgroundColor color ->
                     { summary | backgroundColor = Just color }
+
+                FatBorder ->
+                    { summary | fatBorder = True }
     in
     List.foldr modifySummary
         { width = SingleWidth
@@ -153,6 +179,7 @@ optionsToSummary =
         , tall = False
         , label = Nothing
         , backgroundColor = Nothing
+        , fatBorder = False
         }
 
 
@@ -185,7 +212,7 @@ toHtml (Button { onClick } options) =
     in
     Html.button
         [ Attrs.css
-            [ indentStyle summary.indent
+            [ indentStyle summary
             , buttonHeight summary.tall
             , summary.backgroundColor
                 |> Maybe.withDefault Colors.content1
@@ -215,17 +242,30 @@ disabledStyle disabled =
             |> Css.batch
 
 
-indentStyle : Maybe Bool -> Style
-indentStyle maybeIndent =
-    case maybeIndent of
+indentStyle : Summary -> Style
+indentStyle summary =
+    case summary.indent of
         Nothing ->
-            Style.outdent
+            outdent summary
 
         Just True ->
-            Style.indent
+            if summary.fatBorder then
+                Style.indentWithWidth 2
+
+            else
+                Style.indent
 
         Just False ->
-            Style.outdent
+            outdent summary
+
+
+outdent : Summary -> Style
+outdent summary =
+    if summary.fatBorder then
+        Style.outdentWithWidth 2
+
+    else
+        Style.outdent
 
 
 buttonWidth : Summary -> Style
@@ -251,3 +291,52 @@ buttonHeight tall =
 
     else
         Style.height 5
+
+
+column : List (Button msg) -> List (Html msg)
+column buttons =
+    let
+        buttonRow : List Style -> Button msg -> Html msg
+        buttonRow styles button =
+            Grid.row
+                styles
+                [ Grid.column
+                    []
+                    [ toHtml button ]
+                ]
+    in
+    case buttons of
+        [] ->
+            []
+
+        first :: rest ->
+            buttonRow [] first
+                :: List.map
+                    (buttonRow [ Style.buttonMarginTop ])
+                    rest
+
+
+row : List (Button msg) -> Html msg
+row =
+    rowWithStyles []
+
+
+rowWithStyles : List Style -> List (Button msg) -> Html msg
+rowWithStyles extraRowStyles buttons =
+    let
+        buttonColumn : List Style -> Button msg -> Grid.Column msg
+        buttonColumn extraStyles button =
+            Grid.column
+                (Grid.columnShrink :: extraStyles)
+                [ toHtml button ]
+    in
+    Grid.row (Style.centerContent :: extraRowStyles) <|
+        case buttons of
+            first :: rest ->
+                buttonColumn [] first
+                    :: List.map
+                        (buttonColumn [ Style.buttonMarginLeft ])
+                        rest
+
+            [] ->
+                []

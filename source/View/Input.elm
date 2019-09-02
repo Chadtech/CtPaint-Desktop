@@ -4,6 +4,7 @@ module View.Input exposing
     , config
     , isPassword
     , onEnter
+    , readOnly
     , toHtml
     , withAutocomplete
     , withPlaceholder
@@ -26,11 +27,7 @@ import Util.Maybe as MaybeUtil
 
 
 type Input msg
-    = Input
-        { value : String
-        , onInput : String -> msg
-        }
-        (List (Option msg))
+    = Input { value : String } (List (Option msg))
 
 
 type Option msg
@@ -38,6 +35,7 @@ type Option msg
     | OnEnter msg
     | Autocomplete String
     | Placeholder String
+    | OnInput (String -> msg)
 
 
 type alias Summary msg =
@@ -45,6 +43,7 @@ type alias Summary msg =
     , onEnter : Maybe msg
     , autocomplete : Maybe String
     , placeholder : Maybe String
+    , onInput : Maybe (String -> msg)
     }
 
 
@@ -102,6 +101,9 @@ optionsToSummary =
 
                 Placeholder placeholder ->
                     { summary | placeholder = Just placeholder }
+
+                OnInput msgCtor ->
+                    { summary | onInput = Just msgCtor }
     in
     List.foldr
         modifySummary
@@ -109,20 +111,24 @@ optionsToSummary =
         , password = False
         , autocomplete = Nothing
         , placeholder = Nothing
+        , onInput = Nothing
         }
 
 
 config : (String -> msg) -> String -> Input msg
 config msgCtor value =
     Input
-        { value = value
-        , onInput = msgCtor
-        }
-        []
+        { value = value }
+        [ OnInput msgCtor ]
+
+
+readOnly : String -> Input msg
+readOnly value =
+    Input { value = value } []
 
 
 toHtml : Input msg -> Html msg
-toHtml (Input { value, onInput } options) =
+toHtml (Input { value } options) =
     let
         summary : Summary msg
         summary =
@@ -142,7 +148,6 @@ toHtml (Input { value, onInput } options) =
                 ]
             , Attrs.value value
             , Attrs.spellcheck False
-            , Events.onInput onInput
             ]
 
         conditionalAttrs : List (Attribute msg)
@@ -159,6 +164,9 @@ toHtml (Input { value, onInput } options) =
             , Maybe.map
                 Attrs.placeholder
                 summary.placeholder
+            , Maybe.map
+                Events.onInput
+                summary.onInput
             ]
                 |> List.filterMap identity
     in

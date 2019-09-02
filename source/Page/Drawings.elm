@@ -3,6 +3,7 @@ module Page.Drawings exposing
     , Msg
     , getAccount
     , getSession
+    , handleRoute
     , init
     , listeners
     , mapSession
@@ -16,6 +17,7 @@ import Data.Account exposing (Account)
 import Data.Document exposing (Document)
 import Data.Drawing as Drawing exposing (Drawing)
 import Data.Listener as Listener exposing (Listener)
+import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
 import Db exposing (Db)
 import Html.Grid as Grid
@@ -24,16 +26,19 @@ import Id exposing (Id)
 import Json.Decode as Decode
 import Ports
 import Route
+import Route.Drawings exposing (Route)
 import Session exposing (Session)
 import Style
-import Ui.InitDrawing as InitDrawing
+import Time exposing (Posix)
 import Util.Cmd as CmdUtil
+import Util.String as StringUtil
 import View.Body as Body
 import View.Button as Button
-import View.ButtonRow as ButtonRow
 import View.Card as Card
 import View.CardHeader as CardHeader
 import View.Image as Image
+import View.Input as Input
+import View.InputGroup as InputGroup
 import View.SingleCardPage as SingleCardPage
 import View.Spinner as Spinner
 
@@ -54,12 +59,10 @@ type alias Model =
 
 type Msg
     = DrawingClicked (Id Drawing)
-    | NewDrawingClicked
     | CloseDrawingClicked
-    | CloseNewDrawingClicked
-    | InitDrawingMsg InitDrawing.Msg
-    | OpenDrawingInPaintAppClicked (Id Drawing)
+    | OpenDrawingInPaintAppClicked Drawing.PublicId
     | OpenDrawingLinkClicked Drawing.PublicId
+    | CopyClicked Drawing.PublicId
     | DeleteDrawingClicked (Id Drawing)
     | DeleteYesClicked
     | DeleteNoClicked
@@ -73,14 +76,13 @@ type Msg
 type State
     = SpecificDrawing (Id Drawing)
     | DeleteDrawing (Id Drawing)
-    | LoadingAllDrawings
+    | LoadingAllDrawings Route
     | LoadingDrawing
     | LoadingFailed (Listener.Error String)
     | Drawings
     | Deleting
     | DeleteFailed (Id Drawing) String
     | Deleted String
-    | NewDrawing InitDrawing.Model
 
 
 
@@ -89,11 +91,11 @@ type State
 -------------------------------------------------------------------------------
 
 
-init : Session -> Account -> ( Model, Cmd msg )
-init session account =
+init : Session -> Account -> Route -> ( Model, Cmd msg )
+init session account route =
     ( { session = session
       , account = account
-      , state = LoadingAllDrawings
+      , state = LoadingAllDrawings route
       , drawings = Db.empty
       }
     , allDrawingsRequest
@@ -121,10 +123,30 @@ mapSession f model =
     { model | session = f model.session }
 
 
+handleRoute : Route -> Model -> Model
+handleRoute route model =
+    case model.state of
+        LoadingAllDrawings _ ->
+            setState (LoadingAllDrawings route) model
+
+        _ ->
+            setState (routeToState route) model
+
+
 
 -------------------------------------------------------------------------------
 -- PRIVATE HELPERS --
 -------------------------------------------------------------------------------
+
+
+routeToState : Route -> State
+routeToState route =
+    case route of
+        Route.Drawings.Landing ->
+            Drawings
+
+        Route.Drawings.SpecificDrawing id ->
+            SpecificDrawing id
 
 
 getDrawings : Model -> List ( Id Drawing, Drawing )
@@ -178,14 +200,25 @@ view model =
 
 viewBody : Model -> List (Html Msg)
 viewBody model =
+    let
+        session : Session
+        session =
+            getSession model
+    in
     case model.state of
         SpecificDrawing id ->
-            []
+            specificDrawingView
+                (Db.getWithId model.drawings id)
+                session
+                |> SingleCardPage.view
 
         DeleteDrawing id ->
-            []
+            deleteDrawingView
+                (Db.getWithId model.drawings id)
+                (Session.getContactEmail session)
+                |> SingleCardPage.view
 
-        LoadingAllDrawings ->
+        LoadingAllDrawings _ ->
             Card.view
                 []
                 [ CardHeader.config
@@ -210,11 +243,163 @@ viewBody model =
         Deleted string ->
             []
 
-        NewDrawing initDrawingModel ->
-            []
+        LoadingFailed error ->
+            Card.errorView
+                { title = "loading failed"
+                , errorMessage =
+                    """
+                    Something went wrong. I was not able to load your drawings.
+                    Below is the error. Sorry about that.
+                    """
+                , error =
+                    Just
+                        (Listener.errorToString identity error)
+                }
+                []
+                |> SingleCardPage.view
 
-        LoadingFailed string ->
-            []
+
+deleteDrawingView : ( Id Drawing, Maybe Drawing ) -> String -> Html Msg
+deleteDrawingView ( id, maybeDrawing ) contactEmail =
+    case maybeDrawing of
+        Just drawing ->
+            let
+                quotedName : String
+                quotedName =
+                    StringUtil.quote
+                        (Drawing.getName drawing)
+            in
+            Card.view
+                []
+                [ CardHeader.config
+                    { title = "delete " ++ quotedName }
+                    |> CardHeader.toHtml
+                , Card.textRow
+                    []
+                    ([ "are you sure you want to delete "
+                     , quotedName
+                     , "?"
+                     ]
+                        |> String.concat
+                    )
+                , Button.row
+                    [ Button.config
+                        DeleteYesClicked
+                        "yes"
+                    , Button.config
+                        DeleteNoClicked
+                        "no"
+                    ]
+                ]
+
+        Nothing ->
+            drawingNotFound contactEmail
+
+
+specificDrawingView : ( Id Drawing, Maybe Drawing ) -> Session -> Html Msg
+specificDrawingView ( id, maybeDrawing ) session =
+    case maybeDrawing of
+        Just drawing ->
+            let
+                showTime : String -> (Drawing -> Posix) -> Html msg
+                showTime label toTime =
+                    [ label
+                    , drawing
+                        |> toTime
+                        |> Session.formatTime session
+                    ]
+                        |> String.join " : "
+                        |> Card.textRow [ Style.marginBottom 2 ]
+
+                publicId : Drawing.PublicId
+                publicId =
+                    Drawing.getPublicId drawing
+            in
+            Card.view
+                []
+                [ CardHeader.config
+                    { title = Drawing.getName drawing }
+                    |> CardHeader.withCloseButton
+                        { onClick = CloseDrawingClicked }
+                    |> CardHeader.toHtml
+                , Grid.row
+                    [ Style.pit
+                    , Style.marginBottom 2
+                    ]
+                    [ Grid.column
+                        [ Style.maxWidth 9
+                        , Style.maxHeight 9
+                        ]
+                        [ Image.config
+                            (Image.drawing drawing)
+                            |> Image.toHtml
+                        ]
+                    ]
+                , showTime "created at" Drawing.getCreatedAt
+                , showTime "updated at" Drawing.getUpdatedAt
+                , InputGroup.config
+                    { label = "image link"
+                    , input =
+                        [ Grid.row
+                            []
+                            [ Grid.column
+                                []
+                                [ publicId
+                                    |> Drawing.getDrawingUrl
+                                    |> Input.readOnly
+                                    |> Input.toHtml
+                                ]
+                            , Grid.column
+                                [ Grid.columnShrink
+                                , Style.marginLeft 2
+                                ]
+                                [ Button.config
+                                    (CopyClicked publicId)
+                                    "copy url"
+                                    |> Button.toHtml
+                                ]
+                            ]
+                        ]
+                    }
+                    |> InputGroup.toHtml
+                , Button.rowWithStyles
+                    [ Style.fieldMarginTop ]
+                    [ Button.config
+                        (OpenDrawingLinkClicked publicId)
+                        "open image link"
+                        |> Button.asDoubleWidth
+                    , Button.config
+                        (OpenDrawingInPaintAppClicked publicId)
+                        "open in ctpaint"
+                        |> Button.asDoubleWidth
+                    , Button.config
+                        (DeleteDrawingClicked id)
+                        "delete"
+                    ]
+                ]
+
+        Nothing ->
+            drawingNotFound
+                (Session.getContactEmail session)
+
+
+drawingNotFound : String -> Html Msg
+drawingNotFound contactEmail =
+    Card.view
+        []
+        [ CardHeader.config
+            { title = "Could not find drawing" }
+            |> CardHeader.toHtml
+        , [ """
+            This drawing doesnt exist. Maybe its been
+            deleted? Maybe something went wrong. If
+            this problem persists, please reach me at
+            """
+          , contactEmail
+          ]
+            |> String.join " "
+            |> Card.textRow []
+        ]
 
 
 drawingsView : List ( Id Drawing, Drawing ) -> List (Html Msg)
@@ -223,7 +408,7 @@ drawingsView drawings =
         Card.view
             []
             [ Card.textRow [] "you have no drawings"
-            , ButtonRow.view
+            , Button.row
                 [ Button.config
                     RefreshClicked
                     "reload drawings"
@@ -235,59 +420,11 @@ drawingsView drawings =
             |> SingleCardPage.view
 
     else
-        let
-            drawingView : ( Id Drawing, Drawing ) -> Grid.Column Msg
-            drawingView ( id, drawing ) =
-                Grid.column
-                    []
-                    [ Card.view
-                        [ Style.width 8
-                        , Style.height 8
-                        , Css.displayFlex
-                        , Css.flexDirection Css.column
-                        ]
-                        [ CardHeader.config
-                            { title = drawing.name }
-                            |> CardHeader.toHtml
-                        , Grid.row
-                            [ Style.fullWidth
-                            , Style.pit
-                            , Css.flex (Css.int 1)
-                            , Style.noOverflow
-                            ]
-                            [ Grid.column
-                                [ Style.fullWidth
-                                , Css.displayFlex
-                                , Style.centerContent
-                                , Css.flexDirection Css.column
-                                ]
-                                [ Image.config
-                                    (Image.drawing drawing)
-                                    |> Image.withStyles
-                                        [ Style.fullWidth ]
-                                    |> Image.toHtml
-                                ]
-                            ]
-                        ]
-                    ]
-        in
         [ Grid.column
             [ Style.padding 2
             , Css.flexDirection Css.column
             ]
             [ Grid.row
-                [ Style.paddingBottom 2 ]
-                [ Grid.column
-                    []
-                    [ ButtonRow.view
-                        [ Button.config
-                            NewDrawingClicked
-                            "new drawing"
-                            |> Button.asDoubleWidth
-                        ]
-                    ]
-                ]
-            , Grid.row
                 [ Style.pit
                 , Style.fullWidth
                 , Style.padding 3
@@ -299,6 +436,43 @@ drawingsView drawings =
             |> Body.view
 
 
+drawingView : ( Id Drawing, Drawing ) -> Grid.Column Msg
+drawingView ( id, drawing ) =
+    Grid.column
+        []
+        [ Card.view
+            [ Style.width 8
+            , Style.height 8
+            , Css.displayFlex
+            , Css.flexDirection Css.column
+            ]
+            [ CardHeader.config
+                { title = drawing.name }
+                |> CardHeader.toHtml
+            , Grid.row
+                [ Style.fullWidth
+                , Style.pit
+                , Css.flex (Css.int 1)
+                , Style.noOverflow
+                ]
+                [ Grid.column
+                    [ Style.fullWidth
+                    , Css.displayFlex
+                    , Style.centerContent
+                    , Css.flexDirection Css.column
+                    ]
+                    [ Image.config
+                        (Image.drawing drawing)
+                        |> Image.onClick (DrawingClicked id)
+                        |> Image.withStyles
+                            [ Style.fullWidth ]
+                        |> Image.toHtml
+                    ]
+                ]
+            ]
+        ]
+
+
 
 -------------------------------------------------------------------------------
 -- UPDATE --
@@ -307,6 +481,11 @@ drawingsView drawings =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        navKey : NavKey
+        navKey =
+            Session.getNavKey <| getSession model
+    in
     case msg of
         DrawingClicked id ->
             setState
@@ -314,34 +493,10 @@ update msg model =
                 model
                 |> CmdUtil.withNoCmd
 
-        NewDrawingClicked ->
-            initNewDrawing model
-
         CloseDrawingClicked ->
-            goToDrawings model
-
-        CloseNewDrawingClicked ->
-            goToDrawings model
-
-        InitDrawingMsg subMsg ->
-            case model.state of
-                NewDrawing subModel ->
-                    let
-                        ( newSubModel, cmd ) =
-                            InitDrawing.update
-                                (Session.getNavKey model.session)
-                                subMsg
-                                subModel
-                    in
-                    ( setState
-                        (NewDrawing newSubModel)
-                        model
-                    , cmd
-                    )
-
-                _ ->
-                    model
-                        |> CmdUtil.withNoCmd
+            ( model
+            , goToDrawings navKey
+            )
 
         OpenDrawingInPaintAppClicked id ->
             ( setState LoadingDrawing model
@@ -353,7 +508,7 @@ update msg model =
         OpenDrawingLinkClicked id ->
             ( model
             , Ports.payload "open in new window"
-                |> Ports.withString "url" (Drawing.toUrl id)
+                |> Ports.withString "url" (Drawing.getDrawingUrl id)
                 |> Ports.send
             )
 
@@ -376,22 +531,26 @@ update msg model =
         DeleteNoClicked ->
             case model.state of
                 DeleteDrawing id ->
-                    setState
-                        (SpecificDrawing id)
-                        model
-                        |> CmdUtil.withNoCmd
+                    ( model
+                    , Route.goToDrawings
+                        navKey
+                        (Route.Drawings.SpecificDrawing id)
+                    )
 
                 _ ->
                     model
                         |> CmdUtil.withNoCmd
 
         MakeADrawingClicked ->
-            initNewDrawing model
+            ( model
+            , goToNewDrawing navKey
+            )
 
         RefreshClicked ->
-            ( setState LoadingAllDrawings model
-            , allDrawingsRequest
-            )
+            init
+                (getSession model)
+                (getAccount model)
+                Route.Drawings.Landing
 
         BackToDrawingsClicked ->
             setState Drawings model
@@ -418,17 +577,23 @@ update msg model =
                     loadingFailed err model
                         |> CmdUtil.withNoCmd
 
-
-initNewDrawing : Model -> ( Model, Cmd msg )
-initNewDrawing =
-    setState (NewDrawing InitDrawing.init)
-        >> CmdUtil.withNoCmd
+        CopyClicked publicId ->
+            model
+                |> CmdUtil.withNoCmd
 
 
-goToDrawings : Model -> ( Model, Cmd msg )
-goToDrawings =
-    setState Drawings
-        >> CmdUtil.withNoCmd
+goToNewDrawing : NavKey -> Cmd msg
+goToNewDrawing navKey =
+    Route.goTo
+        navKey
+        Route.InitDrawing
+
+
+goToDrawings : NavKey -> Cmd msg
+goToDrawings navKey =
+    Route.goToDrawings
+        navKey
+        Route.Drawings.Landing
 
 
 track : Msg -> Maybe Tracking.Event
@@ -437,17 +602,8 @@ track msg =
         DrawingClicked _ ->
             Tracking.event "drawing clicked"
 
-        NewDrawingClicked ->
-            Tracking.event "new drawing clicked"
-
         CloseDrawingClicked ->
             Tracking.event "close drawing clicked"
-
-        CloseNewDrawingClicked ->
-            Tracking.event "close new drawing clicked"
-
-        InitDrawingMsg subMsg ->
-            InitDrawing.track subMsg
 
         OpenDrawingInPaintAppClicked _ ->
             Tracking.event "open drawing in paint app clicked"
@@ -479,6 +635,9 @@ track msg =
         GotAllDrawings response ->
             Tracking.event "got all drawings"
                 |> Tracking.withListenerResponse response
+
+        CopyClicked _ ->
+            Tracking.event "copy clicked"
 
 
 

@@ -196,41 +196,25 @@ validate model =
 view : Model -> Document Msg
 view model =
     let
-        navButton : Tab -> Html Msg
+        navButton : Tab -> Body.NavItem Msg
         navButton thisOption =
-            Grid.row
-                [ Style.marginBottom 2 ]
-                [ Grid.column
-                    []
-                    [ Button.config
-                        (TabClickedOn thisOption)
-                        (tabToLabel thisOption)
-                        |> Button.indent
-                            (model.tab == thisOption)
-                        |> Button.asFullWidth
-                        |> Button.toHtml
-                    ]
-                ]
+            Body.navItem
+                { onClick = TabClickedOn thisOption
+                , label = tabToLabel thisOption
+                , active = model.tab == thisOption
+                }
     in
     { title = Just "settings"
     , body =
-        Body.view
-            [ Grid.column
-                [ Style.marginTop 3
-                , Style.marginLeft 3
-                , Grid.exactWidthColumn (Style.sizePx 7)
-                , Css.flexDirection Css.column
-                ]
+        Body.leftNavView
+            { navItems =
                 [ navButton Account
                 , navButton KeyConfig
                 ]
-            , Grid.column
-                [ Style.marginLeft 3
-                , Style.paddingTop 3
-                , Css.flexDirection Css.column
-                ]
-                (viewBody model)
-            ]
+            , content = viewBody model
+            , styles = [ Style.sectionPaddingTop ]
+            , headerRows = []
+            }
     }
 
 
@@ -272,29 +256,22 @@ keyConfigView =
 accountView : Model -> List (Html Msg)
 accountView model =
     [ Grid.row
-        [ Style.marginBottom 1 ]
+        [ Style.fieldMarginBelow ]
         [ Grid.column
             []
             [ Text.fromString "user settings" ]
         ]
+    , InputGroup.text
+        { label = "name"
+        , input =
+            Input.config
+                NameUpdated
+                (Field.getValue model.nameField)
+        }
+        |> InputGroup.withError (Field.getError model.nameField)
+        |> InputGroup.toHtml
     , Grid.row
-        []
-        [ Grid.column
-            []
-            [ InputGroup.text
-                { label = "name"
-                , input =
-                    Input.config
-                        NameUpdated
-                        (Field.getValue model.nameField)
-                }
-                |> InputGroup.withStyles [ Style.marginBottom 1 ]
-                |> InputGroup.withError (Field.getError model.nameField)
-                |> InputGroup.toHtml
-            ]
-        ]
-    , Grid.row
-        []
+        [ Style.fieldMarginTop ]
         [ Grid.column
             []
             [ Button.config

@@ -2,6 +2,7 @@ module Ui.InitDrawing exposing
     ( Model
     , Msg
     , bodyView
+    , header
     , init
     , track
     , update
@@ -12,10 +13,13 @@ module Ui.InitDrawing exposing
 
     InitDrawing is a component used to initialize
     the PaintApp. Its used in two places at the
-    time of writing this: 0 in the init drawing page
-    which only serves to initialize new drawings, and 1;
-    in the home page one can start a new drawing, and
-    this same menu is used.
+    time of writing this:
+        0 the init drawing page which only serves
+        to initialize new drawings
+        1 the paint app itself
+
+
+    -- Chad September 1st 2019
 
 -}
 
@@ -27,16 +31,14 @@ import Html.Styled exposing (Html)
 import Route
 import Route.PaintApp as PaintAppRoute
 import Style
-import Url
 import Util.Cmd as CmdUtil
 import Util.Maybe as MaybeUtil
 import Util.String as StringUtil
-import View.Button as Button
-import View.ButtonRow as ButtonRow
+import View.Button as Button exposing (Button)
 import View.Card as Card
 import View.CardHeader as CardHeader exposing (CardHeader)
 import View.Input as Input
-import View.InputGroup as InputGroup
+import View.InputGroup as InputGroup exposing (InputGroup)
 
 
 
@@ -263,8 +265,8 @@ track msg =
 -------------------------------------------------------------------------------
 
 
-header : Model -> CardHeader msg
-header model =
+header : CardHeader msg
+header =
     CardHeader.config
         { title = "init drawing" }
 
@@ -276,66 +278,80 @@ view =
 
 bodyView : Model -> List (Html Msg)
 bodyView model =
-    [ newView model
-    , [ Grid.row [ Style.verticalDivider ] [] ]
+    [ newDrawingFields model
+    , [ Button.rowWithStyles
+            [ Style.fieldMarginTop ]
+            [ Button.config
+                StartNewDrawingClicked
+                "start new drawing"
+                |> Button.asDoubleWidth
+            ]
+      , Grid.row
+            [ Style.height 4 ]
+            []
+      ]
     , urlView model
     ]
         |> List.concat
 
 
-newView : Model -> List (Html Msg)
-newView model =
+newDrawingFields : Model -> List (Html Msg)
+newDrawingFields model =
     let
         colorButton : BackgroundColor -> Html Msg
         colorButton backgroundColor =
             Button.noLabel
                 (ColorClicked backgroundColor)
+                |> Button.withBackgroundColor
+                    (BackgroundColor.toStyleColor backgroundColor)
+                |> Button.withFatBorder
+                |> Button.asFullWidth
                 |> Button.indent
                     (backgroundColor == model.backgroundColor)
                 |> Button.toHtml
     in
-    [ InputGroup.text
-        { label = "name"
-        , input =
+    [ { label = "name"
+      , input =
             Input.config
                 NameUpdated
                 model.name
-        }
-        |> InputGroup.toHtml
-    , InputGroup.text
-        { label = "width"
-        , input =
+      }
+        |> InputGroup.text
+    , { label = "width"
+      , input =
             Input.config
                 WidthUpdated
                 (getWidthUiStr model)
                 |> Input.withPlaceholder
                     (String.fromInt initWidth ++ "px")
-        }
-        |> InputGroup.toHtml
-    , InputGroup.text
-        { label = "height"
-        , input =
+      }
+        |> InputGroup.text
+    , { label = "height"
+      , input =
             Input.config
                 HeightUpdated
                 (getHeightUiStr model)
                 |> Input.withPlaceholder
                     (String.fromInt initHeight ++ "px")
-        }
-        |> InputGroup.toHtml
-    , InputGroup.config
-        { label = "background color"
-        , input =
-            [ colorButton BackgroundColor.black
-            , colorButton BackgroundColor.white
+      }
+        |> InputGroup.text
+    , { label = "background color"
+      , input =
+            [ Grid.row
+                []
+                [ Grid.column
+                    []
+                    [ colorButton BackgroundColor.black ]
+                , Grid.column
+                    [ Style.marginLeft 1 ]
+                    [ colorButton BackgroundColor.white ]
+                ]
             ]
-        }
-        |> InputGroup.toHtml
-    , ButtonRow.view
-        [ Button.config
-            StartNewDrawingClicked
-            "start new drawing"
-        ]
+      }
+        |> InputGroup.config
     ]
+        |> List.map InputGroup.withDoubleWidth
+        |> InputGroup.manyToHtml
 
 
 urlView : Model -> List (Html Msg)
@@ -353,10 +369,11 @@ urlView model =
                 model.url
         }
         |> InputGroup.toHtml
-    , ButtonRow.view
+    , Button.row
         [ Button.config
             (FromUrlClicked buttonIsDisabled)
             "start from url"
             |> Button.isDisabled buttonIsDisabled
+            |> Button.asDoubleWidth
         ]
     ]

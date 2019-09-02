@@ -1,9 +1,10 @@
 module View.Body exposing
-    ( Body
-    , Option
+    ( NavItem
+    , leftNavView
+    , navItem
     , singleColumnView
-    , singleColumnWidth
     , view
+    , withStyles
     )
 
 import Chadtech.Colors as Colors
@@ -11,6 +12,7 @@ import Css exposing (Style)
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
 import Style
+import View.Button as Button exposing (Button)
 
 
 
@@ -19,28 +21,19 @@ import Style
 -------------------------------------------------------------------------------
 
 
-type Body msg
-    = Body (List Option) (List (Html msg))
-
-
-type Option
-    = SingleColumnWidth
+type NavItem msg
+    = NavItem (Button msg)
 
 
 
 -------------------------------------------------------------------------------
--- HELPERS --
+-- PRIVATE HELPERS --
 -------------------------------------------------------------------------------
 
 
-singleColumnWidth : Body msg -> Body msg
-singleColumnWidth =
-    addOption SingleColumnWidth
-
-
-addOption : Option -> Body msg -> Body msg
-addOption option (Body options children) =
-    Body (option :: options) children
+unwrapNavItem : NavItem msg -> Button msg
+unwrapNavItem (NavItem html) =
+    html
 
 
 
@@ -50,20 +43,27 @@ addOption option (Body options children) =
 
 
 view : List (Grid.Column msg) -> List (Html msg)
-view children =
+view =
+    withStyles []
+
+
+withStyles : List Style -> List (Grid.Column msg) -> List (Html msg)
+withStyles extraStyles children =
     [ Grid.row
         [ Css.backgroundColor Colors.content1
         , Style.fullWidth
         , Css.flex (Css.int 1)
         , Style.centerContent
+        , Css.batch extraStyles
+        , Style.scroll
         ]
         children
     ]
 
 
-singleColumnView : List (Html msg) -> List (Html msg)
-singleColumnView children =
-    view
+singleColumnView : List Style -> List (Html msg) -> List (Html msg)
+singleColumnView styles children =
+    withStyles styles
         [ Grid.column
             [ Style.width 10
             , Css.flex Css.none
@@ -71,3 +71,46 @@ singleColumnView children =
             ]
             children
         ]
+
+
+navItem :
+    { onClick : msg
+    , label : String
+    , active : Bool
+    }
+    -> NavItem msg
+navItem { onClick, label, active } =
+    Button.config
+        onClick
+        label
+        |> Button.indent active
+        |> Button.asFullWidth
+        |> NavItem
+
+
+leftNavView :
+    { navItems : List (NavItem msg)
+    , content : List (Html msg)
+    , styles : List Style
+    , headerRows : List (Html msg)
+    }
+    -> List (Html msg)
+leftNavView { navItems, content, styles, headerRows } =
+    singleColumnView
+        styles
+        (headerRows
+            ++ [ Grid.row
+                    []
+                    [ Grid.column
+                        [ Grid.exactWidthColumn (Style.sizePx 7)
+                        , Css.flexDirection Css.column
+                        ]
+                        (Button.column <| List.map unwrapNavItem navItems)
+                    , Grid.column
+                        [ Style.sectionMarginLeft
+                        , Css.flexDirection Css.column
+                        ]
+                        content
+                    ]
+               ]
+        )

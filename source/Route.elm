@@ -1,7 +1,11 @@
 module Route exposing
     ( Route(..)
+    , about
+    , drawings
     , fromUrl
     , goTo
+    , goToAbout
+    , goToDrawings
     , paintApp
     , paintAppFromDrawing
     , paintAppFromUrl
@@ -9,12 +13,13 @@ module Route exposing
     , toUrl
     )
 
-import Data.Drawing exposing (Drawing)
+import Data.Drawing as Drawing exposing (Drawing)
 import Data.NavKey as NavKey exposing (NavKey)
-import Id exposing (Id)
+import Route.About as About
+import Route.Drawings as Drawings
 import Route.PaintApp as PaintApp
 import Url exposing (Url)
-import Url.Parser as Url exposing ((</>), (<?>), Parser)
+import Url.Parser as Url exposing ((</>), (<?>), Parser, s)
 
 
 
@@ -39,20 +44,16 @@ import Url.Parser as Url exposing ((</>), (<?>), Parser)
 type Route
     = Landing
     | PaintApp PaintApp.Route
-    | About
+    | About About.Route
     | Login
     | ResetPassword
     | Logout
     | Settings
-    | Contact
+    | Drawings Drawings.Route
+    | InitDrawing
 
 
 
---    | InitDrawing
---    | Documentation
---    | Pricing
---    | RoadMap
---    | Login
 --    | Register
 --    | Verify
 -------------------------------------------------------------------------------
@@ -73,20 +74,16 @@ fromUrl url =
 parser : Parser (Route -> a) a
 parser =
     [ Url.map Landing Url.top
-    , Url.map PaintApp PaintApp.parser
-    , Url.map About (Url.s "about")
-    , Url.map Login (Url.s "login")
-    , Url.map ResetPassword (Url.s "resetpassword")
-    , Url.map Logout (Url.s "logout")
-    , Url.map Settings (Url.s "settings")
-    , Url.map Contact (Url.s "contact")
+    , Url.map PaintApp (s "app" </> PaintApp.parser)
+    , Url.map About (s "about" </> About.parser)
+    , Url.map Login (s "login")
+    , Url.map ResetPassword (s "resetpassword")
+    , Url.map Logout (s "logout")
+    , Url.map Settings (s "settings")
+    , Url.map Drawings (s "drawings" </> Drawings.parser)
+    , Url.map InitDrawing (s "init")
 
-    --    , Url.map InitDrawing (s "init")
-    --    , Url.map Documentation (s "documentation")
-    --    , Url.map Pricing (s "pricing")
-    --    , Url.map RoadMap (s "roadmap")
     --    , Url.map Register (s "register")
-    --    , Url.map Settings (s "settings")
     --    , Url.map Verify (s "verify")
     ]
         |> Url.oneOf
@@ -104,10 +101,7 @@ toPieces route =
             []
 
         PaintApp subRoute ->
-            [ "app", PaintApp.toUrl subRoute ]
-
-        About ->
-            [ "about" ]
+            "app" :: PaintApp.toUrlPieces subRoute
 
         Login ->
             [ "login" ]
@@ -121,21 +115,20 @@ toPieces route =
         Settings ->
             [ "settings" ]
 
-        Contact ->
-            [ "contact" ]
+        Drawings subRoute ->
+            "drawings" :: Drawings.toUrlPieces subRoute
+
+        InitDrawing ->
+            [ "init" ]
+
+        About subRoute ->
+            "about" :: About.toUrlPieces subRoute
 
 
 
---        InitDrawing ->
---            [ "init" ]
 --
 --
---        Documentation ->
---            [ "documentation" ]
 --
---
---        Pricing ->
---            [ "pricing" ]
 --
 --        RoadMap ->
 --            [ "roadmap" ]
@@ -155,6 +148,26 @@ goTo key =
     NavKey.goTo key << toUrl
 
 
+goToAbout : NavKey -> About.Route -> Cmd msg
+goToAbout key =
+    goTo key << About
+
+
+goToDrawings : NavKey -> Drawings.Route -> Cmd msg
+goToDrawings key =
+    goTo key << Drawings
+
+
+about : Route
+about =
+    About About.Info
+
+
+drawings : Route
+drawings =
+    Drawings Drawings.Landing
+
+
 paintApp : Route
 paintApp =
     PaintApp PaintApp.Landing
@@ -170,6 +183,6 @@ paintAppFromUrl =
     PaintApp << PaintApp.FromUrl << Url.percentEncode
 
 
-paintAppFromDrawing : Id Drawing -> Route
+paintAppFromDrawing : Drawing.PublicId -> Route
 paintAppFromDrawing =
     PaintApp << PaintApp.FromDrawing

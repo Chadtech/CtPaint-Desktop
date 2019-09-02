@@ -1,4 +1,17 @@
-module View.InputGroup exposing (InputGroup(..), Model, Option(..), Summary, config, optionsToSummary, text, toHtml, withDoubleWidth, withError, withStyles)
+module View.InputGroup exposing
+    ( InputGroup
+    , Model
+    , Option
+    , Summary
+    , config
+    , manyToHtml
+    , optionsToSummary
+    , text
+    , toHtml
+    , withDoubleWidth
+    , withError
+    , withExtraRightColumn
+    )
 
 import Chadtech.Colors as Colors
 import Css exposing (Style)
@@ -6,6 +19,7 @@ import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Style
 import Style.Animation
+import Util.List as ListUtil
 import View.Input as Input exposing (Input)
 import View.Label as Label
 import View.Text as Text
@@ -18,7 +32,7 @@ import View.Text as Text
 
 
 type InputGroup msg
-    = InputGroup (Model msg) (List Option)
+    = InputGroup (Model msg) (List (Option msg))
 
 
 type alias Model msg =
@@ -27,16 +41,18 @@ type alias Model msg =
     }
 
 
-type Option
+type Option msg
     = Error (Maybe String)
     | ExtraStyles (List Style)
+    | ExtraRightColumn (Grid.Column msg)
     | DoubleWidth
 
 
-type alias Summary =
+type alias Summary msg =
     { error : Maybe String
     , styles : List Style
     , doubleWidth : Bool
+    , extraRightColumns : List (Grid.Column msg)
     }
 
 
@@ -61,21 +77,26 @@ withStyles =
     addOption << ExtraStyles
 
 
+withExtraRightColumn : Grid.Column msg -> InputGroup msg -> InputGroup msg
+withExtraRightColumn =
+    addOption << ExtraRightColumn
+
+
 
 -------------------------------------------------------------------------------
 -- PRIVATE HELPERS --
 -------------------------------------------------------------------------------
 
 
-addOption : Option -> InputGroup msg -> InputGroup msg
+addOption : Option msg -> InputGroup msg -> InputGroup msg
 addOption option (InputGroup model options) =
     InputGroup model (option :: options)
 
 
-optionsToSummary : List Option -> Summary
+optionsToSummary : List (Option msg) -> Summary msg
 optionsToSummary =
     let
-        modifySummary : Option -> Summary -> Summary
+        modifySummary : Option msg -> Summary msg -> Summary msg
         modifySummary option summary =
             case option of
                 Error maybeError ->
@@ -86,12 +107,21 @@ optionsToSummary =
 
                 DoubleWidth ->
                     { summary | doubleWidth = True }
+
+                ExtraRightColumn column ->
+                    { summary
+                        | extraRightColumns =
+                            ListUtil.push
+                                column
+                                summary.extraRightColumns
+                    }
     in
     List.foldr
         modifySummary
         { error = Nothing
         , styles = []
         , doubleWidth = False
+        , extraRightColumns = []
         }
 
 
@@ -118,10 +148,24 @@ text { label, input } =
         }
 
 
+manyToHtml : List (InputGroup msg) -> List (Html msg)
+manyToHtml inputGroups =
+    case inputGroups of
+        [] ->
+            []
+
+        first :: rest ->
+            first
+                :: List.map
+                    (withStyles [ Style.marginTop Style.fieldSeperationSize ])
+                    rest
+                |> List.map toHtml
+
+
 toHtml : InputGroup msg -> Html msg
 toHtml (InputGroup { label, input } options) =
     let
-        summary : Summary
+        summary : Summary msg
         summary =
             optionsToSummary options
 
@@ -139,16 +183,18 @@ toHtml (InputGroup { label, input } options) =
         ]
         [ Grid.row
             []
-            [ Label.view
+            ([ Label.view
                 label
                 [ Style.paddingLeft 1
                 , Grid.exactWidthColumn
                     (Style.sizePx width)
                 ]
-            , Grid.column
+             , Grid.column
                 [ Css.flexDirection Css.column ]
                 input
-            ]
+             ]
+                ++ List.reverse summary.extraRightColumns
+            )
         , errorView summary.error
         ]
 

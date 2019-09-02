@@ -8,6 +8,49 @@
             flex-direction: column;
             height: 100vh;
         }
+        .spinner {
+            animation: slideby 1s infinite;
+            animation-timing-function: linear;
+            width: 64px;
+            height: 32px;
+            top: 0px;
+            position: absolute;
+            background-color: #b0a69a;
+        }
+
+        .spinner-pit {
+          width: 256px;
+          height: 32px;
+          position: relative;
+          overflow: hidden;
+          background-color: #071d10;
+          border-top; 2px solid #131610;
+          border-left: 2px solid #131610;
+          border-right: 2px solid #57524F;
+          border-bottom: 2px solid #57524F;
+        }
+
+        .spinner-container {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          padding: 4px;
+          border-bottom; 2px solid #131610;
+          border-right: 2px solid #131610;
+          border-left: 2px solid #57524F;
+          border-top: 2px solid #57524F;
+          transform: translate(-50%, -50%);
+          background-color: #2C2826;
+        }
+
+        @keyframes slideby {
+            from {
+               left: -128px;
+            }
+            to {
+                left: 256px;
+            }
+        }
     </style>
     <link rel="stylesheet" type="text/css" href="http://localhost:2956/fonts.css"/>
     <link rel="icon" href="http://localhost:2956/ct-icon.png">
@@ -15,6 +58,12 @@
     <script type="text/javascript" src="http://localhost:2956/elm.js"></script>
   </head>
   <body>
+    <div class="spinner-container">
+      <div class="spinner-pit">
+        <div class="spinner">
+        </div>
+      </div>
+    </div>
   </body>
   <script type="text/javascript">
     StartCtPaint({

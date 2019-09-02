@@ -1,5 +1,6 @@
 module View.BannerLogo exposing (view)
 
+import Css exposing (Style)
 import Data.MountPath exposing (MountPath)
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
@@ -7,12 +8,10 @@ import Style
 import View.Image as Image
 
 
-view : MountPath -> Html msg
-view mountPath =
+view : List Style -> MountPath -> Html msg
+view styles mountPath =
     Grid.row
-        [ Style.pit
-        , Style.marginVertical 3
-        ]
+        (Style.pit :: styles)
         [ Grid.column
             []
             [ Image.config

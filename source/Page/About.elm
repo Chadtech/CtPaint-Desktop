@@ -1,14 +1,123 @@
-module Page.About exposing (view)
+module Page.About exposing
+    ( Model
+    , Msg
+    , getSession
+    , getUser
+    , handleRoute
+    , init
+    , mapSession
+    , track
+    , update
+    , view
+    )
 
+import Chadtech.Colors as Colors
 import Data.BuildNumber as BuildNumber exposing (BuildNumber)
 import Data.Document exposing (Document)
-import Data.MountPath exposing (MountPath)
+import Data.Tracking as Tracking
+import Data.User exposing (User)
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
+import Route
+import Route.About exposing (Route)
+import Session exposing (Session)
 import Style
+import Util.Cmd as CmdUtil
+import Util.String as StringUtil
 import View.BannerLogo as BannerLogo
 import View.Body as Body
+import View.Button as Button
 import View.Text as Text
+import View.TextArea as TextArea
+
+
+
+-------------------------------------------------------------------------------
+-- TYPES --
+-------------------------------------------------------------------------------
+
+
+type alias Model =
+    { session : Session
+    , user : User
+    , route : Route
+    , commentField : String
+    , commentSent : Bool
+    }
+
+
+type Msg
+    = CommentFieldUpdated String
+    | SendCommentClicked
+    | NavItemClicked Route
+
+
+
+-------------------------------------------------------------------------------
+-- INIT --
+-------------------------------------------------------------------------------
+
+
+init : Session -> User -> Route -> Model
+init session user route =
+    { session = session
+    , user = user
+    , route = route
+    , commentField = ""
+    , commentSent = False
+    }
+
+
+
+-------------------------------------------------------------------------------
+-- PUBLIC HELPERS --
+-------------------------------------------------------------------------------
+
+
+getSession : Model -> Session
+getSession =
+    .session
+
+
+getUser : Model -> User
+getUser =
+    .user
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession f model =
+    { model | session = f model.session }
+
+
+handleRoute : Route -> Model -> Model
+handleRoute =
+    setRoute
+
+
+
+-------------------------------------------------------------------------------
+-- PRIVATE HELPERS --
+-------------------------------------------------------------------------------
+
+
+setCommentField : String -> Model -> Model
+setCommentField newField model =
+    { model | commentField = newField }
+
+
+commentSent : Model -> Model
+commentSent model =
+    { model | commentSent = True }
+
+
+canSendComment : Model -> Bool
+canSendComment model =
+    not (model.commentSent || StringUtil.isBlank model.commentField)
+
+
+setRoute : Route -> Model -> Model
+setRoute route model =
+    { model | route = route }
 
 
 
@@ -17,38 +126,138 @@ import View.Text as Text
 -------------------------------------------------------------------------------
 
 
-view : BuildNumber -> MountPath -> Document msg
-view buildNumber mountPath =
+view : Model -> Document Msg
+view model =
+    let
+        session : Session
+        session =
+            getSession model
+
+        navView : Route -> Body.NavItem Msg
+        navView thisRoute =
+            Body.navItem
+                { onClick = NavItemClicked thisRoute
+                , label = Route.About.toLabel thisRoute
+                , active = thisRoute == model.route
+                }
+    in
     { title = Just "about"
     , body =
-        Body.singleColumnView
-            (BannerLogo.view mountPath :: textRows buildNumber)
+        Body.leftNavView
+            { navItems = List.map navView Route.About.all
+            , content = routeView model
+            , styles = []
+            , headerRows =
+                [ BannerLogo.view
+                    [ Style.sectionMarginVertical ]
+                    (Session.getMountPath session)
+                ]
+            }
     }
 
 
-textRows : BuildNumber -> List (Html msg)
-textRows buildNumber =
+routeView : Model -> List (Html Msg)
+routeView model =
     let
-        paragraphView : String -> Html msg
-        paragraphView str =
-            Grid.row
-                [ Style.marginBottom 4 ]
+        session : Session
+        session =
+            getSession model
+    in
+    case model.route of
+        Route.About.Info ->
+            let
+                paragraphView : String -> Html msg
+                paragraphView str =
+                    Grid.row
+                        [ Style.marginBottom 4 ]
+                        [ Grid.column
+                            []
+                            [ Text.fromString str ]
+                        ]
+            in
+            [ intro
+            , personal
+            , tech
+            , thanks
+            , String.join " "
+                [ "This is build number"
+                , BuildNumber.toString
+                    (Session.getBuildNumber session)
+                , "of this software"
+                ]
+            ]
+                |> List.map paragraphView
+
+        Route.About.Contact ->
+            let
+                email : String
+                email =
+                    getSession model
+                        |> Session.getContactEmail
+            in
+            [ Grid.row
+                [ Style.sectionMarginTop ]
                 [ Grid.column
                     []
-                    [ Text.fromString str ]
+                    [ commentMessage email ]
                 ]
-    in
-    [ intro
-    , personal
-    , tech
-    , thanks
-    , String.join " "
-        [ "This is build number"
-        , BuildNumber.toString buildNumber
-        , "of this software"
+            , Grid.row
+                [ Style.sectionMarginTop ]
+                [ Grid.column
+                    [ Style.height 9 ]
+                    (commentBox model)
+                ]
+            , Button.rowWithStyles
+                [ Style.sectionMarginTop ]
+                [ Button.config
+                    SendCommentClicked
+                    "send"
+                    |> Button.isDisabled
+                        (not <| canSendComment model)
+                ]
+            ]
+
+        Route.About.RoadMap ->
+            []
+
+
+commentMessage : String -> Html msg
+commentMessage email =
+    Text.colorSegments
+        [ ( """
+        Send your  questions, comments, criticisms, and bug reports
+        to
+        """, Nothing )
+        , ( email
+          , Just Colors.important0
+          )
+        , ( """
+        or fill out and submit the form below. I would love to hear from you!
+        """
+          , Nothing
+          )
         ]
+
+
+commentBox : Model -> List (Html Msg)
+commentBox model =
+    let
+        text : String
+        text =
+            if model.commentSent then
+                "Sent! Thank you"
+
+            else
+                model.commentField
+    in
+    [ TextArea.config
+        CommentFieldUpdated
+        text
+        |> TextArea.withPlaceholder "enter your comment here"
+        |> TextArea.isDisabled model.commentSent
+        |> TextArea.withFullHeight
+        |> TextArea.toHtml
     ]
-        |> List.map paragraphView
 
 
 intro : String
@@ -100,3 +309,63 @@ thanks =
     well as their time using the CtPaint alpha to provide feedback, or the pixel art
     they have contributed to this project.
     """
+
+
+
+-------------------------------------------------------------------------------
+-- UPDATE --
+-------------------------------------------------------------------------------
+
+
+update : Msg -> Model -> ( Model, Cmd msg )
+update msg model =
+    let
+        session : Session
+        session =
+            getSession model
+    in
+    case msg of
+        CommentFieldUpdated field ->
+            if model.commentSent then
+                model
+                    |> CmdUtil.withNoCmd
+
+            else
+                model
+                    |> setCommentField field
+                    |> CmdUtil.withNoCmd
+
+        SendCommentClicked ->
+            if canSendComment model then
+                ( commentSent model
+                , Tracking.event "comment"
+                    |> Tracking.withString "value" model.commentField
+                    |> Tracking.send
+                )
+
+            else
+                model
+                    |> CmdUtil.withNoCmd
+
+        NavItemClicked navItem ->
+            ( model
+            , Route.goToAbout
+                (Session.getNavKey session)
+                navItem
+            )
+
+
+track : Msg -> Maybe Tracking.Event
+track msg =
+    case msg of
+        SendCommentClicked ->
+            Tracking.event "send comment click"
+
+        CommentFieldUpdated _ ->
+            Nothing
+
+        NavItemClicked route ->
+            Tracking.event "nav item clicked"
+                |> Tracking.withString
+                    "nav-item"
+                    (Route.About.toLabel route)

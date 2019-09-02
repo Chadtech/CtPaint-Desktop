@@ -38,80 +38,66 @@ type Msg
 view : Model -> Html Msg
 view model =
     let
-        optionView : List Style -> Option -> Grid.Column Msg
-        optionView extraStyles option =
+        optionViewWithStyles : List Style -> Option -> Grid.Column Msg
+        optionViewWithStyles styles option =
             Grid.column
-                [ Grid.columnShrink
-                , Style.marginRight 2
-                , Css.batch extraStyles
-                ]
+                (Grid.columnShrink :: styles)
                 [ Button.config
                     (NavBarOptionClicked option)
                     (Option.toLabel option)
-                    |> Button.indent
-                        (optionIsCurrentPage model option)
+                    |> Button.indent (optionIsCurrentPage model option)
+                    |> Button.asDoubleWidthIf (option == Option.NewDrawing)
                     |> Button.toHtml
                 ]
+
+        optionView : Option -> Grid.Column Msg
+        optionView =
+            optionViewWithStyles [ Style.buttonMarginLeft ]
+
+        firstOptionView : Option -> Grid.Column Msg
+        firstOptionView =
+            optionViewWithStyles [ Style.buttonMarginRight ]
 
         userOptions : List (Grid.Column Msg)
         userOptions =
             case Model.getUser model of
                 User.User ->
-                    [ optionView [] Option.Login ]
+                    [ optionView Option.Login ]
 
                 User.Account _ ->
-                    [ optionView [] Option.Logout
-                    , optionView [] Option.Account
+                    [ optionView Option.Logout
+                    , optionView Option.Account
                     ]
+
+        drawingsOption : List (Grid.Column Msg)
+        drawingsOption =
+            case Model.getUser model of
+                User.User ->
+                    []
+
+                User.Account _ ->
+                    [ optionView Option.Drawings ]
     in
     Grid.row
         [ Style.fullWidth
         , Css.backgroundColor Colors.content1
-        , Style.padding 2
+        , Style.padding 1
         , Style.borderBottom Colors.content0
         ]
-        ([ optionView
-            [ Style.marginRight 3 ]
-            Option.Draw
-         , Grid.column
-            [ Style.verticalDivider
-            , Grid.columnShrink
-            , Style.marginRight 3
-            , Style.height 5
-            ]
-            []
-         , optionView [] Option.Title
-         , optionView [] Option.About
-         , optionView [] Option.Contact
-         , Grid.column [] []
+        ([ [ firstOptionView Option.NewDrawing ]
+         , drawingsOption
+         , [ optionView Option.About
+           , Grid.column [] []
+           ]
+         , userOptions
          ]
-            ++ userOptions
+            |> List.concat
         )
 
 
 optionIsCurrentPage : Model -> Option -> Bool
 optionIsCurrentPage model option =
-    case ( model, option ) of
-        ( Model.Splash _, Option.Title ) ->
-            True
-
-        ( Model.Drawings _, Option.Title ) ->
-            True
-
-        ( Model.About _, Option.About ) ->
-            True
-
-        ( Model.Login _, Option.Login ) ->
-            True
-
-        ( Model.Contact _, Option.Contact ) ->
-            True
-
-        ( Model.Settings _, Option.Account ) ->
-            True
-
-        _ ->
-            False
+    Model.toRoute model == Just (Option.toRoute option)
 
 
 

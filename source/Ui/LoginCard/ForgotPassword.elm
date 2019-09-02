@@ -19,7 +19,6 @@ import Util.Cmd as CmdUtil
 import Util.Html as HtmlUtil
 import Util.Json.Decode as DecodeUtil
 import View.Button as Button
-import View.ButtonRow as ButtonRow
 import View.Card as Card
 import View.Input as Input
 import View.InputGroup as InputGroup
@@ -115,11 +114,11 @@ view model =
                             |> Input.withAutocomplete "email"
                             |> Input.onEnter EnterPressed
                     }
-                    |> InputGroup.withStyles [ Style.marginBottom 1 ]
                     |> InputGroup.withError (Field.getError email)
                     |> InputGroup.toHtml
                 ]
-            , ButtonRow.view
+            , Button.rowWithStyles
+                [ Style.fieldMarginTop ]
                 [ Button.config
                     ResetPasswordClicked
                     "reset password"

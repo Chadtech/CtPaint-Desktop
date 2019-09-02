@@ -17,16 +17,16 @@ import Data.Account as User exposing (Account)
 import Data.Field as Field exposing (Field)
 import Data.Listener as Listener exposing (Listener)
 import Data.Tracking as Tracking
+import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Json.Decode as Decode
 import Style
 import Util.Function as FunctionUtil
 import Util.Json.Decode as DecodeUtil
 import View.Button as Button
-import View.ButtonRow as ButtonRow
 import View.Card as Card
 import View.Input as Input exposing (Input)
-import View.InputGroup as InputGroup
+import View.InputGroup as InputGroup exposing (InputGroup)
 import View.Link as Link
 import View.Spinner as Spinner
 
@@ -146,30 +146,36 @@ view : Model -> List (Html Msg)
 view model =
     case model.httpStatus of
         Ready ->
-            [ Html.form
-                []
-                [ inputGroupView
-                    { label = "email"
-                    , onInput = EmailUpdated
-                    , options =
-                        [ Input.withAutocomplete "email" ]
-                    , field = model.email
-                    }
-                , inputGroupView
-                    { label = "password"
-                    , onInput = PasswordUpdated
-                    , options =
-                        [ Input.isPassword
-                        , Input.withAutocomplete "current-password"
-                        ]
-                    , field = model.password
-                    }
+            [ [ { label = "email"
+                , onInput = EmailUpdated
+                , options =
+                    [ Input.withAutocomplete "email" ]
+                , field = model.email
+                }
+              , { label = "password"
+                , onInput = PasswordUpdated
+                , options =
+                    [ Input.isPassword
+                    , Input.withAutocomplete "current-password"
+                    ]
+                , field = model.password
+                }
+              ]
+                |> List.map inputGroupView
+                |> InputGroup.manyToHtml
+                |> Html.form []
+            , Grid.row
+                [ Style.fieldMarginTop ]
+                [ Grid.column
+                    []
+                    [ Link.config
+                        ForgotPasswordClicked
+                        "I forgot my password"
+                        |> Link.toHtml
+                    ]
                 ]
-            , Link.config
-                ForgotPasswordClicked
-                "I forgot my password"
-                |> Link.toHtml
-            , ButtonRow.view
+            , Button.rowWithStyles
+                [ Style.fieldMarginTop ]
                 [ Button.config LoginClicked "log in" ]
             ]
 
@@ -179,7 +185,7 @@ view model =
         Failed error ->
             List.append
                 (errorView error)
-                [ ButtonRow.view
+                [ Button.row
                     [ Button.config
                         TryAgainClicked
                         "try again"
@@ -220,7 +226,7 @@ inputGroupView :
     , options : List (Input Msg -> Input Msg)
     , field : Field
     }
-    -> Html Msg
+    -> InputGroup Msg
 inputGroupView { label, options, onInput, field } =
     InputGroup.text
         { label = label
@@ -231,9 +237,7 @@ inputGroupView { label, options, onInput, field } =
                 |> FunctionUtil.composeMany options
                 |> Input.onEnter EnterPressed
         }
-        |> InputGroup.withStyles [ Style.marginBottom 1 ]
         |> InputGroup.withError (Field.getError field)
-        |> InputGroup.toHtml
 
 
 errorMsg : Error -> String

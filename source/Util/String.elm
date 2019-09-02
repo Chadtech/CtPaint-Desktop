@@ -5,9 +5,15 @@ module Util.String exposing
     , isBlank
     , isValidEmail
     , lengthIsAtLeast
+    , quote
     )
 
 import Regex exposing (Regex)
+
+
+quote : String -> String
+quote str =
+    "\"" ++ str ++ "\""
 
 
 containsUppercase : String -> Bool

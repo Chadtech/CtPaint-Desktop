@@ -2,13 +2,12 @@ module Route.PaintApp exposing
     ( Params
     , Route(..)
     , parser
-    , toUrl
+    , toUrlPieces
     )
 
 import Data.BackgroundColor as BackgroundColor exposing (BackgroundColor)
-import Data.Drawing exposing (Drawing)
+import Data.Drawing as Drawing exposing (Drawing)
 import Data.Size as Size exposing (Size)
-import Id exposing (Id)
 import Url
 import Url.Parser as Url exposing ((</>), (<?>), Parser)
 import Url.Parser.Query as Query
@@ -24,7 +23,7 @@ type Route
     = Landing
     | WithParams Params
     | FromUrl String
-    | FromDrawing (Id Drawing)
+    | FromDrawing Drawing.PublicId
 
 
 type alias Params =
@@ -56,7 +55,7 @@ parser =
     , Url.map FromUrl (Url.s "url" </> Url.string)
     , Url.map
         FromDrawing
-        (Url.s "id" </> Url.map Id.fromString Url.string)
+        (Url.s "id" </> Drawing.publicIdUrlParser)
     ]
         |> Url.oneOf
 
@@ -73,11 +72,11 @@ toParams maybeWidth maybeHeight maybeBackgroundColor maybeName =
     }
 
 
-toUrl : Route -> String
-toUrl route =
+toUrlPieces : Route -> List String
+toUrlPieces route =
     case route of
         Landing ->
-            ""
+            []
 
         WithParams { backgroundColor, name, dimensions } ->
             let
@@ -85,19 +84,20 @@ toUrl route =
                 encodePair ( key, value ) =
                     key ++ "=" ++ value
             in
-            [ Maybe.map
-                (Tuple.pair "background_color" << BackgroundColor.toString)
-                backgroundColor
-            , Maybe.map (Tuple.pair "name") name
-            , Maybe.map (Tuple.pair "size" << Size.toString) dimensions
-            ]
+            [ [ Maybe.map
+                    (Tuple.pair "background_color" << BackgroundColor.toString)
+                    backgroundColor
+              , Maybe.map (Tuple.pair "name") name
+              , Maybe.map (Tuple.pair "size" << Size.toString) dimensions
+              ]
                 |> List.filterMap identity
                 |> List.map encodePair
                 |> String.join "&"
                 |> (++) "?"
+            ]
 
         FromUrl url ->
-            "url/" ++ Url.percentEncode url
+            [ "url", Url.percentEncode url ]
 
         FromDrawing id ->
-            "id/" ++ Id.toString id
+            [ "id", Drawing.publicIdToString id ]

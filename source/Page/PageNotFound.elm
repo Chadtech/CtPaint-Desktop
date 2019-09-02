@@ -5,14 +5,12 @@ module Page.PageNotFound exposing
     , view
     )
 
-import Css
 import Data.Document exposing (Document)
 import Data.NavKey exposing (NavKey)
 import Data.Tracking as Tracking
 import Route
 import Style
 import View.Button as Button
-import View.ButtonRow as ButtonRow
 import View.Card as Card
 import View.CardHeader as CardHeader
 import View.SingleCardPage as SingleCardPage
@@ -46,7 +44,7 @@ view =
             , Card.textRow
                 []
                 "Sorry, something went wrong. This page does not exist."
-            , ButtonRow.view
+            , Button.row
                 [ Button.config
                     GoHomeClicked
                     "go home"

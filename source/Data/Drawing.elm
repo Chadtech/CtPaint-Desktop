@@ -2,13 +2,19 @@ module Data.Drawing exposing
     ( Drawing
     , PublicId
     , decoder
+    , getCreatedAt
+    , getDrawingUrl
+    , getName
     , getPublicId
-    , toUrl
+    , getUpdatedAt
+    , publicIdToString
+    , publicIdUrlParser
     )
 
 import Id exposing (Id)
 import Json.Decode as Decode exposing (Decoder)
 import Time exposing (Posix)
+import Url.Parser as Url
 import Util.Json.Decode as DecodeUtil
 import Util.Posix as PosixUtil
 
@@ -34,13 +40,46 @@ type PublicId
 
 
 -------------------------------------------------------------------------------
--- DECODER --
+-- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+publicIdUrlParser : Url.Parser (PublicId -> a) a
+publicIdUrlParser =
+    Url.map PublicId Url.string
+
+
+publicIdToString : PublicId -> String
+publicIdToString (PublicId publicId) =
+    publicId
+
+
+getDrawingUrl : PublicId -> String
+getDrawingUrl (PublicId publicId) =
+    [ "https://s3.us-east-2.amazonaws.com/ctpaint-drawings-uploads"
+    , publicId
+    ]
+        |> String.join "/"
 
 
 getPublicId : Drawing -> PublicId
 getPublicId =
     .publicId
+
+
+getName : Drawing -> String
+getName =
+    .name
+
+
+getCreatedAt : Drawing -> Posix
+getCreatedAt =
+    .createdAt
+
+
+getUpdatedAt : Drawing -> Posix
+getUpdatedAt =
+    .updatedAt
 
 
 decoder : Decoder ( Id Drawing, Drawing )
@@ -58,17 +97,3 @@ decoder =
     Decode.map2 Tuple.pair
         (Decode.field "drawingId" Id.decoder)
         contentDecoder
-
-
-
--------------------------------------------------------------------------------
--- HELPERS --
--------------------------------------------------------------------------------
-
-
-toUrl : PublicId -> String
-toUrl (PublicId publicId) =
-    [ "https://s3.us-east-2.amazonaws.com/ctpaint-drawings-uploads"
-    , publicId
-    ]
-        |> String.join "/"

@@ -3,12 +3,15 @@ module Data.BackgroundColor exposing
     , black
     , queryParser
     , toString
+    , toStyleColor
     , white
     )
 
 -------------------------------------------------------------------------------
 -- TYPES --
 -------------------------------------------------------------------------------
+
+import Css
 
 
 type BackgroundColor
@@ -62,3 +65,13 @@ queryParser params =
 
         _ :: rest ->
             queryParser rest
+
+
+toStyleColor : BackgroundColor -> Css.Color
+toStyleColor color =
+    case color of
+        Black ->
+            Css.hex "#000000"
+
+        White ->
+            Css.hex "#FFFFFF"
