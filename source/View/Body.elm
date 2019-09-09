@@ -4,7 +4,6 @@ module View.Body exposing
     , navItem
     , singleColumnView
     , view
-    , withStyles
     )
 
 import Chadtech.Colors as Colors
@@ -42,14 +41,9 @@ unwrapNavItem (NavItem html) =
 -------------------------------------------------------------------------------
 
 
-view : List (Grid.Column msg) -> List (Html msg)
-view =
-    withStyles []
-
-
-withStyles : List Style -> List (Grid.Column msg) -> List (Html msg)
-withStyles extraStyles children =
-    [ Grid.row
+view : List Style -> List (Html msg) -> List (Html msg)
+view extraStyles children =
+    [ Grid.box
         [ Css.backgroundColor Colors.content1
         , Style.fullWidth
         , Css.flex (Css.int 1)
@@ -62,14 +56,12 @@ withStyles extraStyles children =
 
 
 singleColumnView : List Style -> List (Html msg) -> List (Html msg)
-singleColumnView styles children =
-    withStyles styles
-        [ Grid.column
-            [ Style.width 10
-            , Css.flex Css.none
-            , Css.flexDirection Css.column
-            ]
-            children
+singleColumnView styles =
+    view
+        [ Style.width 10
+        , Css.flex Css.none
+        , Css.flexDirection Css.column
+        , Css.batch styles
         ]
 
 

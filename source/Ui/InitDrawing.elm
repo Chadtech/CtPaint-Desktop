@@ -369,7 +369,8 @@ urlView model =
                 model.url
         }
         |> InputGroup.toHtml
-    , Button.row
+    , Button.rowWithStyles
+        [ Style.fieldMarginTop ]
         [ Button.config
             (FromUrlClicked buttonIsDisabled)
             "start from url"

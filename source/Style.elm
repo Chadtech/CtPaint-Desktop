@@ -5,6 +5,7 @@ module Style exposing
     , buttonMarginLeft
     , buttonMarginRight
     , buttonMarginTop
+    , buttonPaddingHorizontal
     , centerContent
     , exactWidth
     , fieldMarginBelow
@@ -17,7 +18,6 @@ module Style exposing
     , fullWidth
     , globals
     , height
-    , horizontalDivider
     , indent
     , indentWithWidth
     , leftJustifyContent
@@ -55,7 +55,7 @@ module Style exposing
     , sectionMarginVertical
     , sectionPaddingTop
     , sizePx
-    , verticalDivider
+    , smallFontSize
     , width
     )
 
@@ -215,6 +215,11 @@ sectionPaddingTop =
     paddingTop sectionSeperationSize
 
 
+fieldPaddingRight : Style
+fieldPaddingRight =
+    paddingRight fieldSeperationSize
+
+
 fieldMarginTop : Style
 fieldMarginTop =
     marginTop fieldSeperationSize
@@ -223,6 +228,11 @@ fieldMarginTop =
 fieldMarginBelow : Style
 fieldMarginBelow =
     marginBottom fieldSeperationSize
+
+
+buttonPaddingHorizontal : Style
+buttonPaddingHorizontal =
+    paddingHorizontal buttonSeparationSize
 
 
 buttonMarginLeft : Style
@@ -287,9 +297,24 @@ pit =
 hfnss : Style
 hfnss =
     [ Css.fontFamilies [ "HFNSS" ]
-    , Css.fontSize (sizePx 5)
+    , normalFontSize
     ]
         |> Css.batch
+
+
+fontSize : Int -> Style
+fontSize =
+    Css.fontSize << sizePx
+
+
+normalFontSize : Style
+normalFontSize =
+    fontSize 5
+
+
+smallFontSize : Style
+smallFontSize =
+    fontSize 4
 
 
 fontSmoothingNone : Style
@@ -390,22 +415,6 @@ pointer =
 noOutline : Style
 noOutline =
     Css.outline Css.none
-
-
-verticalDivider : Style
-verticalDivider =
-    [ borderLeft3 (sizePx 1) solid Colors.content0
-    , borderRight3 (sizePx 1) solid Colors.content2
-    ]
-        |> Css.batch
-
-
-horizontalDivider : Style
-horizontalDivider =
-    [ borderTop3 (sizePx 1) solid Colors.content0
-    , borderBottom3 (sizePx 1) solid Colors.content2
-    ]
-        |> Css.batch
 
 
 centerContent : Style

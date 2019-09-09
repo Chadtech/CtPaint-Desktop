@@ -77,12 +77,11 @@ type State
     = SpecificDrawing (Id Drawing)
     | DeleteDrawing (Id Drawing)
     | LoadingAllDrawings Route
-    | LoadingDrawing
     | LoadingFailed (Listener.Error String)
     | Drawings
     | Deleting
-    | DeleteFailed (Id Drawing) String
-    | Deleted String
+    | DeleteFailed (Id Drawing) { error : String }
+    | Deleted { drawingName : String }
 
 
 
@@ -228,20 +227,41 @@ viewBody model =
                 ]
                 |> SingleCardPage.view
 
-        LoadingDrawing ->
-            []
-
         Drawings ->
             drawingsView (getDrawings model)
 
         Deleting ->
-            []
+            Card.view
+                []
+                [ CardHeader.config
+                    { title = "deleting" }
+                    |> CardHeader.toHtml
+                , Spinner.row
+                ]
+                |> SingleCardPage.view
 
-        DeleteFailed id string ->
-            []
+        DeleteFailed id error ->
+            failedToDeleteView
+                (Db.getWithId model.drawings id)
+                error
+                |> SingleCardPage.view
 
-        Deleted string ->
-            []
+        Deleted { drawingName } ->
+            Card.view
+                []
+                [ CardHeader.config
+                    { title = "deleted" }
+                    |> CardHeader.toHtml
+                , Card.textRow
+                    []
+                    ([ drawingName
+                        |> StringUtil.quote
+                     , "has been deleted"
+                     ]
+                        |> String.join " "
+                    )
+                ]
+                |> SingleCardPage.view
 
         LoadingFailed error ->
             Card.errorView
@@ -257,6 +277,24 @@ viewBody model =
                 }
                 []
                 |> SingleCardPage.view
+
+
+failedToDeleteView : ( Id Drawing, Maybe Drawing ) -> { error : String } -> Html Msg
+failedToDeleteView ( id, maybeDrawing ) { error } =
+    Card.errorView
+        { title = "error"
+        , errorMessage =
+            [ "Something didnt work. "
+            , maybeDrawing
+                |> Maybe.map
+                    (Drawing.getName >> StringUtil.quote)
+                |> Maybe.withDefault "Your drawing"
+            , " might not have been deleted."
+            ]
+                |> String.concat
+        , error = Just error
+        }
+        []
 
 
 deleteDrawingView : ( Id Drawing, Maybe Drawing ) -> String -> Html Msg
@@ -420,7 +458,7 @@ drawingsView drawings =
             |> SingleCardPage.view
 
     else
-        [ Grid.column
+        Body.view
             [ Style.padding 2
             , Css.flexDirection Css.column
             ]
@@ -432,8 +470,6 @@ drawingsView drawings =
                 ]
                 (List.map drawingView drawings)
             ]
-        ]
-            |> Body.view
 
 
 drawingView : ( Id Drawing, Drawing ) -> Grid.Column Msg
@@ -499,7 +535,7 @@ update msg model =
             )
 
         OpenDrawingInPaintAppClicked id ->
-            ( setState LoadingDrawing model
+            ( model
             , Route.goTo
                 (Session.getNavKey model.session)
                 (Route.paintAppFromDrawing id)

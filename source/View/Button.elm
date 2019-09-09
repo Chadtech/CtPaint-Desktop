@@ -7,6 +7,7 @@ module View.Button exposing
     , asHalfWidth
     , column
     , config
+    , icon
     , indent
     , isDisabled
     , makeTaller
@@ -25,6 +26,7 @@ import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
 import Html.Styled.Events as Events
 import Style
+import Util.Css as CssUtil
 
 
 
@@ -56,6 +58,7 @@ type Option
     | Label String
     | BackgroundColor Css.Color
     | FatBorder
+    | Icon
 
 
 type alias Summary =
@@ -66,6 +69,7 @@ type alias Summary =
     , label : Maybe String
     , backgroundColor : Maybe Css.Color
     , fatBorder : Bool
+    , iconFont : Bool
     }
 
 
@@ -171,6 +175,11 @@ optionsToSummary =
 
                 FatBorder ->
                     { summary | fatBorder = True }
+
+                Icon ->
+                    modifySummary
+                        (Width FullWidth)
+                        { summary | iconFont = True }
     in
     List.foldr modifySummary
         { width = SingleWidth
@@ -180,6 +189,7 @@ optionsToSummary =
         , label = Nothing
         , backgroundColor = Nothing
         , fatBorder = False
+        , iconFont = False
         }
 
 
@@ -194,6 +204,13 @@ config onClick label =
     Button
         { onClick = onClick }
         [ Label label ]
+
+
+icon : msg -> String -> Button msg
+icon onClick iconStr =
+    Button
+        { onClick = onClick }
+        [ Label iconStr, Icon ]
 
 
 noLabel : msg -> Button msg
@@ -221,10 +238,19 @@ toHtml (Button { onClick } options) =
             , Css.active [ Style.indent ]
             , buttonWidth summary
             , disabledStyle summary.disabled
+            , CssUtil.styleIf summary.iconFont iconStyle
             ]
         , Events.onClick onClick
         ]
         [ Html.text (Maybe.withDefault "" summary.label) ]
+
+
+iconStyle : Style
+iconStyle =
+    [ Css.fontFamilies [ "icons" ]
+    , Style.smallFontSize
+    ]
+        |> Css.batch
 
 
 disabledStyle : Bool -> Style

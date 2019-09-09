@@ -78,6 +78,7 @@ type Msg
     | SettingsMsg Settings.Msg
     | AboutMsg About.Msg
     | InitDrawingMsg InitDrawing.Msg
+    | PaintAppMsg PaintApp.Msg
 
 
 
@@ -184,6 +185,7 @@ viewPage model =
 
         Model.PaintApp subModel ->
             PaintApp.view subModel
+                |> Document.map PaintAppMsg
 
         Model.About subModel ->
             About.view subModel
@@ -346,6 +348,17 @@ updateFromOk msg model =
                 Model.About subModel ->
                     About.update subMsg subModel
                         |> Tuple.mapFirst Model.About
+
+                _ ->
+                    model
+                        |> CmdUtil.withNoCmd
+
+        PaintAppMsg subMsg ->
+            case model of
+                Model.PaintApp subModel ->
+                    PaintApp.update subMsg subModel
+                        |> Tuple.mapFirst Model.PaintApp
+                        |> CmdUtil.mapCmd PaintAppMsg
 
                 _ ->
                     model
@@ -522,6 +535,9 @@ trackPage msg =
 
         AboutMsg subMsg ->
             About.track subMsg
+
+        PaintAppMsg subMsg ->
+            PaintApp.track subMsg
 
 
 

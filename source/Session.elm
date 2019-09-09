@@ -8,6 +8,7 @@ module Session exposing
     , getMountPath
     , getNavKey
     , getSessionId
+    , getWindowSize
     , init
     , subscriptions
     , track
@@ -145,6 +146,11 @@ getNavKey =
 getSessionId : Session -> SessionId
 getSessionId =
     .sessionId
+
+
+getWindowSize : Session -> Size
+getWindowSize =
+    .windowSize
 
 
 formatTime : Session -> Posix -> String
