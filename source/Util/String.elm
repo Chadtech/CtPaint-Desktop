@@ -1,5 +1,6 @@
 module Util.String exposing
-    ( containsLowercase
+    ( alphanumeric
+    , containsLowercase
     , containsSpecialCharacter
     , containsUppercase
     , isBlank
@@ -9,6 +10,18 @@ module Util.String exposing
     )
 
 import Regex exposing (Regex)
+
+
+alphanumeric : ( Char, List Char )
+alphanumeric =
+    ( '0'
+    , [ "123456789"
+      , "abcdefghijklmnopqrstuvwxyz"
+      , "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      ]
+        |> String.concat
+        |> String.toList
+    )
 
 
 quote : String -> String

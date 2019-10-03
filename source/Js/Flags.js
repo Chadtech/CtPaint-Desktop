@@ -1,5 +1,5 @@
 module.exports = {
-    make: function(user, manifest, canvasContainerId) {
+    make: function(user, manifest, canvasManagerNodeName) {
         var buf = new Uint32Array(1);
         window.crypto.getRandomValues(buf);
         var milliseconds = new Date().getMilliseconds()
@@ -14,7 +14,7 @@ module.exports = {
             user: user,
             mountPath: manifest.mountPath,
             buildNumber: manifest.buildNumber,
-            canvasContainerId: canvasContainerId
+            canvasManagerNodeName: canvasManagerNodeName
         }; 
     }
 }

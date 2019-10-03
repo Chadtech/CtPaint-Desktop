@@ -8,25 +8,46 @@
 
 */
 
-var canvasContainerId = "ctpaint-canvas-container";
+var canvasManagerNodeName = "canvas-manager";
+var msgsWaitingForInitialization = []
 
 var Flags = require("./Js/Flags");
+
 
 StartCtPaint = function(manifest) {
     var Client = require("./Js/Client")();
     var track = manifest.track;
-    var app = { elm: null };
+    var app = { elm: "loading" };
 
-    function toElm(name, props) {
-        app.elm.ports.fromJs.send({
-            name: name,
-            props: props
+    function flushInitializationMsg () {
+        msgsWaitingForInitialization.forEach(function(msg) {
+            toElm(msg.name, msg.props);
         });
     }
 
+    function toElm(name, props) {
+        var msg = {
+            name: name,
+            props: props || null
+        };
+
+        if (app.elm === "loading") {
+            msgsWaitingForInitialization.push(msg)
+        }
+        else {
+            app.elm.ports.fromJs.send(msg);
+        }
+
+    }
+
+    var CanvasManager = require("./Js/WebComponent/CanvasManager")({
+        canvasManagerNodeName: canvasManagerNodeName,
+        toElm: toElm,
+        production: manifest.production
+    });
+
     var User = require("./Js/User")(Client, toElm);
     var Drawing = require("./Js/Drawing")(Client, toElm);
-    var CanvasManager = require("./Js/CanvasManager")(canvasContainerId, toElm)
 
     var actions = {
         log_in: User.login,
@@ -35,7 +56,7 @@ StartCtPaint = function(manifest) {
         reset_password: User.resetPassword,
         open_in_new_window: window.open,
         get_drawings: Drawing.getAll,
-        init_canvas_manager: CanvasManager.init
+        canvas_manager_msg: CanvasManager.update
     };
 
     function jsMsgHandler(msg) {
@@ -51,8 +72,9 @@ StartCtPaint = function(manifest) {
 
     User.get(function(user) {
         app.elm = Elm.Main.init({
-            flags: Flags.make(user, manifest, canvasContainerId)
+            flags: Flags.make(user, manifest, canvasManagerNodeName)
         })
+        flushInitializationMsg()
         app.elm.ports.toJs.subscribe(jsMsgHandler);
     });
 }

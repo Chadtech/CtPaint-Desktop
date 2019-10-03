@@ -1,6 +1,7 @@
 module Data.BackgroundColor exposing
     ( BackgroundColor
     , black
+    , encode
     , queryParser
     , toString
     , toStyleColor
@@ -12,6 +13,7 @@ module Data.BackgroundColor exposing
 -------------------------------------------------------------------------------
 
 import Css
+import Json.Encode as Encode
 
 
 type BackgroundColor
@@ -39,6 +41,11 @@ white =
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+encode : BackgroundColor -> Encode.Value
+encode =
+    toString >> Encode.string
 
 
 toString : BackgroundColor -> String

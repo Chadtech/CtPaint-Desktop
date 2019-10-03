@@ -4,7 +4,9 @@ port module Ports exposing
     , logout
     , payload
     , send
+    , sendToCanvasManager
     , withId
+    , withInt
     , withNoProps
     , withProp
     , withString
@@ -55,6 +57,11 @@ withString propName stringValue =
     withProp propName (Encode.string stringValue)
 
 
+withInt : String -> Int -> Payload -> Payload
+withInt propName intValue =
+    withProp propName (Encode.int intValue)
+
+
 withProp : String -> Encode.Value -> Payload -> Payload
 withProp propName value { name, props } =
     { name = name
@@ -63,7 +70,20 @@ withProp propName value { name, props } =
 
 
 send : Payload -> Cmd msg
-send { name, props } =
+send =
+    toJs << encodePayload
+
+
+sendToCanvasManager : Payload -> Cmd msg
+sendToCanvasManager payload_ =
+    payload "canvas manager msg"
+        |> withProp "msg" (encodePayload payload_)
+        |> encodePayload
+        |> toJs
+
+
+encodePayload : Payload -> Encode.Value
+encodePayload { name, props } =
     let
         encodedProps : Encode.Value
         encodedProps =
@@ -77,7 +97,6 @@ send { name, props } =
     , Tuple.pair "props" encodedProps
     ]
         |> Encode.object
-        |> toJs
 
 
 logout : Cmd msg

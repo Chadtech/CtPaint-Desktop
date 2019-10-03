@@ -74,7 +74,7 @@ type Msg
     | PageNotFoundMsg PageNotFound.Msg
     | LoginMsg Login.Msg
     | ResetPasswordMsg ResetPassword.Msg
-    | Drawings Drawings.Msg
+    | DrawingsMsg Drawings.Msg
     | SettingsMsg Settings.Msg
     | AboutMsg About.Msg
     | InitDrawingMsg InitDrawing.Msg
@@ -205,7 +205,7 @@ viewPage model =
 
         Model.Drawings subModel ->
             Drawings.view subModel
-                |> viewInFrame Drawings
+                |> viewInFrame DrawingsMsg
 
         Model.Logout subModel ->
             Logout.view subModel
@@ -302,12 +302,12 @@ updateFromOk msg model =
             model
                 |> CmdUtil.withNoCmd
 
-        Drawings subMsg ->
+        DrawingsMsg subMsg ->
             case model of
                 Model.Drawings subModel ->
                     Drawings.update subMsg subModel
                         |> Tuple.mapFirst Model.Drawings
-                        |> CmdUtil.mapCmd Drawings
+                        |> CmdUtil.mapCmd DrawingsMsg
 
                 _ ->
                     model
@@ -392,9 +392,9 @@ handleRouteFromOk model route =
     in
     case route of
         Route.PaintApp subRoute ->
-            PaintApp.init session user
-                |> Tuple.mapFirst Model.PaintApp
-                |> CmdUtil.mapCmd PaintAppMsg
+            PaintApp.init session user subRoute
+                |> Model.PaintApp
+                |> CmdUtil.withNoCmd
 
         Route.Landing ->
             ( model
@@ -463,7 +463,7 @@ handleRouteFromOk model route =
                                 account
                                 subRoute
                                 |> Tuple.mapFirst Model.Drawings
-                                |> CmdUtil.mapCmd Drawings
+                                |> CmdUtil.mapCmd DrawingsMsg
 
         Route.InitDrawing ->
             Model.InitDrawing
@@ -518,7 +518,7 @@ trackPage msg =
         PageNotFoundMsg subMsg ->
             PageNotFound.track subMsg
 
-        Drawings subMsg ->
+        DrawingsMsg subMsg ->
             Drawings.track subMsg
 
         SettingsMsg subMsg ->
@@ -610,7 +610,10 @@ listeners model =
             ]
 
         Model.Drawings _ ->
-            Listener.mapMany Drawings Drawings.listeners
+            Listener.mapMany DrawingsMsg Drawings.listeners
+
+        Model.PaintApp _ ->
+            Listener.mapMany PaintAppMsg PaintApp.listeners
 
         _ ->
             []

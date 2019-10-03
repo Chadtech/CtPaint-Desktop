@@ -28,10 +28,8 @@ module Data.Tracking exposing
 -}
 
 import Data.Listener as Listener
-import Data.SessionId as SesionId exposing (SessionId)
 import Json.Encode as Encode exposing (Value)
 import Ports
-import Util.Json.Encode as EncodeUtil
 
 
 

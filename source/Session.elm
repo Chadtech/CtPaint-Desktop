@@ -4,13 +4,14 @@ module Session exposing
     , decoder
     , formatTime
     , getBuildNumber
-    , getCanvasContainerId
+    , getCanvasManagerNodeName
     , getContactEmail
     , getMountPath
     , getNavKey
     , getSessionId
     , getWindowSize
     , init
+    , stepRandom
     , subscriptions
     , track
     , update
@@ -46,7 +47,7 @@ type alias Session =
     , windowSize : Size
     , contactEmail : String
     , timezone : Timezone
-    , canvasContainerId : String
+    , canvasManagerNodeName : String
     }
 
 
@@ -87,6 +88,16 @@ loadedTimezone zone session =
     { session | timezone = Loaded zone }
 
 
+getSeed : Session -> Random.Seed
+getSeed =
+    .seed
+
+
+setSeed : Random.Seed -> Session -> Session
+setSeed newSeed session =
+    { session | seed = newSeed }
+
+
 
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
@@ -119,16 +130,25 @@ decoder navKey =
                 |> DecodeUtil.apply windowSizeDecoder
                 |> DecodeUtil.set "ctpaint@programhouse.us"
                 |> DecodeUtil.set (Fallback Time.utc)
-                |> DecodeUtil.applyField "canvasContainerId" Decode.string
+                |> DecodeUtil.applyField "canvasManagerNodeName" Decode.string
     in
     Decode.map Random.initialSeed Decode.int
         |> Decode.field "seed"
         |> Decode.andThen fromSeed
 
 
-getCanvasContainerId : Session -> String
-getCanvasContainerId =
-    .canvasContainerId
+stepRandom : Random.Generator a -> Session -> ( a, Session )
+stepRandom generator session =
+    let
+        ( v, newSeed ) =
+            Random.step generator (getSeed session)
+    in
+    ( v, setSeed newSeed session )
+
+
+getCanvasManagerNodeName : Session -> String
+getCanvasManagerNodeName =
+    .canvasManagerNodeName
 
 
 getContactEmail : Session -> String

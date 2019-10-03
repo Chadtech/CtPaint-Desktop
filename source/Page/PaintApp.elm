@@ -4,6 +4,7 @@ module Page.PaintApp exposing
     , getSession
     , getUser
     , init
+    , listeners
     , mapSession
     , navigationIsOkay
     , track
@@ -13,7 +14,10 @@ module Page.PaintApp exposing
 
 import Color exposing (Color)
 import Css
+import Data.BackgroundColor as BackgroundColor exposing (BackgroundColor)
 import Data.Document exposing (Document)
+import Data.Listener as Listener exposing (Listener)
+import Data.OrderedSet exposing (OrderedSet)
 import Data.Palette as Palette exposing (Palette)
 import Data.Position exposing (Position)
 import Data.Size as Size exposing (Size)
@@ -25,13 +29,17 @@ import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
 import Html.Styled.Attributes as Attrs
 import Html.Styled.Lazy as HtmlLazy
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Ports
 import Route exposing (Route)
+import Route.PaintApp as PaintAppRoute
 import Session exposing (Session)
 import Style
 import Ui.Toolbar as Toolbar
 import Util.Cmd as CmdUtil
 import Util.List as ListUtil
+import Util.Random as RandomUtil
 import View.Body as Body
 import View.Button as Button
 import View.ColorBox as ColorBox
@@ -59,7 +67,23 @@ type alias Model =
     --
     , swatches : Swatches
     , palette : Palette
+
+    -- LAYERS
+    , canvasManagerConnection : CanvasManagerConnection
     }
+
+
+type alias InitCanvasParams =
+    { dimensions : Size
+    , backgroundColor : BackgroundColor
+    , name : String
+    }
+
+
+type CanvasManagerConnection
+    = CanvasManager__Connecting PaintAppRoute.Route
+    | CanvasManager__Connected
+    | CanvasManager__Failed (Listener.Error String)
 
 
 type ViewMode
@@ -71,6 +95,7 @@ type Msg
     = ToolbarMsg Toolbar.Msg
     | PaletteColorClicked Int
     | AddPaletteColorClicked
+    | CanvasManagerInitialized (Listener.Response String ())
 
 
 
@@ -79,22 +104,21 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session -> User -> ( Model, Cmd msg )
-init session user =
-    ( { session = session
-      , user = user
-      , pendingNavigation = Nothing
-      , viewMode = Mode__Normal
-      , eraserSize = 5
-      , tool = Tool.init
-      , mousePosition =
-            Size.center <| Session.getWindowSize session
-      , swatches = Swatches.default
-      , palette = Palette.default
-      }
-    , Ports.payload "init canvas manager"
-        |> Ports.send
-    )
+init : Session -> User -> PaintAppRoute.Route -> Model
+init session user paintAppRoute =
+    { session = session
+    , user = user
+    , pendingNavigation = Nothing
+    , viewMode = Mode__Normal
+    , eraserSize = 5
+    , tool = Tool.init
+    , mousePosition =
+        Size.center <| Session.getWindowSize session
+    , swatches = Swatches.default
+    , palette = Palette.default
+    , canvasManagerConnection =
+        CanvasManager__Connecting paintAppRoute
+    }
 
 
 
@@ -115,7 +139,7 @@ getUser =
 
 mapSession : (Session -> Session) -> Model -> Model
 mapSession f model =
-    { model | session = f model.session }
+    setSession (f <| getSession model) model
 
 
 navigationIsOkay : Model -> Bool
@@ -127,6 +151,56 @@ navigationIsOkay model =
 -------------------------------------------------------------------------------
 -- PRIVATE HELPERS --
 -------------------------------------------------------------------------------
+
+
+setSession : Session -> Model -> Model
+setSession session model =
+    { model | session = session }
+
+
+encodeInitCanvasParams : InitCanvasParams -> Encode.Value
+encodeInitCanvasParams { dimensions, backgroundColor } =
+    [ Tuple.pair "width" <|
+        Encode.int dimensions.width
+    , Tuple.pair "height" <|
+        Encode.int dimensions.height
+    , Tuple.pair "backgroundColor" <|
+        BackgroundColor.encode backgroundColor
+    ]
+        |> Encode.object
+
+
+resolveRouteParams : Session -> PaintAppRoute.Params -> ( InitCanvasParams, Session )
+resolveRouteParams session params =
+    let
+        ( name, newSession ) =
+            case params.name of
+                Just givenName ->
+                    ( givenName, session )
+
+                Nothing ->
+                    Session.stepRandom
+                        (RandomUtil.alphanumeric 16)
+                        session
+    in
+    ( { dimensions =
+            params.dimensions
+                |> Maybe.withDefault (Size.square 400)
+      , backgroundColor =
+            params.backgroundColor
+                |> Maybe.withDefault BackgroundColor.white
+      , name = name
+      }
+    , newSession
+    )
+
+
+setCanvasManagerError : Listener.Error String -> Model -> Model
+setCanvasManagerError error model =
+    { model
+        | canvasManagerConnection =
+            CanvasManager__Failed error
+    }
 
 
 mapSwatches : (Swatches -> Swatches) -> Model -> Model
@@ -229,8 +303,8 @@ normalView model =
                 , Style.relative
                 ]
                 [ clickScreen
-                , HtmlLazy.lazy canvasContainer
-                    (Session.getCanvasContainerId <|
+                , HtmlLazy.lazy canvasManagerView
+                    (Session.getCanvasManagerNodeName <|
                         getSession model
                     )
                 ]
@@ -242,14 +316,9 @@ normalView model =
         ]
 
 
-canvasContainer : String -> Html Msg
-canvasContainer canvasContainerId =
-    Html.div
-        [ Attrs.css
-            []
-        , Attrs.id canvasContainerId
-        ]
-        []
+canvasManagerView : String -> Html Msg
+canvasManagerView nodeName =
+    Html.node nodeName [] []
 
 
 taskbar : Html msg
@@ -410,6 +479,73 @@ update msg model =
                 model
                 |> CmdUtil.withNoCmd
 
+        CanvasManagerInitialized response ->
+            case response of
+                Ok () ->
+                    case model.canvasManagerConnection of
+                        CanvasManager__Connecting subRoute ->
+                            handleCanvasManagerInitialization subRoute model
+
+                        _ ->
+                            -- TODO record unexpected case
+                            model
+                                |> CmdUtil.withNoCmd
+
+                Err error ->
+                    setCanvasManagerError error model
+                        |> CmdUtil.withNoCmd
+
+
+handleCanvasManagerInitialization : PaintAppRoute.Route -> Model -> ( Model, Cmd Msg )
+handleCanvasManagerInitialization route model =
+    let
+        session : Session
+        session =
+            getSession model
+
+        initializeCanvases : List ( String, Encode.Value ) -> Ports.Payload
+        initializeCanvases canvases =
+            Ports.payload "initialize layers"
+                |> Ports.withProp
+                    "canvases"
+                    (canvases |> Encode.object)
+
+        initializeFromParams : PaintAppRoute.Params -> ( Model, Cmd Msg )
+        initializeFromParams routeParams =
+            let
+                ( resolvedParams, newSession ) =
+                    resolveRouteParams
+                        session
+                        routeParams
+            in
+            ( setSession newSession model
+            , initializeCanvases
+                [ Tuple.pair "layer-0" <|
+                    encodeInitCanvasParams resolvedParams
+                ]
+                |> Ports.sendToCanvasManager
+            )
+    in
+    case route of
+        PaintAppRoute.Landing ->
+            initializeFromParams
+                { dimensions = Nothing
+                , name = Nothing
+                , backgroundColor = Nothing
+                }
+
+        PaintAppRoute.WithParams params ->
+            initializeFromParams params
+
+        PaintAppRoute.FromUrl _ ->
+            -- TODO from url
+            model
+                |> CmdUtil.withNoCmd
+
+        PaintAppRoute.FromDrawing id ->
+            model
+                |> CmdUtil.withNoCmd
+
 
 updateFromToolbar : Toolbar.Msg -> Model -> Model
 updateFromToolbar msg model =
@@ -445,3 +581,27 @@ track msg =
 
         AddPaletteColorClicked ->
             Tracking.event "add palette color clicked"
+
+        CanvasManagerInitialized response ->
+            Tracking.event "canvas manager initialized"
+                |> Tracking.withListenerResponse response
+
+
+
+-------------------------------------------------------------------------------
+-- PORTS --
+-------------------------------------------------------------------------------
+
+
+listeners : List (Listener Msg)
+listeners =
+    [ Listener.for
+        { name = "canvas manager init"
+        , decoder =
+            [ Decode.map Ok (Decode.null ())
+            , Decode.map Err Decode.string
+            ]
+                |> Decode.oneOf
+        , handler = CanvasManagerInitialized
+        }
+    ]

@@ -1,6 +1,7 @@
 module Data.Size exposing
     ( Size
     , center
+    , square
     , toString
     )
 
@@ -21,6 +22,11 @@ type alias Size =
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+square : Int -> Size
+square i =
+    { width = i, height = i }
 
 
 toString : Size -> String
