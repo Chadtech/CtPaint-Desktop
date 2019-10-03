@@ -17,10 +17,12 @@ module View.Button exposing
     , toHtml
     , withBackgroundColor
     , withFatBorder
+    , withSize
     )
 
 import Chadtech.Colors as Colors
 import Css exposing (Style)
+import Data.Size exposing (Size)
 import Html.Grid as Grid
 import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attrs
@@ -59,17 +61,22 @@ type Option
     | BackgroundColor Css.Color
     | FatBorder
     | Icon
+    | AsExactSize Size
+
+
+type Sizing
+    = RegularSizing Width { tall : Bool }
+    | ExactSize Size
 
 
 type alias Summary =
-    { width : Width
-    , indent : Maybe Bool
+    { indent : Maybe Bool
     , disabled : Bool
-    , tall : Bool
     , label : Maybe String
     , backgroundColor : Maybe Css.Color
     , fatBorder : Bool
     , iconFont : Bool
+    , sizing : Sizing
     }
 
 
@@ -77,6 +84,11 @@ type alias Summary =
 -------------------------------------------------------------------------------
 -- PUBLIC HELPERS --
 -------------------------------------------------------------------------------
+
+
+withSize : Size -> Button msg -> Button msg
+withSize =
+    addOption << AsExactSize
 
 
 withFatBorder : Button msg -> Button msg
@@ -156,7 +168,15 @@ optionsToSummary =
         modifySummary option summary =
             case option of
                 Width width ->
-                    { summary | width = width }
+                    { summary
+                        | sizing =
+                            case summary.sizing of
+                                RegularSizing _ tall ->
+                                    RegularSizing width tall
+
+                                _ ->
+                                    summary.sizing
+                    }
 
                 Indent indent_ ->
                     { summary | indent = Just indent_ }
@@ -165,7 +185,17 @@ optionsToSummary =
                     { summary | disabled = disabled }
 
                 Tall tall ->
-                    { summary | tall = tall }
+                    { summary
+                        | sizing =
+                            case summary.sizing of
+                                RegularSizing width _ ->
+                                    RegularSizing
+                                        width
+                                        { tall = tall }
+
+                                _ ->
+                                    summary.sizing
+                    }
 
                 Label label ->
                     { summary | label = Just label }
@@ -180,16 +210,18 @@ optionsToSummary =
                     modifySummary
                         (Width FullWidth)
                         { summary | iconFont = True }
+
+                AsExactSize size ->
+                    { summary | sizing = ExactSize size }
     in
     List.foldr modifySummary
-        { width = SingleWidth
-        , indent = Nothing
+        { indent = Nothing
         , disabled = False
-        , tall = False
         , label = Nothing
         , backgroundColor = Nothing
         , fatBorder = False
         , iconFont = False
+        , sizing = RegularSizing SingleWidth { tall = False }
         }
 
 
@@ -230,19 +262,58 @@ toHtml (Button { onClick } options) =
     Html.button
         [ Attrs.css
             [ indentStyle summary
-            , buttonHeight summary.tall
+            , sizingStyle summary.sizing
             , summary.backgroundColor
                 |> Maybe.withDefault Colors.content1
                 |> Css.backgroundColor
             , Css.color Colors.content4
             , Css.active [ Style.indent ]
-            , buttonWidth summary
             , disabledStyle summary.disabled
             , CssUtil.styleIf summary.iconFont iconStyle
             ]
         , Events.onClick onClick
         ]
         [ Html.text (Maybe.withDefault "" summary.label) ]
+
+
+sizingStyle : Sizing -> Style
+sizingStyle sizing =
+    let
+        buttonWidth : Width -> Style
+        buttonWidth width =
+            case width of
+                HalfWidth ->
+                    Style.width 6
+
+                SingleWidth ->
+                    Style.width 7
+
+                DoubleWidth ->
+                    Style.width 8
+
+                FullWidth ->
+                    Style.fullWidth
+
+        buttonHeight : Bool -> Style
+        buttonHeight tall =
+            if tall then
+                Style.height 6
+
+            else
+                Style.height 5
+    in
+    case sizing of
+        RegularSizing width { tall } ->
+            [ buttonHeight tall
+            , buttonWidth width
+            ]
+                |> Css.batch
+
+        ExactSize size ->
+            [ Style.width size.width
+            , Style.height size.height
+            ]
+                |> Css.batch
 
 
 iconStyle : Style
@@ -292,31 +363,6 @@ outdent summary =
 
     else
         Style.outdent
-
-
-buttonWidth : Summary -> Style
-buttonWidth summary =
-    case summary.width of
-        HalfWidth ->
-            Style.width 6
-
-        SingleWidth ->
-            Style.width 7
-
-        DoubleWidth ->
-            Style.width 8
-
-        FullWidth ->
-            Style.fullWidth
-
-
-buttonHeight : Bool -> Style
-buttonHeight tall =
-    if tall then
-        Style.height 6
-
-    else
-        Style.height 5
 
 
 column : List (Button msg) -> List (Html msg)

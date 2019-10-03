@@ -1,7 +1,5 @@
 module.exports = {
-    make: function(user, manifest) {
-        var localWork = localStorage.getItem("local work");
-
+    make: function(user, manifest, canvasContainerId) {
         var buf = new Uint32Array(1);
         window.crypto.getRandomValues(buf);
         var milliseconds = new Date().getMilliseconds()
@@ -15,7 +13,8 @@ module.exports = {
             browser: getBrowser(),
             user: user,
             mountPath: manifest.mountPath,
-            buildNumber: manifest.buildNumber
+            buildNumber: manifest.buildNumber,
+            canvasContainerId: canvasContainerId
         }; 
     }
 }

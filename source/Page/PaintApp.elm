@@ -11,21 +11,30 @@ module Page.PaintApp exposing
     , view
     )
 
+import Color exposing (Color)
 import Css
 import Data.Document exposing (Document)
+import Data.Palette as Palette exposing (Palette)
 import Data.Position exposing (Position)
-import Data.Size as Size
+import Data.Size as Size exposing (Size)
+import Data.Swatches as Swatches exposing (Swatches)
 import Data.Tool as Tool exposing (Tool)
 import Data.Tracking as Tracking
 import Data.User exposing (User)
 import Html.Grid as Grid
 import Html.Styled as Html exposing (Html)
+import Html.Styled.Attributes as Attrs
+import Html.Styled.Lazy as HtmlLazy
+import Ports
 import Route exposing (Route)
 import Session exposing (Session)
 import Style
 import Ui.Toolbar as Toolbar
 import Util.Cmd as CmdUtil
+import Util.List as ListUtil
 import View.Body as Body
+import View.Button as Button
+import View.ColorBox as ColorBox
 
 
 
@@ -38,10 +47,18 @@ type alias Model =
     { session : Session
     , user : User
     , pendingNavigation : Maybe Route
+    , mousePosition : Position
     , viewMode : ViewMode
+
+    -- TOOLS
+    --
     , eraserSize : Int
     , tool : Tool
-    , mousePosition : Position
+
+    -- COLORS
+    --
+    , swatches : Swatches
+    , palette : Palette
     }
 
 
@@ -52,6 +69,8 @@ type ViewMode
 
 type Msg
     = ToolbarMsg Toolbar.Msg
+    | PaletteColorClicked Int
+    | AddPaletteColorClicked
 
 
 
@@ -60,17 +79,22 @@ type Msg
 -------------------------------------------------------------------------------
 
 
-init : Session -> User -> Model
+init : Session -> User -> ( Model, Cmd msg )
 init session user =
-    { session = session
-    , user = user
-    , pendingNavigation = Nothing
-    , viewMode = Mode__Normal
-    , eraserSize = 5
-    , tool = Tool.init
-    , mousePosition =
-        Size.center <| Session.getWindowSize session
-    }
+    ( { session = session
+      , user = user
+      , pendingNavigation = Nothing
+      , viewMode = Mode__Normal
+      , eraserSize = 5
+      , tool = Tool.init
+      , mousePosition =
+            Size.center <| Session.getWindowSize session
+      , swatches = Swatches.default
+      , palette = Palette.default
+      }
+    , Ports.payload "init canvas manager"
+        |> Ports.send
+    )
 
 
 
@@ -103,6 +127,16 @@ navigationIsOkay model =
 -------------------------------------------------------------------------------
 -- PRIVATE HELPERS --
 -------------------------------------------------------------------------------
+
+
+mapSwatches : (Swatches -> Swatches) -> Model -> Model
+mapSwatches f model =
+    { model | swatches = f model.swatches }
+
+
+mapPalette : (Palette -> Palette) -> Model -> Model
+mapPalette f model =
+    { model | palette = f model.palette }
 
 
 setTool : Tool -> Model -> Model
@@ -162,6 +196,20 @@ view model =
 
 normalView : Model -> List (Html Msg)
 normalView model =
+    let
+        clickScreen : Html Msg
+        clickScreen =
+            Html.div
+                [ Attrs.css
+                    [ Css.position Css.absolute
+                    , Css.left Css.zero
+                    , Css.top Css.zero
+                    , Css.right Css.zero
+                    , Css.bottom Css.zero
+                    ]
+                ]
+                []
+    in
     Body.view
         [ Css.displayFlex
         , Css.flexDirection Css.column
@@ -178,11 +226,30 @@ normalView model =
             , Grid.column
                 [ Style.pit
                 , Style.buttonMarginRight
+                , Style.relative
                 ]
-                []
+                [ clickScreen
+                , HtmlLazy.lazy canvasContainer
+                    (Session.getCanvasContainerId <|
+                        getSession model
+                    )
+                ]
             ]
-        , colorBar
+        , HtmlLazy.lazy2
+            colorBar
+            model.swatches
+            model.palette
         ]
+
+
+canvasContainer : String -> Html Msg
+canvasContainer canvasContainerId =
+    Html.div
+        [ Attrs.css
+            []
+        , Attrs.id canvasContainerId
+        ]
+        []
 
 
 taskbar : Html msg
@@ -192,10 +259,122 @@ taskbar =
         []
 
 
-colorBar : Html msg
-colorBar =
+colorBar : Swatches -> Palette -> Html Msg
+colorBar swatches palette =
     Grid.row
-        [ Style.height 6 ]
+        [ Style.height 6
+        , Style.padding 2
+        ]
+        [ swatchesView swatches
+        , Grid.column
+            [ Style.pit
+            , Style.marginLeft 2
+            , Style.scroll
+            ]
+            [ HtmlLazy.lazy
+                paletteView
+                palette
+            ]
+        , infoView
+        ]
+
+
+swatchesView : Swatches -> Grid.Column Msg
+swatchesView swatches =
+    let
+        spacing : Int
+        spacing =
+            2
+    in
+    -- TODO make lazy
+    Grid.column
+        [ Css.flexDirection Css.column
+        , Grid.exactWidthColumn (Style.sizePx 7)
+        ]
+        [ Grid.row
+            [ Style.grow
+            , Style.paddingBottom spacing
+            ]
+            [ Grid.column
+                []
+                [ ColorBox.fromColor
+                    swatches.top
+                    |> ColorBox.toHtml
+                ]
+            ]
+        , Grid.row
+            [ Style.grow ]
+            [ Grid.column
+                [ Style.paddingRight spacing ]
+                [ ColorBox.fromColor
+                    swatches.left
+                    |> ColorBox.toHtml
+                ]
+            , Grid.column
+                [ Css.flex (Css.int 2) ]
+                [ ColorBox.fromColor
+                    swatches.bottom
+                    |> ColorBox.toHtml
+                ]
+            , Grid.column
+                [ Style.paddingLeft spacing ]
+                [ ColorBox.fromColor
+                    swatches.right
+                    |> ColorBox.toHtml
+                ]
+            ]
+        ]
+
+
+paletteView : Palette -> Html Msg
+paletteView palette =
+    let
+        squareSize : Size
+        squareSize =
+            { width = 5, height = 5 }
+
+        squareView : Int -> Color -> Grid.Column Msg
+        squareView index paletteColor =
+            Grid.column
+                [ Css.flex (Css.int 0) ]
+                [ paletteColor
+                    |> ColorBox.fromColor
+                    |> ColorBox.setSize squareSize
+                    |> ColorBox.onClick
+                        (PaletteColorClicked index)
+                    |> ColorBox.toHtml
+                ]
+
+        addSquareButton : Grid.Column Msg
+        addSquareButton =
+            Grid.column
+                []
+                [ Button.config
+                    AddPaletteColorClicked
+                    "+"
+                    |> Button.withSize squareSize
+                    |> Button.toHtml
+                ]
+
+        squares : List (Grid.Column Msg)
+        squares =
+            palette
+                |> Palette.toList
+                |> List.indexedMap squareView
+                |> ListUtil.push addSquareButton
+    in
+    Grid.row
+        [ Css.flexWrap Css.wrap ]
+        squares
+
+
+infoView : Grid.Column msg
+infoView =
+    Grid.column
+        [ Style.pit
+        , Style.marginLeft 2
+        , Grid.exactWidthColumn (Style.sizePx 9)
+        ]
         []
 
 
@@ -210,6 +389,25 @@ update msg model =
     case msg of
         ToolbarMsg subMsg ->
             updateFromToolbar subMsg model
+                |> CmdUtil.withNoCmd
+
+        PaletteColorClicked index ->
+            case Palette.get index model.palette of
+                Just color ->
+                    mapSwatches
+                        (Swatches.setTop color)
+                        model
+                        |> CmdUtil.withNoCmd
+
+                Nothing ->
+                    -- TODO record unexpected case
+                    model
+                        |> CmdUtil.withNoCmd
+
+        AddPaletteColorClicked ->
+            mapPalette
+                Palette.addColor
+                model
                 |> CmdUtil.withNoCmd
 
 
@@ -241,3 +439,9 @@ track msg =
     case msg of
         ToolbarMsg subMsg ->
             Toolbar.track subMsg
+
+        PaletteColorClicked _ ->
+            Tracking.event "palette color clicked"
+
+        AddPaletteColorClicked ->
+            Tracking.event "add palette color clicked"

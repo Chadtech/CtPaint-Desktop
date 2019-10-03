@@ -14,7 +14,7 @@ import Data.Tool as Tool exposing (Tool)
 import Data.Tracking as Tracking
 import Html.Grid as Grid
 import Html.Styled exposing (Html)
-import Html.Styled.Lazy
+import Html.Styled.Lazy as HtmlLazy
 import Style
 import View.Button as Button
 
@@ -325,7 +325,7 @@ view { eraserSize, toolOption } =
         [ Grid.columnShrink
         , Style.buttonPaddingHorizontal
         ]
-        [ Html.Styled.Lazy.lazy2
+        [ HtmlLazy.lazy2
             viewLazy
             eraserSize
             (toolOptionToComparable toolOption)

@@ -392,9 +392,9 @@ handleRouteFromOk model route =
     in
     case route of
         Route.PaintApp subRoute ->
-            Model.PaintApp
-                (PaintApp.init session user)
-                |> CmdUtil.withNoCmd
+            PaintApp.init session user
+                |> Tuple.mapFirst Model.PaintApp
+                |> CmdUtil.mapCmd PaintAppMsg
 
         Route.Landing ->
             ( model

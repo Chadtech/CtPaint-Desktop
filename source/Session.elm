@@ -4,6 +4,7 @@ module Session exposing
     , decoder
     , formatTime
     , getBuildNumber
+    , getCanvasContainerId
     , getContactEmail
     , getMountPath
     , getNavKey
@@ -45,6 +46,7 @@ type alias Session =
     , windowSize : Size
     , contactEmail : String
     , timezone : Timezone
+    , canvasContainerId : String
     }
 
 
@@ -117,10 +119,16 @@ decoder navKey =
                 |> DecodeUtil.apply windowSizeDecoder
                 |> DecodeUtil.set "ctpaint@programhouse.us"
                 |> DecodeUtil.set (Fallback Time.utc)
+                |> DecodeUtil.applyField "canvasContainerId" Decode.string
     in
     Decode.map Random.initialSeed Decode.int
         |> Decode.field "seed"
         |> Decode.andThen fromSeed
+
+
+getCanvasContainerId : Session -> String
+getCanvasContainerId =
+    .canvasContainerId
 
 
 getContactEmail : Session -> String

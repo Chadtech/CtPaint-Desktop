@@ -17,6 +17,7 @@ module Style exposing
     , fullHeight
     , fullWidth
     , globals
+    , grow
     , height
     , indent
     , indentWithWidth
@@ -460,3 +461,8 @@ scroll =
 problemBackground : Style
 problemBackground =
     Css.backgroundColor Colors.problem0
+
+
+grow : Style
+grow =
+    Css.flex (Css.int 1)

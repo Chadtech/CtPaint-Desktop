@@ -8,6 +8,8 @@
 
 */
 
+var canvasContainerId = "ctpaint-canvas-container";
+
 var Flags = require("./Js/Flags");
 
 StartCtPaint = function(manifest) {
@@ -24,6 +26,7 @@ StartCtPaint = function(manifest) {
 
     var User = require("./Js/User")(Client, toElm);
     var Drawing = require("./Js/Drawing")(Client, toElm);
+    var CanvasManager = require("./Js/CanvasManager")(canvasContainerId, toElm)
 
     var actions = {
         log_in: User.login,
@@ -31,7 +34,8 @@ StartCtPaint = function(manifest) {
         forgot_password: User.forgotPassword,
         reset_password: User.resetPassword,
         open_in_new_window: window.open,
-        get_drawings: Drawing.getAll
+        get_drawings: Drawing.getAll,
+        init_canvas_manager: CanvasManager.init
     };
 
     function jsMsgHandler(msg) {
@@ -47,7 +51,7 @@ StartCtPaint = function(manifest) {
 
     User.get(function(user) {
         app.elm = Elm.Main.init({
-            flags: Flags.make(user, manifest)
+            flags: Flags.make(user, manifest, canvasContainerId)
         })
         app.elm.ports.toJs.subscribe(jsMsgHandler);
     });

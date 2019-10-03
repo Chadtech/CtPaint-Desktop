@@ -68,7 +68,7 @@ function get(Client, init) {
                     break;
 
                 default:
-                    init("Unknown get session error");
+                    init(err.name);
             }
         }
     });
