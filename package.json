@@ -8,7 +8,7 @@
     "body-parser": "^1.15.0",
     "browserify": "^16.0.0",
     "express": "^4.13.4",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-autowatch": "^1.0.2",
     "save": "^2.3.2",
     "vinyl-buffer": "^1.0.0",
